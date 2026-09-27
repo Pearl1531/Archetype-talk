@@ -522,7 +522,7 @@ function blDetail(){
 function blRowCard(which, idx, t, row){
   const key = which+':'+idx;
   const q = blGet(t,row,'question') || row.find(c=>c) || '(empty row)';
-  const persona = blGet(t,row,'persona');
+  const persona = blGet(t,row,'persona').replace(/^[-—–\s]+$/,'');   // "—" in the cell means none
   const { kind } = blKindOf(t, row);
   const S = blSevOf(t, row);
   const sel = BL_SEL===key;
@@ -578,13 +578,21 @@ function blFormPane(){
 }
 /* the left column: one list at a time (open or answered), filtered by the
    tiles above it and by the kind segment */
+/* the rows the list shows, most urgent first — "what is critical" is the
+   question you arrive with, so it is never at the bottom. Ties keep file order. */
+function blShown(){
+  const t = (BL_LIST==='open' ? BL.open : BL.closed).table;
+  const rank = r => BL_SEV_ORDER.indexOf(blSevOf(t,r).sev);
+  return t.rows.map((r,i)=>({r,i})).filter(({r})=>
+    (BL_KIND_FILTER==='all' || blKindOf(t,r).kind===BL_KIND_FILTER) &&
+    (BL_SEV_FILTER==='all'  || blSevOf(t,r).sev===BL_SEV_FILTER))
+    .sort((a,b)=> rank(a.r)-rank(b.r) || a.i-b.i);
+}
 function blListPane(){
   const which = BL_LIST;
   const sec = which==='open' ? BL.open : BL.closed;
   const t = sec.table, rows = t.rows;
-  const shown = rows.map((r,i)=>({r,i})).filter(({r})=>
-    (BL_KIND_FILTER==='all' || blKindOf(t,r).kind===BL_KIND_FILTER) &&
-    (BL_SEV_FILTER==='all'  || blSevOf(t,r).sev===BL_SEV_FILTER));
+  const shown = blShown();
   const hidden = rows.length - shown.length;
   const cards = shown.map(({r,i})=> blRowCard(which, i, t, r)).join('');
   /* The heading is the status, not the section name: a question is either still
@@ -593,7 +601,6 @@ function blListPane(){
   return `<div class="bl-list">
     <div class="bl-list-head">
       <h3>${tr(which==='open' ? 'To run' : 'Answered')}<span class="n">${shown.length}${hidden?` / ${rows.length}`:''}</span></h3>
-      <button class="btn btn-ghost btn-sm" data-act="new" title="${esc(tr('Add a question by hand'))}">＋</button>
     </div>
     <label class="filter-pill bl-list-filter">
       ${BL_ICONS.search}
@@ -690,6 +697,8 @@ function renderBacklog(){
   const nOpen = BL.open.table.rows.length, nClosed = BL.closed.table.rows.length;
   // how many filters are actually narrowing the list — the badge on the button,
   // so a filtered list can never look like the whole list
+  // an empty right pane on arrival is a dead end — open the most urgent question
+  if(!BL_EDIT && !(BL_SEL && blRowAt(BL_SEL).row)){ const f = blShown()[0]; BL_SEL = f ? BL_LIST+':'+f.i : null; }
   const nFilters = (BL_KIND_FILTER!=='all'?1:0) + (BL_SEV_FILTER!=='all'?1:0) + (BL_LIST!=='open'?1:0);
   grid.innerHTML = `
     <datalist id="blPersonas">${personas.map(p=>`<option value="${esc(p)}"></option>`).join('')}</datalist>

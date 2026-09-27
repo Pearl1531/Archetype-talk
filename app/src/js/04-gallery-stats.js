@@ -97,6 +97,12 @@ function distinctParticipants(){
   wsEntities().forEach(e=>{ if(e.type==='Transcript' && !isExcluded(e)) g.add(participantGroupId(e)); });
   return g.size;
 }
+/* The demo is a snapshot, read as of the day its research closed — not today.
+   Against the real clock every visitor would meet it as months overdue, which
+   says nothing about the method and everything about when the demo was made.
+   A real project always runs on the real clock. */
+const DEMO_AS_OF = new Date(2026, 6, 15);
+function graphNow(){ return WS==='demo' ? DEMO_AS_OF.getTime() : Date.now(); }
 /* transcript freshness: >3 months = repeat the research; >1 year = don't lean on it for persona work */
 function parseAnyDate(str){
   const t = String(str||'').trim(); let m;
@@ -106,7 +112,7 @@ function parseAnyDate(str){
 }
 function transcriptAgeDays(e){
   const d = parseAnyDate(e.fm.date); if(!d) return null;
-  return Math.floor((Date.now() - d.getTime()) / 86400000);
+  return Math.floor((graphNow() - d.getTime()) / 86400000);
 }
 function staleNoteHtml(e, withAction){
   if(isExcluded(e)) return ''; // decision made — the warning's job is done

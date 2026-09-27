@@ -5,7 +5,7 @@ title: 'INT-06 Tom'
 interview_id: INT-06
 participant: 'Tom, 41, regional sales rep, Portland — 2-3h driving daily'
 method: 'In-depth interview, in the car in a client parking lot'
-date: 25.06.2025
+date: 25.06.2026
 # Demo file — a fictional participant, so there is no consent record to point at.
 # The one lifecycle field that still earns its place is the Art. 9 flag: Tom names
 # dyslexia himself, and that flag is what makes /export, persona-voice and

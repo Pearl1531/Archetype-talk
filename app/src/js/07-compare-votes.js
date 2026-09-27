@@ -82,7 +82,7 @@ function renderCompare(){
     const e = ENTITIES[id];
     const m = competitorMentions(e);
     const prox = PROX_LABEL[String(e.fm.proximity||'').trim()];
-    const vDays = e.fm.retrieved ? (d=>d?Math.floor((Date.now()-d.getTime())/86400000):null)(parseAnyDate(e.fm.retrieved)) : null;
+    const vDays = e.fm.retrieved ? (d=>d?Math.floor((graphNow()-d.getTime())/86400000):null)(parseAnyDate(e.fm.retrieved)) : null;
     return `<div class="cmp-col-head">
       ${compTileHtml(e,56)}
       <div class="cmp-col-name"><a href="#${e.id}">${esc(e.title)}</a>${e.fm.demo?'<span class="demo-badge">Demo</span>':''}</div>

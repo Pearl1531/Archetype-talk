@@ -15,7 +15,6 @@ its screenshot is still being made.
 | file | used by |
 |---|---|
 | `wizard-graph.jpg` | welcome step 2, "What this repository is" — the mind map |
-| `wizard-talk.jpg` | welcome step 3, "You and your AI assistant" — a persona conversation |
 
 Both are shown in a band of ~512×132 CSS px (the card's full width; it never
 grows for a picture), so they are stored **already cut to that proportion**,

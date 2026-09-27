@@ -21,7 +21,7 @@ In the usability test P3 saw Smart Shuffle as an intrusion into a deliberately c
 
 ## Interview date
 
-18.06.2025
+18.06.2026
 
 ## Transcript
 

@@ -21,7 +21,7 @@ Jake (student plan) says that on a price hike he'd go back to ad-supported Free 
 
 ## Interview date
 
-14.06.2025
+14.06.2026
 
 ## Transcript
 

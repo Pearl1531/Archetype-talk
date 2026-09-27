@@ -17,7 +17,7 @@ Emma knows Apple Music second-hand (her sister) and is aware of the same-price a
 
 ## Interview date
 
-12.06.2025
+12.06.2026
 
 ## Transcript
 

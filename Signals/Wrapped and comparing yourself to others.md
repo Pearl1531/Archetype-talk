@@ -21,7 +21,7 @@ Zoe enjoys Wrapped but catches herself comparing her stats to others once it's p
 
 ## Interview date
 
-27.06.2025
+27.06.2026
 
 ## Transcript
 

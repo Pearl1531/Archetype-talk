@@ -331,13 +331,16 @@ async function renderProjects(){
   const main = PJ_PAGE === 'help' ? pjHelpMain() : `
       <div class="pj-head">
         <h1>${esc(tr('Projects'))}</h1>
-        <div class="pj-actions">
+        ${rows.length ? `<div class="pj-actions">
+          <button class="pj-btn" data-demo="1">${PJ_ICONS.flask}${esc(tr('Open the demo'))}</button>
           <button class="pj-btn" id="pjImport2">${PJ_ICONS.folder}${esc(tr('Import a project'))}</button>
           <button class="pj-btn primary" id="pjNew2"${canPick ? '' : ' disabled'}>${PJ_ICONS.plus}${esc(tr('New project'))}</button>
-        </div>
+        </div>` : ''}
       </div>
       <p class="pj-lead">${esc(tr('Every project is a folder of Markdown files you own. Open one to browse its graph, talk to its personas and edit the files in place.'))}</p>
-      ${cta}
+      ${/* one set of ways in, never two: the explained cards while there is nothing
+           yet, compact buttons in the head once your projects fill the page */ ''}
+      ${rows.length ? '' : cta}
       ${list}
       ${canPick ? '' : `<p class="pj-lead" style="margin-top:var(--s-6)">${esc(tr('This browser can browse but not connect a folder — creating and opening projects needs Chrome or Edge.'))}</p>`}`;
 

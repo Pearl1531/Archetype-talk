@@ -5,7 +5,7 @@ title: 'INT-02 Jake'
 interview_id: INT-02
 participant: 'Jake, 23, student, Boston'
 method: 'In-depth interview, in person'
-date: 14.06.2025
+date: 14.06.2026
 abstract: Student, social discoverer: finds music through friends' playlists and shares his own as a calling card; lyric/melody search keeps failing so he gives up; counts every dollar on the student plan and would drop to Free if prices rise; wants zero-effort discovery; half his friends are on the YouTube Premium bundle - only his playlists keep him.   # scan header - positive index for cheap triage, see Transcripts/_template.md
 topics: [social-discovery, playlist-sharing, search-failures, price-sensitivity, effortless-discovery, switching-barriers]
 mentions_competitors: ['YouTube Music']   # EXHAUSTIVE at extraction time - [] means checked-and-none, unlike topics

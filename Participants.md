@@ -12,13 +12,13 @@ Pseudonymized registry of research participants, maintained by `/extract-finding
 
 | Code | Date | Segment sketch | Matched Archetype(s) | Produced |
 |------|------|----------------|----------------------|----------|
-| INT-01 | 12.06.2025 | 29, marketing specialist, Chicago — daily background listener, shared account | The Utility Listener, The Algorithm Drifter, The Library Hoarder | Signals → Emma |
-| INT-02 | 14.06.2025 | 23, student, Boston — social discovery, price-sensitive | The Social Curator, The Value Auditor | Signals → Jake |
-| INT-04 | 19.06.2025 | 34, HR, mom of two, Denver — family use on one account | The Algorithm Drifter (family variant) | Signals — persona not yet built |
-| INT-05 | 20.06.2025 | 35, engineer, Seattle — 1h daily commute | The Utility Listener | Signals — persona not yet built |
-| INT-06 | 25.06.2025 | 41, sales rep, Portland — 2–3h driving daily, voice-first | The Voice-First Driver | Signals → Tom |
-| INT-07 | 27.06.2025 | 27, graphic designer, Brooklyn — vinyl collector, active explorer | The Passive Discoverer / curator segment | Signals — persona not yet built |
-| TEST-03 | 18.06.2025 | moderated Smart Shuffle test — **same participant as INT-07 (Zoe)**, profile match | (usability test) | Signals |
+| INT-01 | 12.06.2026 | 29, marketing specialist, Chicago — daily background listener, shared account | The Utility Listener, The Algorithm Drifter, The Library Hoarder | Signals → Emma |
+| INT-02 | 14.06.2026 | 23, student, Boston — social discovery, price-sensitive | The Social Curator, The Value Auditor | Signals → Jake |
+| INT-04 | 19.06.2026 | 34, HR, mom of two, Denver — family use on one account | The Algorithm Drifter (family variant) | Signals — persona not yet built |
+| INT-05 | 20.06.2026 | 35, engineer, Seattle — 1h daily commute | The Utility Listener | Signals — persona not yet built |
+| INT-06 | 25.06.2026 | 41, sales rep, Portland — 2–3h driving daily, voice-first | The Voice-First Driver | Signals → Tom |
+| INT-07 | 27.06.2026 | 27, graphic designer, Brooklyn — vinyl collector, active explorer | The Passive Discoverer / curator segment | Signals — persona not yet built |
+| TEST-03 | 18.06.2026 | moderated Smart Shuffle test — **same participant as INT-07 (Zoe)**, profile match | (usability test) | Signals |
 
 *(Demo rows — mirror the example `Transcripts/` set; replace with your own as real sessions come in. These sketches are deliberately chatty because the participants are invented and the example has to read clearly; for real people, apply the minimisation test above and write less.)*
 

@@ -9,8 +9,8 @@ const avatarBtn = document.getElementById('avatarBtn');
 const avatarMenu = document.getElementById('avatarMenu');
 
 /* Initials, the way a person would write them: "Mateusz Jędraszczyk" → MJ.
-   No name on file is not a blank avatar — it is A, for anonymous, because the
-   app works perfectly well without ever being told who you are. */
+   No name on file gets a person glyph, not a letter: a lone "A" in the corner
+   reads as someone else's account, and the app works fine without a name. */
 function topnavInitials(){
   const who = String((typeof PREFS !== 'undefined' && PREFS.name) || '').trim();
   if(!who) return 'A';
@@ -20,13 +20,15 @@ function topnavSync(){
   if(!avatarBtn) return;
   const who = String((typeof PREFS !== 'undefined' && PREFS.name) || '').trim();
   const ini = topnavInitials();
-  document.getElementById('avatarInitials').textContent = ini;
-  document.getElementById('avatarInitials2').textContent = ini;
+  ['avatarInitials','avatarInitials2'].forEach(id=>{
+    const el = document.getElementById(id);
+    if(who) el.textContent = ini; else el.innerHTML = ICONS.Persona;
+  });
   document.getElementById('avatarName').textContent = who || tr('Anonymous');
   const ws = document.getElementById('avatarWs');
   ws.textContent = typeof WS !== 'undefined'
     ? tr(WS === 'demo' ? 'Demo workspace' : 'your project workspace') : '';
-  avatarBtn.title = who || tr('Anonymous');
+  avatarBtn.title = (who ? who + ' — ' : '') + tr('Menu: language, export, exit');
 }
 function topnavOpen(on){
   if(!avatarMenu) return;

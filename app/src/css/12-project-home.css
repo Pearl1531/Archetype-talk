@@ -89,6 +89,7 @@
   .dash-ring-center span { font-size: var(--fs-sm); color: var(--text-mute); }
   .dash-ring-foot { display: flex; flex-direction: column; gap: 6px; font-size: var(--fs-sm); color: var(--text-dim); }
   .dash-ring-foot > span { display: inline-flex; align-items: center; gap: 6px; }
+  .dash-ring-foot > .dash-ring-excl { color: var(--text-mute); padding-left: 14px; }
   /* nothing to count — the ring says why, and what ends it */
   .dash-ring-note { font-size: var(--fs-sm); color: var(--text-mute); line-height: 1.5; flex: 1; min-width: 180px; }
 
@@ -200,3 +201,4 @@
     .dash-hero-legend { margin-left: 0; }
     .dash-stat b { font-size: 34px; }
   }
+  .dash-note-line { margin: 0; color: var(--text-dim); font-size: var(--fs-md); line-height: 1.55; }

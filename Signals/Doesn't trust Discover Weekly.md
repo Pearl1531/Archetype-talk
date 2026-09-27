@@ -21,7 +21,7 @@ Emma stopped trusting Discover Weekly after parties and a shared account "pollut
 
 ## Interview date
 
-12.06.2025
+12.06.2026
 
 ## Transcript
 

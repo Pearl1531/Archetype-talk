@@ -21,7 +21,7 @@ Unprompted, Emma described how her Liked Songs library became unnavigable — sh
 
 ## Interview date
 
-12.06.2025
+12.06.2026
 
 ## Transcript
 

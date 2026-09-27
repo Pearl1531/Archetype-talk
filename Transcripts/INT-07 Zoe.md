@@ -5,7 +5,7 @@ title: 'INT-07 Zoe'
 interview_id: INT-07
 participant: 'Zoe, 27, graphic designer, Brooklyn — vinyl collector, active music explorer'
 method: 'In-depth interview, remote (video call)'
-date: 27.06.2025
+date: 27.06.2026
 abstract: Active explorer and vinyl collector: curates a large library and resents recommendation drift toward mainstream; tracks disappearing from the catalog silently break her collections; crossfade imposed over album gaps kills continuous listening; skeptical of Wrapped-style social comparison; buys directly on Bandcamp to actually own music.   # scan header - positive index for cheap triage, see Transcripts/_template.md
 topics: [active-discovery, collection-curation, algorithm-drift, catalog-removal, gapless-playback, wrapped-social-comparison, pricing]
 mentions_competitors: ['Bandcamp']   # EXHAUSTIVE at extraction time - [] means checked-and-none, unlike topics

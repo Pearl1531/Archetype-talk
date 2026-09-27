@@ -77,12 +77,19 @@ function mdToHtml(md){
     if(m=line.match(/^#\s+(.*)/)){ flushP(); closeList(); html+='<h1>'+inline(m[1])+'</h1>'; continue; }
     if(m=line.match(/^##\s+(.*)/)){ flushP(); closeList(); html+='<h2>'+inline(m[1])+'</h2>'; continue; }
     if(m=line.match(/^###\s+(.*)/)){ flushP(); closeList(); html+='<h3>'+inline(m[1])+'</h3>'; continue; }
+    /* A template's note to the writer ("Biographical sketch — character colour,
+       not research findings. … Do not cite …") is for whoever edits the file;
+       the reader gets its bold lead as a quiet caption, not a pull quote. */
+    if(m=line.match(/^>\s?\*\*([^*]+)\*\*/)) if(/not research findings/i.test(m[1])){ flushP(); closeList(); html+='<p class="md-note">'+inline(m[1].trim())+'</p>'; continue; }
     if(m=line.match(/^>\s?(.*)/)){ flushP(); closeList(); html+='<blockquote>'+inline(m[1])+'</blockquote>'; continue; }
-    if(m=line.match(/^[-*]\s+(.*)/)){ flushP(); if(!inList){ html+='<ul>'; inList=true; } html+='<li>'+inline(m[1])+'</li>'; continue; }
+    // "  - …" under a bullet is its continuation — rendered as a sub-item, not as literal "- " in a paragraph
+    if(m=line.match(/^(\s*)[-*]\s+(.*)/)){ flushP(); if(!inList){ html+='<ul>'; inList=true; } html+=(m[1].length>=2?'<li class="li-sub">':'<li>')+inline(m[2])+'</li>'; continue; }
     closeList(); para.push(line.trim());
   }
   if(fenceType!==null) html+=vizBlock(fenceType, fenceBuf.join('\n')); // unclosed fence
-  flushP(); closeList(); return html;
+  flushP(); closeList();
+  // *[colour]* marks invented-for-flavour detail: say so in words, not in brackets
+  return html.replace(/<em>\[colour\]<\/em>/g, `<span class="colour-chip" title="${esc(tr('Character colour for warm-up questions — not a research finding'))}">${tr('not researched')}</span>`);
 }
 
 const galleryView=document.getElementById('galleryView');
@@ -126,7 +133,7 @@ function openDetail(id){
     const bioSec = section(e.body,'Who they are');
     const whoBullet = (bioSec.match(/\*\*Who:\*\*\s*([^\n(]+)/)||[])[1] || '';   // the human one-liner, not the template blockquote
     const who = trim(stripLinks((e.fm.description || whoBullet).replace(/\*\[colour\]\*/g,'')), 200);
-    const np = personaParticipants(e), cf = personaStats(e).cf;
+    const cf = personaStats(e).cf;
     pHero.innerHTML = `
       <figure class="p-hero-fig">
         <div class="p-hero-avatar">${avatarHtml(e, nm)}</div>
@@ -135,7 +142,7 @@ function openDetail(id){
           <div class="p-hero-role">${esc(role || e.fm.description || '')}</div>
           <div class="p-hero-chips">
             ${e.fm.category?`<span class="tag">${esc(e.fm.category)}</span>`:''}
-            <span class="tag">${np||'—'} participant${np===1?'':'s'}</span>
+            ${participantsChip(e)}
             <span class="tag">${esc(String(cf).trim())} confidence</span>
           </div>
           <button type="button" class="btn btn-primary p-hero-cta" id="pPosterBtn" title="${esc(tr('Full-bleed visual one-pager of this persona'))}">⧉ ${tr('Poster view')}</button>
@@ -216,7 +223,10 @@ function openDetail(id){
   document.getElementById('dSource').innerHTML =
     `<svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><path d="M14 2v6h6"/></svg>${esc(e.file)}${e.draft?' <span class="draft-src">· draft — stored in this browser, not on disk yet</span>':''}${e.sandbox?' <span class="draft-src">· sandbox edit — this browser only (↺ Reset demo in the workspace menu)</span>':''}`;
   const doc = document.getElementById('doc');
-  doc.innerHTML = mdToHtml(e.body.replace(/^#\s+.*\n/,''));
+  // a persona's opening quote already stands in the hero above — don't print it twice
+  doc.innerHTML = mdToHtml(e.type==='Persona'
+    ? e.body.replace(/^#\s+.*\n/,'').replace(/^\s*>\s?"[^\n]*\n(\s*---\s*\n)?/,'')
+    : e.body.replace(/^#\s+.*\n/,''));
   doc.querySelectorAll('a.xref[data-goto]').forEach(a=>{
     const gid = a.getAttribute('data-goto');
     if(gid) a.onclick = (ev)=>{ ev.preventDefault(); location.hash = '#'+gid; };

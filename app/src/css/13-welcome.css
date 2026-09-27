@@ -107,12 +107,11 @@
 
   .wc-nav { display: flex; gap: 10px; margin-top: var(--s-2); }
   .wc-nav .btn { flex: 1; justify-content: center; padding: 10px 16px; }
-  .wc-nav-end { justify-content: center; margin-top: 2px; }
-  .wc-nav-end .btn {
-    flex: 0 0 auto; padding: 6px 16px;
-    background: none; border-color: transparent; color: var(--text-dim);
-  }
-  .wc-nav-end .btn:hover { color: var(--text); border-color: var(--line); }
+  .wc-nav-gap { flex: 1; }
+  /* every step is the same height, so nothing jumps under the pointer between
+     Next clicks: the content takes the top, the nav rides at the bottom */
+  .wc-card.wc-wide { min-height: min(740px, calc(100vh - 48px)); }
+  .wc-card.wc-wide .wc-nav { margin-top: auto; }
 
   .wc-btn { width: 100%; justify-content: center; padding: 11px 16px; font-size: var(--fs-md); }
   /* the one button that moves you forward says so */
@@ -134,6 +133,12 @@
      little air above the title so the step does not grow taller */
   .wc-shot + h1 { margin-top: 2px; }
   @media (max-height: 720px) { .wc-shot { height: 104px; } }
+  /* the drawn conversation preview (step 3) */
+  .wc-mock { display: flex; flex-direction: column; justify-content: center; gap: 8px; padding: 10px 12px; font-size: 12px; line-height: 1.45; }
+  .wc-mock-q { align-self: flex-end; max-width: 80%; padding: 6px 10px; border-radius: 12px 12px 3px 12px; background: var(--bg-elev-2); color: var(--text-soft); }
+  .wc-mock-a { align-self: flex-start; max-width: 92%; padding: 6px 10px; border-radius: 12px 12px 12px 3px; border: 1px solid var(--line); color: var(--text); }
+  .wc-mock-a b { display: block; font-size: 11px; color: var(--accent, #ff4d00); margin-bottom: 1px; }
+  .wc-mock-src { display: block; margin-top: 3px; font-size: 10.5px; color: var(--text-mute); }
   .wc-note { margin: 0; color: var(--text-mute); font-size: var(--fs-xs); line-height: 1.5; }
 
   .wc-links { display: flex; align-items: center; justify-content: center; gap: 8px; margin-top: var(--s-1); }

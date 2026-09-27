@@ -21,7 +21,7 @@ The one input mode Tom relies on most often fails him — voice search regularly
 
 ## Interview date
 
-25.06.2025
+25.06.2026
 
 ## Transcript
 

@@ -33,6 +33,7 @@
     letter-spacing: .02em; cursor: pointer; transition: box-shadow .12s, filter .12s;
   }
   .topnav-ava:hover { filter: brightness(1.1); }
+  .topnav-ava svg { width: 16px; height: 16px; }
   .topnav-ava[aria-expanded="true"] { box-shadow: 0 0 0 3px var(--accent-soft); }
   .topnav-ava.sm { width: 34px; height: 34px; cursor: default; }
 

@@ -161,8 +161,18 @@ const WC_ICONS = {
    not there yet simply renders nothing — the step keeps working. */
 const WC_SHOTS = {
   graph: '__IMG:wizard-graph.jpg__',
-  talk:  '__IMG:wizard-talk.jpg__',
 };
+/* The conversation preview is drawn, not photographed: a screenshot fixes one
+   language, and an English card over a Polish transcript reads as a bug. The
+   question follows the interface; the answer is the persona's own words and
+   stays verbatim — a quote is data, never translated. */
+function wcTalkMock(){
+  return `<figure class="wc-shot wc-mock" aria-label="${esc(tr('A conversation with a persona, answering from her own signals'))}">
+    <div class="wc-mock-q">${esc(tr('How do you manage your library?'))}</div>
+    <div class="wc-mock-a"><b>Emma</b> “I've got something like two thousand liked songs and I can never find anything.”
+      <span class="wc-mock-src">↳ ${esc(tr('Signal'))} “Lost library” · INT-01</span></div>
+  </figure>`;
+}
 
 /* The steps, in order. `hero` opens, `connect` closes, the rest are one
    explanation each — three bullets is the ceiling on purpose. */
@@ -178,7 +188,7 @@ function wcSteps(){
         [WC_ICONS.levels, tr('Levels, not vibes'), tr('Each finding carries a level from L1 (assumption) to L5 (validated with correlation), so you can see how much weight it holds.')],
       ] },
     { kind: 'info', title: tr('You and your AI assistant'),
-      shot: WC_SHOTS.talk, shotAlt: tr('A conversation with a persona, answering from her own signals'),
+      mock: true,
       lead: tr('The app shows the graph; your AI assistant writes it. Both work on the same folder of Markdown files, so neither of them owns your data.'),
       bullets: [
         [WC_ICONS.talk, tr('Talk to a persona'), tr('She answers only from her linked signals and evidence — and a conversation never creates research data, only questions to go and ask.')],
@@ -197,7 +207,7 @@ function wcSteps(){
       bullets: [
         [WC_ICONS.folder, tr('Why this matters'), tr('Without a folder the app has only the demo to show. With one it reads your real research straight from disk — no import, no copy, no sync, no second version of the truth.')],
         [WC_ICONS.eye, tr('What we touch'), tr('We read the <code>.md</code> files in that folder. We write only when you edit something here or ask for it.')],
-        [WC_ICONS.root, tr('Pick the project ROOT'), tr('The folder that contains the entity folders — not your whole Documents, and not one folder inside it.')],
+        [WC_ICONS.root, tr('Pick the project’s top folder'), tr('The folder that contains the entity folders — not your whole Documents, and not one folder inside it.')],
       ] },
   ];
 }
@@ -227,22 +237,23 @@ function renderWelcome(){
        <p class="wc-lead">${esc(tr('Five short steps: what this is, how you work with it, what it does with your data — and only then the folder.'))}</p>
        <button class="btn btn-primary wc-btn wc-btn-go" id="wcStart">${esc(tr('Start setup'))}${WC_ICONS.arrow}</button>
        <button class="btn btn-outline wc-btn" id="wcDemo">${esc(tr('Open the demo'))}</button>`
-    : `${st.shot ? `<figure class="wc-shot"><img src="${st.shot}" alt="${esc(st.shotAlt||'')}" loading="lazy" decoding="async"></figure>` : ''}
+    : `${st.shot ? `<figure class="wc-shot"><img src="${st.shot}" alt="${esc(st.shotAlt||'')}" loading="lazy" decoding="async"></figure>` : ''}${st.mock ? wcTalkMock() : ''}
        <h1 id="wcTitle">${esc(st.title)}</h1>
        <p class="wc-lead">${st.lead}</p>
        <ul class="wc-list">${st.bullets.map(([ico, h, p])=>
           `<li><span class="wc-ico" aria-hidden="true">${ico}</span><span class="wc-li-txt"><b>${esc(h)}</b><span>${p}</span></span></li>`).join('')}</ul>
        ${st.kind === 'connect'
           ? `<button class="btn btn-primary wc-btn" id="wcConnect"${canPick ? '' : ' disabled'}>${esc(tr('Connect the project folder'))}</button>
+             <button class="btn btn-outline wc-btn" id="wcCreate"${canPick ? '' : ' disabled'}>${esc(tr('No folder yet? Start a new project'))}</button>
              ${canPick ? '' : `<p class="wc-note">${esc(tr('This browser can browse but not connect a folder — creating and opening projects needs Chrome or Edge.'))}</p>`}
              <button class="btn btn-outline wc-btn" id="wcDemo">${esc(tr('Open the demo instead'))}</button>` : ''}`;
 
-  /* On the last step "Back" is the only thing left in the nav row, and a third
-     full-width button under the actual call to action reads as a third choice.
-     It shrinks to what it is: the way back. */
-  const nav = st.kind === 'hero' ? '' : `<div class="wc-nav${last ? ' wc-nav-end' : ''}">
+  /* Back and Next sit in the same place on every step, so the hand learns the
+     spot. On the last step Next's slot stays empty — the calls to action above
+     are the way forward — rather than Back moving to a new position. */
+  const nav = st.kind === 'hero' ? '' : `<div class="wc-nav">
       <button type="button" class="btn btn-outline" id="wcBack">${esc(tr('Back'))}</button>
-      ${last ? '' : `<button type="button" class="btn btn-primary" id="wcNext">${esc(tr('Next'))}</button>`}
+      ${last ? '<span class="wc-nav-gap"></span>' : `<button type="button" class="btn btn-primary" id="wcNext">${esc(tr('Next'))}</button>`}
     </div>`;
 
   /* Language sits outside the card, in the corner, on every step — not a step of
@@ -290,6 +301,11 @@ function renderWelcome(){
   if(q('wcConnect')) q('wcConnect').onclick = async ()=>{
     if(!canPick){ toast(tr('Connecting a folder needs Chrome or Edge')); return; }
     if(await loadFromPicker()){ welcomeSeen(); wcGo('dashboard'); }
+  };
+  if(q('wcCreate')) q('wcCreate').onclick = async ()=>{
+    const before = DIRHANDLE;
+    await projectCreate();
+    if(DIRHANDLE && DIRHANDLE !== before){ welcomeSeen(); wcGo('dashboard'); }
   };
   if(q('wcDemo')) q('wcDemo').onclick = ()=>{
     store.set('at-last', 'demo');            // next launch opens what you opened last

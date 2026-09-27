@@ -116,4 +116,8 @@
     .doc .viz-bar-row, .doc .viz-rating-row { grid-template-columns: 1fr; gap: 4px; }
     .doc .viz-bar-val, .doc .viz-rating-val { text-align: left; }
   }
-
+  /* writer's notes from a template, the "not researched" marker, sub-bullets */
+  .doc .md-note { font-size: var(--text-caption); color: var(--text-mute); margin: 0 0 var(--s-3); }
+  .doc .colour-chip { display: inline-block; font-size: 11px; line-height: 1.6; padding: 0 7px; margin-right: 4px;
+    border: 1px dashed var(--line); border-radius: var(--r-pill); color: var(--text-mute); vertical-align: 1px; }
+  .doc li.li-sub { list-style: none; margin-left: var(--s-5); color: var(--text-soft); }

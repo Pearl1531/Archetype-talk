@@ -5,7 +5,7 @@ title: 'INT-04 Olivia'
 interview_id: INT-04
 participant: 'Olivia, 34, HR, mom of two, Denver'
 method: 'In-depth interview, remote'
-date: 19.06.2025
+date: 19.06.2026
 abstract: Mom of two on one shared login: kids' cartoons and songs overrun her recommendations; the household has a Family plan but everyone uses a single profile for tablet convenience; wants Netflix-style per-person profiles and dreams of a 'that wasn't me' reset button.   # scan header - positive index for cheap triage, see Transcripts/_template.md
 topics: [kids-content, family-profiles, context-pollution, reset-mode, shared-account]
 mentions_competitors: []   # EXHAUSTIVE at extraction time - [] means checked-and-none, unlike topics

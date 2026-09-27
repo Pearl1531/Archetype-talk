@@ -5,11 +5,11 @@ title: 'INT-05 Peter'
 interview_id: INT-05
 participant: 'Peter, 35, engineer, 1h commute daily, Seattle'
 method: 'In-depth interview, remote'
-date: 20.06.2025
+date: 20.06.2026
 abstract: Car commuter (1h daily): pays Premium for music and no ads, feels charged for podcasts/audiobooks he never touches; morning-energy vs evening-wind-down contexts clash in his recommendations; asks directly for focus/evening modes and says he'd take a cheaper music-only plan immediately.   # scan header - positive index for cheap triage, see Transcripts/_template.md
 topics: [commute-listening, podcasts-unused, context-modes, lite-plan, premium-pricing]
 mentions_competitors: []   # EXHAUSTIVE at extraction time - [] means checked-and-none, unlike topics
-excluded: true   # researcher decision — session went stale (>3 months); out of analyses until a refresh round
+excluded: true   # researcher decision — kept in the demo to show what exclusion does: on disk, out of every count and analysis until switched back on
 ---
 
 # INT-05 — Peter

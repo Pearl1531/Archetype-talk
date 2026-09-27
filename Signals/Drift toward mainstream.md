@@ -21,7 +21,7 @@ Zoe notices Discover Weekly drifting toward mainstream/popular tracks for a week
 
 ## Interview date
 
-27.06.2025
+27.06.2026
 
 ## Transcript
 

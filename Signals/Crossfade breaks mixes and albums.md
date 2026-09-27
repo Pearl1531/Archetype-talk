@@ -21,7 +21,7 @@ Zoe turns crossfade off manually because it wrecks continuous electronic albums 
 
 ## Interview date
 
-27.06.2025
+27.06.2026
 
 ## Transcript
 

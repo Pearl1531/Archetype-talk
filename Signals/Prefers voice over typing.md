@@ -24,7 +24,7 @@ Tom defaults to voice input almost everywhere, not just while driving — he nam
 
 ## Interview date
 
-25.06.2025
+25.06.2026
 
 ## Transcript
 

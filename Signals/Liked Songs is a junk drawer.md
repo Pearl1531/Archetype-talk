@@ -21,7 +21,7 @@ The same participant who curates everything else meticulously uses Liked Songs a
 
 ## Interview date
 
-27.06.2025
+27.06.2026
 
 ## Transcript
 

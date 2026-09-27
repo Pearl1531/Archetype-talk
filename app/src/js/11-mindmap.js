@@ -57,7 +57,7 @@ function mmEntityDate(e){
 function mindmapData(focus, depth){
   let ents = wsEntities().filter(e=> !MM_HIDDEN.has(e.type));
   if(MM_MONTHS){                          // hide dated raw data older than the window; undated stays
-    const cut = new Date(); cut.setMonth(cut.getMonth()-MM_MONTHS);
+    const cut = new Date(graphNow()); cut.setMonth(cut.getMonth()-MM_MONTHS);
     ents = ents.filter(e=>{ const d=mmEntityDate(e); return !d || d>=cut; });
   }
   let pairs = graphPairs(ents);

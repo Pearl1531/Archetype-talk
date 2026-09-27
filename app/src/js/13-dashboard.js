@@ -23,7 +23,7 @@ function dashStats(){
   const openHypos = by('Hypothesis').filter(e=> String(e.fm.status||'').toLowerCase()!=='promoted');
   // desk-research staleness: Evidence + researched competitors verified >3 months
   // ago (or never dated), plus competitors still waiting for their first research
-  const ageDays = v => { const d = parseAnyDate(v); return d ? Math.floor((Date.now()-d.getTime())/86400000) : null; };
+  const ageDays = v => { const d = parseAnyDate(v); return d ? Math.floor((graphNow()-d.getTime())/86400000) : null; };
   const desk = ents.filter(e=> e.type==='Evidence' || (e.type==='Competitor' && String(e.fm.needs_research)!=='true'));
   const staleDesk = desk.filter(e=>{ const a = ageDays(e.fm.retrieved || e.fm.updated || e.fm.date); return a===null || a>92; }).length;
   const needsRes = by('Competitor').filter(e=> String(e.fm.needs_research)==='true').length;
@@ -65,7 +65,7 @@ function dashTimeline(s){
   const dates = s.dates;
   if(!dates.length) return dashEmptyState(s, 'No dated interviews yet — nothing to chart.', 'dash-muted');
   const key = d => d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0');
-  const first = dates[0], now = new Date();
+  const first = dates[0], now = new Date(graphNow());
   const buckets = []; let y=first.getFullYear(), m=first.getMonth();
   while((y<now.getFullYear() || (y===now.getFullYear() && m<=now.getMonth())) && buckets.length<18){
     buckets.push({ y, m, key:y+'-'+String(m+1).padStart(2,'0'), n:0 });
@@ -89,7 +89,7 @@ function dashTimeline(s){
 function dashPromptText(s){
   const proj = (typeof projectDisplayName==='function' ? projectDisplayName() : '').trim();
   const last = s.dates.length ? dashFmtDate(s.dates[s.dates.length-1]) : '—';
-  const ago = s.dates.length ? Math.floor((Date.now()-s.dates[s.dates.length-1])/86400000)+' days ago' : 'no dated interviews';
+  const ago = s.dates.length ? Math.floor((graphNow()-s.dates[s.dates.length-1])/86400000)+' days ago' : 'no dated interviews';
   const hy = s.openHypos.length ? s.openHypos.map(e=>'- '+e.title).join('\n') : '- (none on file yet)';
   return `You are helping plan the next qualitative research round for the Archetype Talk research graph${proj?` (project: ${proj})`:''}.
 
@@ -338,7 +338,7 @@ function dashDonut(good, bad){
 /* cumulative transcript count at the end of each month, first interview → now */
 function dashCumulative(dates){
   if(!dates.length) return [];
-  const now = new Date(), out = [];
+  const now = new Date(graphNow()), out = [];
   const mk = d => d.getFullYear()*12 + d.getMonth();
   const dkeys = dates.map(mk);
   // begin one month before the first interview at 0, so the line rises from a
@@ -390,7 +390,7 @@ function renderDashboard(){
   pageSub.textContent = tr('A snapshot of what’s in your research graph right now — and what to look at next.');
   pageSub.style.display = '';
   grid.className = 'dash-wrap';
-  const lastAgo = s.dates.length ? Math.floor((Date.now()-s.dates[s.dates.length-1])/86400000) : null;
+  const lastAgo = s.dates.length ? Math.floor((graphNow()-s.dates[s.dates.length-1])/86400000) : null;
   const totalEnt = wsEntities().length;
 
   /* No inventory tiles: Signals / Evidence / Hypotheses / Ideas are already on
@@ -420,7 +420,7 @@ function renderDashboard(){
     dashMeter('Freshness', s.transcripts ? `${s.fresh} / ${s.transcripts}` : '—', freshPct,
       s.transcripts === 0 ? (s.excluded ? 'Every transcript is switched off' : 'No interviews on file')
         : freshPct === 0 ? 'Everything is out of date'
-        : freshPct < 50 ? 'More than half has aged out' : 'Mostly current',
+        : freshPct < 50 ? 'More than half has aged out' : freshPct === 100 ? 'All current' : 'Mostly current',
       s.transcripts === 0
         ? (s.excluded
             ? dashWayOut(s)
@@ -465,13 +465,13 @@ function renderDashboard(){
 
   grid.innerHTML = `
     <section class="dash-sec">
-      <div class="dash-sec-h"><h2>${tr("What's in your graph")}</h2><span class="dash-sec-note">${tr('right now')} · ${tr(WS==='demo'?'Demo workspace':'your project workspace')}</span></div>
+      <div class="dash-sec-h"><h2>${tr("What's in your graph")}</h2><span class="dash-sec-note">${WS==='demo' ? tr('as of {d}').replace('{d}', DEMO_AS_OF.toLocaleDateString(LANG==='pl'?'pl-PL':'en-GB',{day:'numeric',month:'short',year:'numeric'})) : tr('right now')} · ${tr(WS==='demo'?'Demo workspace':'your project workspace')}</span></div>
       <!-- One horizontal strip instead of a tall hero column: the greeting and
            the two headline numbers are one line of reading, so making them a
            400px-tall card only bought empty space for the cards beside it. -->
       <section class="dash-card dash-strip">
         <div class="dash-strip-top">
-          <div class="dash-hero-hi"><span class="dash-hero-ava">${who?esc(initialsFor(who)):'◐'}</span><div class="dash-hero-hey"><b>${who?(tr('Hey,')+' '+esc(who)):tr('Your research graph')}</b><span>${tr('welcome back')}</span></div></div>
+          <div class="dash-hero-hi"><span class="dash-hero-ava">${who?esc(initialsFor(who)):'◐'}</span><div class="dash-hero-hey"><b>${who?(tr('Hey,')+' '+esc(who)):tr('Your research graph')}</b><span>${WS==='demo' ? tr('Example project · Spotify listeners') : esc(projectDisplayName())}</span></div></div>
           <div class="dash-strip-btns">
             <button class="btn btn-primary btn-sm" id="dashPlan">${tr('Plan next round')}</button>
             <button class="btn btn-outline btn-sm" id="dashConnect">${tr('Connect folder')}</button>
@@ -492,7 +492,7 @@ function renderDashboard(){
               ? `<b>${s.fresh}/${s.transcripts}</b><span>${tr('fresh')}</span>`
               : `<b>—</b><span>${s.excluded?tr('all switched off'):tr('none yet')}</span>`}</div></div>
             ${s.transcripts
-              ? `<div class="dash-ring-foot"><span><span class="dash-dot ok"></span>${nFresh(s.fresh)}</span><span><span class="dash-dot bad"></span>${nStale(s.stale)}</span></div>`
+              ? `<div class="dash-ring-foot"><span><span class="dash-dot ok"></span>${nFresh(s.fresh)}</span><span><span class="dash-dot bad"></span>${nStale(s.stale)}</span>${s.excluded?`<span class="dash-ring-excl" title="${esc(tr('Excluded transcripts stay on disk but count toward nothing until you turn them back on'))}">${trn(s.excluded,'+ {n} excluded from analysis','+ {n} excluded from analysis','+ {n} wyłączona z analizy','+ {n} wyłączone z analizy','+ {n} wyłączonych z analizy')}</span>`:''}</div>`
               : `<p class="dash-ring-note">${dashWayOut(s)}</p>`}
           </div>
         </div>
@@ -506,6 +506,10 @@ function renderDashboard(){
          next to 400px of nothing. -->
     <div class="dash-two">
       <div class="dash-col">
+        ${/* A trend needs at least two months to be one. Before that, two charts
+             would draw a single jump and a single bar — decoration pretending
+             to be data — so they wait, and one line says what there is. */ ''}
+        ${new Set(s.dates.map(d=>d.getFullYear()*12+d.getMonth())).size >= 2 ? `
         <section class="dash-card dash-area-card">
           <div class="dash-sec-h"><h2>${tr('Transcripts over time')}</h2><span class="dash-sec-note">${tr('cumulative, by month')}</span></div>
           ${dashArea(s)}
@@ -514,7 +518,11 @@ function renderDashboard(){
         <section class="dash-card">
           <div class="dash-sec-h"><h2>${tr('Research cadence')}</h2><span class="dash-sec-note">${tr('interviews per month')}</span></div>
           ${dashTimeline(s)}
-        </section>
+        </section>` : s.dates.length ? `
+        <section class="dash-card">
+          <div class="dash-sec-h"><h2>${tr('Research timeline')}</h2></div>
+          <p class="dash-note-line">${trn(s.dates.length,'{n} interview, all in {m}.','{n} interviews, all in {m}.','{n} wywiad, wszystkie w: {m}.','{n} wywiady, wszystkie w: {m}.','{n} wywiadów, wszystkie w: {m}.').replace('{m}', s.dates[0].toLocaleDateString(LANG==='pl'?'pl-PL':'en-GB',{month:'long',year:'numeric'}))} ${tr('Trend charts appear once your research spans two months.')}</p>
+        </section>` : ''}
         <section class="dash-card dash-gauge-card">
           <div class="dash-sec-h"><h2>${tr('Refresh cadence')}</h2><span class="dash-sec-note">${tr('vs the 3-month line')}</span></div>
           ${dashGauge(lastAgo, s)}

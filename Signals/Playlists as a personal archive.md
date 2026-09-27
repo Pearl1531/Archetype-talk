@@ -21,7 +21,7 @@ Zoe runs a deliberate curation system: playlists split by genre and purpose ("am
 
 ## Interview date
 
-27.06.2025
+27.06.2026
 
 ## Transcript
 

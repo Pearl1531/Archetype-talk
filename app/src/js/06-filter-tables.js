@@ -26,13 +26,14 @@ function personaStats(e){
 /* Distinct research participants feeding a persona — counted from its linked
    Signals' transcript links (matching happens per transcript: every interview
    is a different person, a persona is a composite, never one person re-interviewed). */
-function personaParticipants(e){
-  const seen = new Set();
+function personaParticipants(e, excludedToo){
+  const seen = new Set(), off = new Set();
   const addTranscriptsOf = body => {
     for(const m of body.matchAll(MD_LINK)){
       const url = m[2]; if(/^https?:/.test(url)) continue;
       const id = resolveRef(url);
-      if(id && ENTITIES[id] && ENTITIES[id].type==='Transcript' && !isExcluded(ENTITIES[id])) seen.add(participantGroupId(ENTITIES[id]));
+      if(id && ENTITIES[id] && ENTITIES[id].type==='Transcript')
+        (isExcluded(ENTITIES[id]) ? off : seen).add(participantGroupId(ENTITIES[id]));
     }
   };
   addTranscriptsOf(e.body);
@@ -41,7 +42,16 @@ function personaParticipants(e){
     const id = resolveRef(url);
     if(id && ENTITIES[id] && ENTITIES[id].type==='Signal') addTranscriptsOf(ENTITIES[id].body);
   }
+  /* excludedToo: also say how many people stand behind the persona but are out
+     of analysis — a count that silently drops them contradicts the file, which
+     still names them. */
+  if(excludedToo){ seen.forEach(p=>off.delete(p)); return { n: seen.size, off: off.size }; }
   return seen.size;
+}
+function participantsChip(e){
+  const { n, off } = personaParticipants(e, true);
+  const main = n ? trn(n,'{n} participant','{n} participants','{n} uczestnik','{n} uczestników','{n} uczestników') : tr('no participants yet');
+  return `<span class="tag"${off?` title="${esc(tr('Excluded transcripts stay on disk but count toward nothing until you turn them back on'))}"`:''}>${main}${off?' · '+tr('+{n} excluded').replace('{n}',off):''}</span>`;
 }
 const demoCell = e => e.fm.demo ? '<span class="demo-badge">Demo</span>' : '';
 const titleCell = e => {
@@ -263,7 +273,7 @@ function renderCompList(list){
     const intro = compIntro(e);
     const pos = unbullet(stripLinks(section(e.body,'Market position')));
     const fact = trim(pos.split(/(?<=[.!?])\s+/)[0]||'', 180);
-    const vDays = e.fm.retrieved ? (d=>d?Math.floor((Date.now()-d.getTime())/86400000):null)(parseAnyDate(e.fm.retrieved)) : null;
+    const vDays = e.fm.retrieved ? (d=>d?Math.floor((graphNow()-d.getTime())/86400000):null)(parseAnyDate(e.fm.retrieved)) : null;
     const panel = String(e.fm.needs_research)==='true'
       ? `<div class="cg-wait">🔎 ${tr('Hand-added — awaiting desk research. The next AI session will offer a 1–3 year lookback before filling this profile.')}</div>`
       : `<div class="cg-ring-row">

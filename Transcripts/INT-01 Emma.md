@@ -5,7 +5,7 @@ title: 'INT-01 Emma'
 interview_id: INT-01
 participant: 'Emma, 29, marketing specialist, Chicago'
 method: 'In-depth interview, remote'
-date: 12.06.2025
+date: 12.06.2026
 abstract: Passive background listener: 2000+ unmanageable Liked Songs so she loops the same five playlists; account shared with a metal-listening boyfriend pollutes recommendations; lost trust in Discover Weekly after parties; wants one-tap mood/context modes; feels she overpays for podcasts she never uses; sister's Apple Music tempts on sound quality but playlist migration blocks switching.   # scan header - positive index for cheap triage, see Transcripts/_template.md
 topics: [background-listening, library-chaos, shared-account, discover-weekly-distrust, context-modes, premium-pricing, switching-barriers]
 mentions_competitors: ['Apple Music']   # EXHAUSTIVE at extraction time - [] means checked-and-none, unlike topics
