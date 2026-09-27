@@ -23,6 +23,41 @@ function personaStats(e){
   const cfRaw = (e.body.match(/Confidence:\**\s*([^\n(]+)/i)||[])[1]||'—';
   return { cf: String(cfRaw).split(/[—(;,]/)[0].trim() };
 }
+/* ---------- Levels, drawn ----------
+   One ladder for a persona's maturity and for the weight of one claim — the
+   canonical definition is .claude/skills/ai-persona/references/levels.md, and
+   nothing here re-decides it. A persona sits on the highest rung whose
+   artefacts all exist; a claim is weighed by what it links to. */
+function linkedEntities(md){
+  const out = [];
+  for(const m of md.matchAll(MD_LINK)){ const url = m[2]; if(/^https?:/.test(url)) continue; const id = resolveRef(url); if(id && ENTITIES[id]) out.push(ENTITIES[id]); }
+  return out;
+}
+function personaLevel(e){
+  const types = new Set(linkedEntities(e.body).map(x=>x.type));
+  const ev = types.has('Evidence'), sig = types.has('Signal');
+  const corr = /[A-Za-z]/.test(stripLinks(section(e.body,'Correlations')||''));
+  if(ev && sig && corr && types.has('IdeaForImprovement') && /primary/i.test(e.fm.category||'')) return 5;
+  if(ev && sig && corr) return 4;
+  return sig ? 3 : ev ? 2 : 1;
+}
+function claimLevel(ents){
+  const sigs = ents.filter(x=>x.type==='Signal'), evs = ents.filter(x=>x.type==='Evidence');
+  const validated = sigs.some(s=> [].concat(s.fm.evidences||[]).filter(Boolean).length);
+  if(sigs.length && (evs.length || validated)) return 4;
+  return sigs.length ? 3 : evs.length ? 2 : 0;
+}
+const LEVEL_TEXT = {
+  1: ['Assumption', 'No data behind it yet — the persona says “I don’t know”.'],
+  2: ['Desk research', 'Backed by desk research only — not confirmed in interviews.'],
+  3: ['Interviews', 'Heard in our own interviews — treat a single source with care.'],
+  4: ['Correlated', 'Heard in interviews and backed by desk research.'],
+  5: ['Ready for decisions', 'Interviews, desk research and correlations — may carry product recommendations.'],
+};
+function levelChip(n, withName){
+  const [name, why] = LEVEL_TEXT[n];
+  return `<span class="lvl lvl-${n}" title="${esc('L'+n+' · '+tr(name)+' — '+tr(why))}">L${n}${withName?' · '+esc(tr(name)):''}</span>`;
+}
 /* Distinct research participants feeding a persona — counted from its linked
    Signals' transcript links (matching happens per transcript: every interview
    is a different person, a persona is a composite, never one person re-interviewed). */

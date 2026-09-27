@@ -267,7 +267,7 @@ function card(e){
     let q=''; for(const s of qFull.split(/(?<=[.!?])\s+/)){ if(!q) q=s; else if((q+' '+s).length<=130) q+=' '+s; else break; }  // whole sentences
     if(q.length>150) q=trim(q,140);
     el.classList.add('p-apple');
-    inner = `<div class="pa-kicker">${esc(e.fm.category||'')} persona${e.fm.demo?'<span class="pa-demo">Demo</span>':''}</div>
+    inner = `<div class="pa-kicker">${esc(tr(e.fm.category||''))} ${tr('persona')}${e.fm.demo?'<span class="pa-demo">Demo</span>':''}${levelChip(personaLevel(e))}</div>
       <h3 class="pa-quote">${esc(q)}</h3>
       <div class="pa-who">${esc(nm)}${role?` · ${esc(role)}`:''}</div>
       <div class="pa-avatar">${avatarHtml(e, nm)}</div>`;

@@ -237,7 +237,11 @@
   .p-hero-chips { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 14px; }
   /* Primary way into the poster: full width of the avatar column, directly under
      the name and its tags — the one action this page is really for. */
-  .p-hero-cta { width: 100%; margin-top: 18px; }
+  .p-hero-cta { width: 100%; margin-top: 8px; }
+  /* the talk button is the persona's main action: full width, first */
+  .p-talk { display: flex; width: 100%; margin: 18px 0 0; }
+  .p-talk > .pj-btn:first-child { flex: 1; justify-content: center; }
+  .p-talk .pj-menu { left: 0; right: auto; top: calc(100% + 6px); bottom: auto; }
   .p-hero-main { padding-top: 4px; }
   .p-hero-main .kicker { display: inline-flex; align-items: center; gap: 7px; font-size: 14px; font-weight: 600; letter-spacing: .8px; text-transform: uppercase; color: var(--text-dim); }
   .p-hero-main .kicker svg { width: 14px; height: 14px; color: var(--text-mute); }

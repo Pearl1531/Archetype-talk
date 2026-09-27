@@ -92,6 +92,100 @@ function mdToHtml(md){
   return html.replace(/<em>\[colour\]<\/em>/g, `<span class="colour-chip" title="${esc(tr('Character colour for warm-up questions — not a research finding'))}">${tr('not researched')}</span>`);
 }
 
+/* ---------- the evidence trail, on hover ----------
+   "Every claim traces to a source" is the promise; this makes it one gesture.
+   Pointing at a Signal or Evidence link shows what it actually holds — the
+   verbatim quote and its interview, or the finding and when it was checked —
+   without leaving the page. One floating card, reused. */
+function peekHtml(x){
+  if(x.type==='Signal'){
+    const q = (firstQuote(x.body)||'').replace(/^["“”']+|["“”']+$/g,'');
+    const date = section(x.body,'Interview date') || '';
+    const tr0 = linkedEntities(x.body).find(t=>t.type==='Transcript');
+    return `<div class="peek-k">${ICONS.Signal}${tr('Signal')} ${levelChip(claimLevel([x]))}</div>
+      <div class="peek-t">${esc(x.title)}</div>
+      ${q?`<blockquote class="peek-q">“${esc(trim(q,220))}”</blockquote>`:''}
+      <div class="peek-m">${[tr0?esc(tr0.title):'', esc(date.trim())].filter(Boolean).join(' · ')}</div>`;
+  }
+  if(x.type==='Evidence'){
+    const take = stripLinks((section(x.body,'Takeaways')||section(x.body,'Content')||'').split('\n').find(l=>/\w/.test(l))||'').replace(/^[-*]\s+/,'');
+    return `<div class="peek-k">${ICONS.Evidence}${tr('Evidence')} ${levelChip(2)}</div>
+      <div class="peek-t">${esc(x.title)}</div>
+      ${take?`<p class="peek-p">${esc(trim(take,220))}</p>`:''}
+      ${x.fm.retrieved?`<div class="peek-m">${tr('Checked')} ${esc(String(x.fm.retrieved))}</div>`:''}`;
+  }
+  return '';
+}
+let PEEK = null;
+function wirePeek(root){
+  if(!PEEK){ PEEK = document.createElement('div'); PEEK.className = 'peek'; PEEK.setAttribute('role','tooltip'); PEEK.hidden = true; document.body.appendChild(PEEK); }
+  const show = a =>{
+    const x = ENTITIES[a.dataset.goto]; const html = x ? peekHtml(x) : '';
+    if(!html) return;
+    PEEK.innerHTML = html; PEEK.hidden = false;
+    const r = a.getBoundingClientRect(), w = PEEK.offsetWidth, h = PEEK.offsetHeight;
+    const below = r.bottom + 8 + h < innerHeight;
+    PEEK.style.left = Math.max(8, Math.min(innerWidth - w - 8, r.left)) + 'px';
+    PEEK.style.top  = (below ? r.bottom + 8 : r.top - h - 8) + 'px';
+  };
+  const hide = ()=>{ PEEK.hidden = true; };
+  root.querySelectorAll('a.xref[data-goto]').forEach(a=>{
+    a.addEventListener('mouseenter', ()=> show(a)); a.addEventListener('focus', ()=> show(a));
+    a.addEventListener('mouseleave', hide); a.addEventListener('blur', hide);
+    a.addEventListener('click', hide);
+  });
+}
+
+/* ---------- "Talk to Emma" ----------
+   The conversation happens in your AI agent, not in this window — so the
+   button hands you the exact line that starts it, in the dialect of the agent
+   you use (the same list, and the same remembered choice, as the Projects
+   screen's starter prompt). Pasting it in the project folder is the whole step. */
+function talkCommand(e, agent){
+  const f = e.file;
+  if(agent==='codex') return `$persona-talk ${f}`;
+  if(agent==='gemini') return tr('Use the persona-talk skill: let me talk to the persona in {f}.').replace('{f}', f);
+  if(agent==='other') return tr('Read AGENTS.md and CLAUDE.md, then follow .claude/skills/persona-talk/SKILL.md to let me talk to the persona in {f}.').replace('{f}', f);
+  return `/persona-talk ${f}`;   // Claude Code, Cursor, Copilot: a slash command
+}
+const TALK_ICO = '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M20 12a7 7 0 0 1-7 7H8l-4 3 1.2-4A7 7 0 0 1 13 5a7 7 0 0 1 7 7Z"/></svg>';
+function talkButtonHtml(e, first){
+  const agent = pjAgent();
+  return `<div class="pj-split p-talk">
+      <button type="button" class="pj-btn primary" data-talk="copy" title="${esc(tr('Copies the line that starts the conversation — paste it into {a}, opened in this project folder').replace('{a}', pjAgentLabel(agent)))}">${TALK_ICO} ${esc(tr('Talk to {name}').replace('{name}', first))}</button>
+      <button type="button" class="pj-btn primary pj-split-more" data-talk="more" aria-haspopup="true" aria-expanded="false" aria-label="${esc(tr('Pick another AI assistant'))}">${PJ_ICONS.caret}</button>
+      <div class="pj-menu" data-talk="menu" role="menu" hidden>
+        <div class="pj-menu-head">${esc(tr('Copy the line for…'))}</div>
+        ${PJ_AGENTS.map(a => `<button type="button" class="pj-menu-item${a.id === agent ? ' on' : ''}" role="menuitem" data-talk-ai="${a.id}">${esc(tr(a.label))}</button>`).join('')}
+      </div>
+    </div>`;
+}
+function wireTalkButton(root, e, first){
+  const box = root.querySelector('.p-talk'); if(!box) return;
+  const menu = box.querySelector('[data-talk="menu"]'), more = box.querySelector('[data-talk="more"]');
+  const copy = agent =>{
+    store.set('at-ai', agent);
+    const txt = talkCommand(e, agent);
+    const done = ()=> toast(tr('Copied “{t}” — paste it into {a}, opened in this project folder').replace('{t}', trim(txt, 60)).replace('{a}', pjAgentLabel(agent)));
+    if(navigator.clipboard && navigator.clipboard.writeText) navigator.clipboard.writeText(txt).then(done, ()=> fallbackCopy(txt, done));
+    else fallbackCopy(txt, done);
+  };
+  const close = ()=>{ menu.hidden = true; more.setAttribute('aria-expanded','false'); };
+  box.querySelector('[data-talk="copy"]').onclick = ()=> copy(pjAgent());
+  more.onclick = ev=>{ ev.stopPropagation(); menu.hidden = !menu.hidden; more.setAttribute('aria-expanded', String(!menu.hidden)); };
+  // picking an agent copies for it AND makes it the default the button names
+  menu.querySelectorAll('[data-talk-ai]').forEach(b=> b.onclick = ()=>{
+    close(); copy(b.dataset.talkAi);
+    box.outerHTML = talkButtonHtml(e, first); wireTalkButton(root, e, first);
+  });
+}
+// one listener for every talk menu: a click anywhere else closes it
+document.addEventListener('click', ev=>{
+  document.querySelectorAll('.p-talk [data-talk="menu"]:not([hidden])').forEach(m=>{
+    if(!m.parentElement.contains(ev.target)){ m.hidden = true; m.parentElement.querySelector('[data-talk="more"]').setAttribute('aria-expanded','false'); }
+  });
+});
+
 const galleryView=document.getElementById('galleryView');
 const detailView=document.getElementById('detailView');
 let CURRENT = null;
@@ -133,7 +227,6 @@ function openDetail(id){
     const bioSec = section(e.body,'Who they are');
     const whoBullet = (bioSec.match(/\*\*Who:\*\*\s*([^\n(]+)/)||[])[1] || '';   // the human one-liner, not the template blockquote
     const who = trim(stripLinks((e.fm.description || whoBullet).replace(/\*\[colour\]\*/g,'')), 200);
-    const cf = personaStats(e).cf;
     pHero.innerHTML = `
       <figure class="p-hero-fig">
         <div class="p-hero-avatar">${avatarHtml(e, nm)}</div>
@@ -143,9 +236,10 @@ function openDetail(id){
           <div class="p-hero-chips">
             ${e.fm.category?`<span class="tag">${esc(e.fm.category)}</span>`:''}
             ${participantsChip(e)}
-            <span class="tag">${esc(String(cf).trim())} confidence</span>
+            ${levelChip(personaLevel(e), true)}
           </div>
-          <button type="button" class="btn btn-primary p-hero-cta" id="pPosterBtn" title="${esc(tr('Full-bleed visual one-pager of this persona'))}">⧉ ${tr('Poster view')}</button>
+          ${talkButtonHtml(e, nm.split(/\s+/)[0])}
+          <button type="button" class="btn btn-outline p-hero-cta" id="pPosterBtn" title="${esc(tr('Full-bleed visual one-pager of this persona'))}">⧉ ${tr('Poster view')}</button>
         </figcaption>
       </figure>
       <div class="p-hero-main">
@@ -155,6 +249,7 @@ function openDetail(id){
       </div>`;
     pHero.style.display='';
     document.getElementById('pPosterBtn').onclick = ()=> posterOpen(e.id);
+    wireTalkButton(pHero, e, nm.split(/\s+/)[0]);
   } else { pHero.style.display='none'; }
   const ctl = document.getElementById('dIconCtl');
   if(e.type==='Competitor'){
@@ -230,6 +325,14 @@ function openDetail(id){
   doc.querySelectorAll('a.xref[data-goto]').forEach(a=>{
     const gid = a.getAttribute('data-goto');
     if(gid) a.onclick = (ev)=>{ ev.preventDefault(); location.hash = '#'+gid; };
+  });
+  /* On a persona every sourced bullet shows its weight: the claim's level,
+     read off what it links to. A bullet with no source gets no badge — the
+     page does not grade what it cannot trace. */
+  wirePeek(doc);
+  if(e.type==='Persona') doc.querySelectorAll(':scope > ul > li:not(.li-sub)').forEach(li=>{
+    const n = claimLevel([...li.querySelectorAll('a.xref[data-goto]')].map(a=>ENTITIES[a.dataset.goto]).filter(Boolean));
+    if(n) li.insertAdjacentHTML('afterbegin', levelChip(n) + ' ');
   });
   /* inline source citations [S1]: number the list items under the ## Sources
      heading (src-1, src-2, …) and make each chip scroll to + flash its source */

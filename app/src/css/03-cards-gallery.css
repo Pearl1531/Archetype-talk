@@ -338,5 +338,15 @@
     background: #241307; border: 1px solid #3b82f633; border-radius: var(--r-md);
     font-size: var(--text-caption); color: var(--text-soft);
   }
-
+  /* ---- Levels (L1–L5) — one badge for persona maturity and claim weight ----
+     Quiet at the bottom of the ladder, ember at the top: the colour says how
+     much weight it carries, the tooltip says why. */
+  .lvl { display: inline-flex; align-items: center; gap: 4px; flex: none;
+    font-family: var(--font-mono, ui-monospace, Menlo, monospace); font-size: 11px; font-weight: 600;
+    line-height: 1; padding: 3px 7px; border-radius: var(--r-pill); vertical-align: 1px;
+    border: 1px solid var(--line); color: var(--text-mute); cursor: help; white-space: nowrap; }
+  .lvl-3 { color: var(--warn-text); border-color: color-mix(in srgb, var(--warn) 40%, transparent); }
+  .lvl-4, .lvl-5 { color: var(--accent-text); border-color: color-mix(in srgb, var(--accent, #ff4d00) 45%, transparent); background: var(--accent-soft); }
+  body.lin-all .p-apple .pa-kicker { white-space: nowrap; }
+  .pa-kicker .lvl { margin-left: auto; }
 

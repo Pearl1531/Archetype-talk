@@ -121,3 +121,16 @@
   .doc .colour-chip { display: inline-block; font-size: 11px; line-height: 1.6; padding: 0 7px; margin-right: 4px;
     border: 1px dashed var(--line); border-radius: var(--r-pill); color: var(--text-mute); vertical-align: 1px; }
   .doc li.li-sub { list-style: none; margin-left: var(--s-5); color: var(--text-soft); }
+  /* the evidence-trail card shown when you point at a Signal / Evidence link */
+  .peek { position: fixed; z-index: 60; width: 340px; max-width: calc(100vw - 16px); pointer-events: none;
+    padding: 12px 14px; border: 1px solid var(--line); border-radius: var(--r-md);
+    background: var(--bg-elev-2); box-shadow: 0 12px 34px rgba(0,0,0,.35); font-size: 13px; line-height: 1.45; }
+  .peek[hidden] { display: none; }
+  .peek-k { display: flex; align-items: center; gap: 6px; color: var(--text-mute); font-size: 11px; text-transform: uppercase; letter-spacing: .06em; }
+  .peek-k svg { width: 12px; height: 12px; }
+  .peek-k .lvl { margin-left: auto; text-transform: none; letter-spacing: 0; }
+  .peek-t { margin-top: 6px; font-weight: 600; color: var(--text); }
+  .peek-q { margin: 6px 0 0; padding: 0 0 0 10px; border-left: 2px solid var(--accent, #ff4d00); color: var(--text-soft); font-style: normal; }
+  .peek-p { margin: 6px 0 0; color: var(--text-soft); }
+  .peek-m { margin-top: 6px; color: var(--text-mute); font-size: 12px; }
+
