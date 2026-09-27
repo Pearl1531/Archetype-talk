@@ -1,0 +1,127 @@
+  :root {
+    /* Type scale — the one part of the older layer that is NOT an alias: these
+       sizes (16/18/24/30) have no twin on the --fs-* ladder below, so merging
+       the two would resize text rather than rename a token. Left as the type
+       scale until someone makes that call deliberately. Colours, radii and
+       spacing used to sit here too, each one a `var()` pointing at the shared
+       token underneath; those are gone and the rules name the shared token. */
+    --font-geist: 'Geist', ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+    --text-caption: 14px;  --leading-caption: 1.4; --tracking-caption: 0.6px;
+    --text-body: 14px;     --leading-body: 1.43;
+    --text-body-lg: 16px;  --leading-body-lg: 1.5;
+    --text-subheading: 18px; --leading-subheading: 1.56;
+    --text-heading-sm: 24px; --leading-heading-sm: 1.33; --tracking-heading-sm: -0.6px;
+    --text-heading: 30px;    --leading-heading: 1.2;     --tracking-heading: -0.75px;
+
+    /* Shadows */
+    --shadow-subtle: 0 0 0 1px rgba(255,255,255,0.03);
+
+    /* Layout widths — three tiers, no per-page values:
+       grid pages fill .content (--width-content); single-column lists fill it too (--width-column),
+       so a list and a grid end at the same right edge;
+       doc/reading pages share --width-reading */
+    --sidebar-w: 240px;   /* the left rail; the top bar starts where it ends */
+    --width-content: 1280px;
+    --width-column: 100%;
+    --width-reading: 800px;
+
+    /* Global grid — wide layouts place their rails on these 12 columns
+       instead of inventing per-page pixel widths */
+    --grid-cols: 12;
+    --grid-gutter: var(--s-6);
+  }
+
+  /* ── Shared product tokens ───────────────────────────────────────────────
+     One vocabulary across our products: the names below are the same ones IA
+     Builder uses (surfaces, hairlines, radii, spacing, type), so a component
+     copied between the two lands in the right colours without a rename. Two
+     levels of "lift" instead of shadows, hairline borders, pill buttons.
+
+     What is NOT shared is the accent: `--accent` stays Archetype Talk's ember
+     (set in 08-shared-skin.css) — same skeleton, own voice. Everything
+     accent-derived is computed from it, so flipping that one value re-tints
+     every page built on these tokens.
+
+     These are the names to write. The block above holds only the type scale,
+     which has no twin here; everything else — surface, ink, hairline, radius,
+     spacing — is named once, right here. */
+  :root {
+    /* Surfaces — canvas, then two steps up */
+    --bg: #090909;
+    --bg-elev: #141414;
+    --bg-elev-2: #1c1c1c;
+    --line: #262626;
+    --line-soft: #1a1a1a;
+    --edge: #3a3a3a;
+    --hover-bg: #1c1c1c;
+    --hover-border: #3a3a3a;
+
+    /* Ink — four steps; --text-mute is the darkest that still clears 4.5:1 on --bg */
+    --text: #ffffff;
+    --text-soft: #d6d6d6;
+    --text-dim: #999999;
+    --text-mute: #8a8a8a;
+
+    /* Accent-derived (--accent itself lives in 08-shared-skin.css) */
+    --accent-soft: color-mix(in srgb, var(--accent, #ff4d00) 15%, transparent);
+    --accent-text: color-mix(in srgb, var(--accent, #ff4d00) 65%, #ffffff);
+
+    /* Status */
+    --warn: #f59e0b;
+    --warn-text: #fbbf24; --danger-text: #f87171;
+
+    /* Primary action is an inverted surface, not a brand colour */
+    --primary-bg: #ffffff;
+    --primary-fg: #000000;
+
+    /* Depth */
+    --shadow: 0 10px 30px rgba(0, 0, 0, 0.55);
+
+    /* Radii — utility → pill; text buttons are always pills */
+    --r-xs: 4px; --r-sm: 6px; --r-md: 10px; --r-lg: 15px; --r-xl: 20px; --r-pill: 100px;
+
+    /* Spacing — one 4px-based ladder, no in-between values */
+    --s-1: 4px; --s-2: 8px; --s-3: 12px; --s-4: 16px; --s-5: 20px;
+    --s-6: 24px; --s-8: 32px; --s-10: 40px; --s-12: 48px; --s-16: 64px;
+
+    /* Type — Inter when the system has it, never fetched (offline by design) */
+    --font-ui: 'Inter', 'Inter Variable', var(--font-geist);
+    /* 14px is the floor of this app — nothing readable is set below it. That
+       collapses the two smallest rungs into one value: `xs` and `sm` are the
+       same size now and separate by weight, tracking and colour instead
+       (uppercase micro-labels vs. quiet sub-text), which is what they were
+       really doing anyway. Everything above steps up to keep the hierarchy. */
+    --fs-xs: 14px; --fs-sm: 14px; --fs-md: 15px; --fs-lg: 17px;
+    --fs-xl: 20px; --fs-2xl: 23px; --fs-3xl: 28px; --fs-4xl: 32px;
+    --tracking-tight: -0.01em; --tracking-display: -0.03em;
+  }
+
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  :where(button, [role="button"], [tabindex="0"], summary, a, input, select, textarea):focus-visible {
+    outline: 1px solid var(--accent, #ff4d00); outline-offset: 2px; border-radius: var(--r-xs); }
+  html { -webkit-font-smoothing: antialiased; text-rendering: optimizeLegibility; }
+  body {
+    background: var(--bg);
+    color: var(--text);
+    font-family: var(--font-ui);
+    font-size: var(--text-body);
+    line-height: var(--leading-body);
+    font-feature-settings: "ss01" on, "cv11" on;
+  }
+  /* font-size too, not just the family: a button with no size of its own falls
+     back to the UA's 13.33px, which is under the 14px floor this app keeps */
+  button { font-family: inherit; font-size: inherit; cursor: pointer; border: none; background: none; color: inherit; }
+  ::placeholder { color: var(--text-dim); }
+
+  /* Skip link — first Tab stop, visually hidden until focused (WCAG 2.4.1) */
+  .skip-link {
+    position: fixed; top: -60px; left: 12px; z-index: 1000;
+    padding: 10px 16px; background: var(--bg-elev); color: var(--text);
+    border: 1px solid var(--accent, #ff4d00); border-radius: var(--r-sm); text-decoration: none;
+    font-size: var(--text-body); transition: top .12s ease; }
+  .skip-link:focus { top: 12px; }
+
+  /* Any element wired for xref navigation (data-goto) is a real control:
+     make keyboard-reachable and show the pointer even when it's a <div>. */
+  [data-goto] { cursor: pointer; }
+

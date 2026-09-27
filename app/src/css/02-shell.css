@@ -1,0 +1,77 @@
+  /* ── App shell: sidebar + main ─────────────────────────────── */
+  .shell { display: flex; min-height: 100vh; }
+
+  .sidebar {
+    width: var(--sidebar-w); flex: none;
+    background: var(--bg-elev-2);
+    padding: var(--s-5) var(--s-3);
+    display: flex; flex-direction: column; gap: var(--s-1);
+    position: sticky; top: 0; height: 100vh; overflow-y: auto;
+  }
+  .side-top { display: flex; align-items: center; justify-content: space-between; }
+  .nav-burger, .nav-scrim { display: none; }
+  .brand {
+    display: flex; align-items: center; gap: 10px;
+    padding: var(--s-2) var(--s-3) var(--s-5);
+    font-size: var(--text-body); font-weight: 600; letter-spacing: -0.2px; white-space: nowrap;
+  }
+  .brand .mark { width: 8px; height: 8px; border-radius: 50%; background: var(--accent, #ff4d00); flex: none; }
+
+  .side-label {
+    font-size: var(--text-caption); line-height: var(--leading-caption);
+    letter-spacing: var(--tracking-caption); text-transform: uppercase;
+    color: var(--text-dim); font-weight: 500;
+    padding: var(--s-4) var(--s-3) var(--s-2);
+  }
+  .nav-item {
+    display: flex; align-items: center; gap: 10px; width: 100%;
+    padding: 7px var(--s-3); border-radius: var(--r-md);
+    font-size: var(--text-body); font-weight: 500; color: var(--text-dim);
+    text-align: left; transition: background .12s, color .12s;
+  }
+  .nav-item:hover { background: rgba(10,10,10,0.04); color: var(--text); }
+  .nav-item.active { background: var(--bg-elev); color: var(--text); box-shadow: var(--shadow-subtle); }
+  .nav-item svg { flex: none; color: currentColor; opacity: .75; }
+  .nav-item .n {
+    margin-left: auto; font-size: var(--text-caption); font-weight: 500;
+    color: var(--text-dim); background: rgba(255,255,255,0.08);
+    padding: 1px 7px; border-radius: var(--r-pill); min-width: 22px; text-align: center;
+  }
+  .nav-item.active .n { background: var(--bg); }
+
+  .side-foot { margin-top: auto; padding: var(--s-4) var(--s-1) var(--s-1); display: flex; flex-direction: column; gap: var(--s-2); }
+  .btn {
+    display: inline-flex; align-items: center; justify-content: center; gap: 8px;
+    height: 36px; padding: 0 var(--s-4); border-radius: var(--r-pill);
+    font-size: var(--text-body); font-weight: 500; white-space: nowrap;
+    transition: background .12s, border-color .12s;
+  }
+  .btn-primary { background: var(--text); color: var(--bg-elev-2); }
+  .btn-primary:hover { background: var(--text-soft); }
+  .btn-ghost { background: var(--bg); color: var(--text); }
+  .btn-ghost:hover { background: var(--line); }
+  .btn-outline { background: transparent; color: var(--text); border: 1px solid var(--line); }
+  .btn-outline:hover { border-color: var(--text-dim); }
+  /* Exit moved to the account nav (14-topnav.css); what is left at the foot of
+     the rail is the one primary action and the credit. */
+  .side-credit { display: flex; flex-direction: column; gap: 1px; padding: 0 var(--s-2) 2px;
+    font-size: 14px; line-height: 1.45; }
+  .side-credit a { color: var(--text-dim); text-decoration: none; }
+  .side-credit a:hover { color: var(--accent-text); text-decoration: underline; }
+  .side-credit span { color: var(--text-mute); }
+
+  .side-hint { font-size: var(--text-caption); line-height: 1.5; color: var(--text-dim); padding: 0 var(--s-2); }
+  .side-hint b { color: var(--text-soft); font-weight: 500; }
+
+  /* language: two words, so a segmented pair rather than a select — the choice
+     is visible without opening anything, which is what a room full of new
+     users needs */
+  .lang-switch { display: inline-flex; align-self: flex-start; border: 1px solid var(--line); border-radius: var(--r-pill); overflow: hidden; }
+  .lang-opt {
+    padding: 3px 10px; font-size: var(--text-caption); font-weight: 600; letter-spacing: .04em;
+    color: var(--text-dim); background: transparent; transition: background .12s, color .12s;
+  }
+  .lang-opt + .lang-opt { border-left: 1px solid var(--line); }
+  .lang-opt:hover { color: var(--text); }
+  .lang-opt.on { background: var(--text); color: var(--bg-elev-2); }
+

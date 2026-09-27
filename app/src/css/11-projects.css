@@ -1,0 +1,239 @@
+  /* ── Projects — the screen you land on ───────────────────────────────────
+     Not a view inside a project: a separate screen that owns the window, the
+     way IA Builder's dashboard does. Built entirely on the shared tokens from
+     01-tokens-base.css (`--bg*`, `--r-*`, `--s-*`) — the first page migrated,
+     so it doubles as the reference for the ones that follow. Own `.pj-*`
+     classes, no collisions with the app shell, so it can sit last in the
+     cascade without overriding anything. */
+  #projectsView { display: none; }
+  body.projects-open { overflow: hidden; }
+  body.projects-open #projectsView {
+    display: grid; grid-template-columns: 232px 1fr;
+    position: fixed; inset: 0; z-index: 470;
+    background: var(--bg); color: var(--text);
+    font-family: var(--font-ui); font-size: var(--fs-md);
+    letter-spacing: var(--tracking-tight);
+    overflow: hidden;
+  }
+
+  /* rail */
+  .pj-rail {
+    display: flex; flex-direction: column; gap: var(--s-5);
+    padding: var(--s-4) var(--s-3);
+    border-right: 1px solid var(--line);
+    background: var(--bg-elev);
+    overflow-y: auto;
+  }
+  .pj-brand {
+    display: flex; align-items: center; gap: 9px;
+    padding: var(--s-1) 6px; font-weight: 600;
+    letter-spacing: var(--tracking-display);
+  }
+  .pj-mark {
+    display: grid; place-items: center; width: 26px; height: 26px; flex: none;
+    border-radius: var(--r-sm); background: var(--primary-bg); color: var(--primary-fg);
+    font-size: 14px; font-weight: 700; letter-spacing: var(--tracking-display);
+  }
+  .pj-nav { display: flex; flex-direction: column; gap: 2px; }
+  .pj-nav-item {
+    display: flex; align-items: center; gap: 9px; width: 100%;
+    padding: var(--s-2) var(--s-2) var(--s-2) 10px;
+    border: 0; border-radius: var(--r-sm);
+    background: transparent; color: var(--text-soft);
+    text-align: left; cursor: pointer;
+  }
+  .pj-nav-item:hover { background: var(--hover-bg); }
+  .pj-nav-item.on { background: var(--accent-soft); color: var(--text); font-weight: 600; }
+  .pj-nav-item .pj-n { margin-left: auto; color: var(--text-mute); font-size: var(--fs-xs); }
+  .pj-rail-foot { margin-top: auto; display: flex; flex-direction: column; gap: var(--s-3); }
+  .pj-note {
+    display: flex; align-items: flex-start; gap: 9px;
+    padding: 10px 11px;
+    border: 1px solid var(--line); border-radius: var(--r-md);
+    background: var(--bg-elev-2); color: var(--text-mute);
+    font-size: var(--fs-xs); line-height: 1.5;
+  }
+  .pj-note strong { display: block; color: var(--text-soft); font-weight: 600; }
+
+  /* main column */
+  .pj-main { padding: var(--s-8) var(--s-8) var(--s-10); overflow-y: auto; }
+  .pj-head {
+    display: flex; align-items: center; justify-content: space-between;
+    gap: var(--s-4); flex-wrap: wrap; margin-bottom: var(--s-5);
+  }
+  .pj-head h1 { margin: 0; font-size: var(--fs-3xl); font-weight: 600; letter-spacing: var(--tracking-display); }
+  .pj-actions { display: flex; gap: var(--s-2); flex-wrap: wrap; }
+  .pj-lead { max-width: 62ch; margin: -2px 0 var(--s-5); color: var(--text-dim); line-height: 1.55; }
+
+  /* buttons — pill, surface-lift on hover, primary is the inverted surface */
+  .pj-btn {
+    display: inline-flex; align-items: center; gap: 6px;
+    padding: 7px 13px; white-space: nowrap;
+    border: 1px solid transparent; border-radius: var(--r-pill);
+    background: var(--bg-elev); color: var(--text);
+    font: inherit; font-weight: 500; cursor: pointer;
+    transition: background .12s, border-color .12s, color .12s, opacity .12s;
+  }
+  .pj-btn:hover { border-color: var(--line); background: var(--bg-elev-2); }
+  .pj-btn.primary { background: var(--primary-bg); border-color: var(--primary-bg); color: var(--primary-fg); }
+  .pj-btn.primary:hover { opacity: .88; background: var(--primary-bg); }
+  .pj-btn.sm { padding: 5px 10px; font-size: var(--fs-sm); }
+  .pj-btn.icon { padding: 6px; border-radius: var(--r-sm); color: var(--text-dim); }
+  .pj-btn.icon:hover { color: var(--text); }
+  .pj-btn.icon.danger:hover { color: var(--danger-text); }
+  .pj-btn:disabled { opacity: .35; cursor: not-allowed; }
+
+  /* cards */
+  .pj-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(268px, 1fr)); gap: 18px; }
+  .pj-card {
+    display: flex; flex-direction: column;
+    border: 1px solid var(--line); border-radius: var(--r-lg);
+    background: var(--bg-elev); overflow: hidden;
+    transition: border-color .12s;
+  }
+  .pj-card:hover { border-color: var(--hover-border); }
+  .pj-thumb {
+    display: block; width: 100%; aspect-ratio: 16 / 10; padding: var(--s-4);
+    border: 0; border-bottom: 1px solid var(--line);
+    background: var(--bg); cursor: pointer;
+  }
+  .pj-thumb svg { width: 100%; height: 100%; display: block; }
+  .pj-node { fill: var(--bg-elev-2); stroke: var(--line); stroke-width: 1; }
+  .pj-node.root { fill: var(--accent-soft); stroke: var(--accent); }
+  .pj-edge { fill: none; stroke: var(--edge); stroke-width: 1; }
+  .pj-foot { display: flex; align-items: center; gap: var(--s-2); padding: 11px var(--s-3); }
+  .pj-txt { display: flex; flex-direction: column; gap: 2px; min-width: 0; }
+  .pj-name {
+    border: 0; padding: 0; background: none; color: inherit;
+    font: inherit; font-weight: 600; text-align: left; cursor: pointer;
+    overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
+  }
+  .pj-name:hover { color: var(--accent-text); }
+  .pj-hint { color: var(--text-mute); font-size: var(--fs-xs);
+    overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+  .pj-foot .pj-btn.icon, .pj-foot .pj-btn.sm { margin-left: auto; flex: none; }
+  /* the three ways in — shown above the list, and alone when the list is empty */
+  .pj-cta { display: grid; grid-template-columns: repeat(auto-fit, minmax(232px, 1fr)); gap: var(--s-3); margin-bottom: var(--s-8); }
+  .pj-cta-card {
+    display: flex; flex-direction: column; gap: 6px; align-items: flex-start;
+    padding: var(--s-4); text-align: left;
+    border: 1px solid var(--line); border-radius: var(--r-lg);
+    background: var(--bg-elev); color: var(--text);
+    font: inherit; cursor: pointer;
+    transition: border-color .12s, background .12s;
+  }
+  .pj-cta-card:hover { border-color: var(--hover-border); background: var(--bg-elev-2); }
+  .pj-cta-ico {
+    display: grid; place-items: center; width: 30px; height: 30px; margin-bottom: 2px;
+    border: 1px solid var(--line); border-radius: var(--r-sm);
+    background: var(--bg-elev-2); color: var(--accent-text);
+  }
+  .pj-cta-card b { font-weight: 600; letter-spacing: var(--tracking-tight); }
+  .pj-cta-card span { color: var(--text-dim); font-size: var(--fs-sm); line-height: 1.5; }
+  .pj-cta-card:disabled { opacity: .45; cursor: not-allowed; }
+
+  .pj-sec {
+    display: flex; align-items: baseline; gap: var(--s-2);
+    margin: 0 0 var(--s-3); color: var(--text-dim);
+    font-size: var(--fs-sm); text-transform: uppercase; letter-spacing: .08em;
+  }
+  .pj-sec .pj-n { color: var(--text-mute); }
+  .pj-empty {
+    display: flex; flex-direction: column; align-items: center; gap: 10px;
+    padding: var(--s-16) var(--s-6);
+    border: 1px dashed var(--line); border-radius: var(--r-xl);
+    color: var(--text-mute); text-align: center;
+  }
+  .pj-empty h2 { margin: var(--s-1) 0 0; font-size: var(--fs-xl); font-weight: 600; color: var(--text); }
+  .pj-empty p { max-width: 46ch; margin: 0; line-height: 1.55; }
+
+  .pj-cta-card .pj-cta-meta { margin-top: 2px; color: var(--text-mute); font-size: var(--fs-xs); }
+
+  /* empty state — the starter prompt lives here, as a split button: the left
+     half copies for the assistant you used last, the caret opens the rest */
+  .pj-empty-ai { max-width: 52ch; margin: var(--s-2) 0 0; color: var(--text-dim); line-height: 1.55; }
+  .pj-empty-note { max-width: 52ch; margin: 0; color: var(--text-mute); font-size: var(--fs-xs); line-height: 1.5; }
+  .pj-split { position: relative; display: inline-flex; margin: var(--s-1) 0 var(--s-2); }
+  .pj-split .pj-btn.primary { border-radius: var(--r-pill) 0 0 var(--r-pill); }
+  .pj-split .pj-btn.pj-split-more {
+    padding: 7px 10px; border-radius: 0 var(--r-pill) var(--r-pill) 0;
+    border-left: 1px solid color-mix(in srgb, var(--primary-fg) 26%, transparent);
+  }
+  .pj-menu {
+    /* upward: this button lives in the empty state, near the bottom of the
+       page, so a menu dropping down would open off-screen */
+    position: absolute; bottom: calc(100% + 6px); right: 0; z-index: 5;
+    display: flex; flex-direction: column; min-width: 208px; padding: 5px;
+    border: 1px solid var(--line); border-radius: var(--r-md);
+    background: var(--bg-elev); box-shadow: 0 12px 34px rgba(0,0,0,.28);
+    text-align: left;
+  }
+  .pj-menu[hidden] { display: none; }
+  .pj-menu-head { padding: 6px 9px 5px; color: var(--text-mute); font-size: var(--fs-xs); }
+  .pj-menu-item {
+    padding: 7px 9px; border: 0; border-radius: var(--r-sm);
+    background: transparent; color: var(--text);
+    font: inherit; text-align: left; cursor: pointer;
+  }
+  .pj-menu-item:hover { background: var(--hover-bg); }
+  .pj-menu-item.on { color: var(--accent-text); font-weight: 600; }
+
+  /* credits — the licence and the person, at the foot of the rail */
+  .pj-credit { display: flex; flex-direction: column; gap: 2px; padding: 0 6px 2px; font-size: var(--fs-xs); }
+  .pj-credit a { color: var(--text-dim); text-decoration: none; }
+  .pj-credit a:hover { color: var(--accent-text); text-decoration: underline; }
+  .pj-credit span { color: var(--text-mute); }
+
+  /* help & FAQ */
+  .pj-chips { display: flex; flex-wrap: wrap; gap: var(--s-2); margin-bottom: var(--s-6); }
+  .pj-chip {
+    padding: 5px 12px; border: 1px solid var(--line); border-radius: var(--r-pill);
+    background: var(--bg-elev); color: var(--text-dim);
+    font: inherit; font-size: var(--fs-sm); cursor: pointer;
+  }
+  .pj-chip:hover { border-color: var(--hover-border); color: var(--text); }
+  .pj-faq-sec { max-width: 78ch; margin-bottom: var(--s-8); scroll-margin-top: var(--s-5); }
+  .pj-faq-sec h2 {
+    margin: 0 0 var(--s-3); color: var(--text-dim);
+    font-size: var(--fs-sm); font-weight: 600;
+    text-transform: uppercase; letter-spacing: .08em;
+  }
+  .pj-faq { border-bottom: 1px solid var(--line); }
+  .pj-faq summary {
+    display: flex; align-items: center; gap: var(--s-2);
+    padding: 12px 2px; cursor: pointer; font-weight: 500;
+    list-style: none;
+  }
+  .pj-faq summary::-webkit-details-marker { display: none; }
+  .pj-faq summary::before {
+    content: '+'; flex: none; width: 16px;
+    color: var(--text-mute); font-size: var(--fs-md);
+  }
+  .pj-faq[open] summary::before { content: '−'; }
+  .pj-faq summary:hover { color: var(--accent-text); }
+  .pj-faq-a { padding: 0 2px 14px 18px; color: var(--text-dim); line-height: 1.6; }
+  .pj-faq-a p { margin: 0; }
+  .pj-faq-a code {
+    padding: 1px 5px; border-radius: var(--r-sm);
+    background: var(--bg-elev-2); font-family: var(--font-mono); font-size: .92em;
+  }
+  .pj-faq-a b { color: var(--text); }
+
+  /* the toast lives at z-index 400; this screen sits above it */
+  body.projects-open .toast { z-index: 480; }
+
+  /* the shell's language switch, re-tokenised for this screen */
+  #projectsView .lang-switch { border-color: var(--line); border-radius: var(--r-pill); }
+  #projectsView .lang-opt { padding: 5px 11px; font-size: var(--fs-xs); color: var(--text-dim); }
+  #projectsView .lang-opt + .lang-opt { border-left-color: var(--line); }
+  #projectsView .lang-opt:hover { color: var(--text); }
+  #projectsView .lang-opt.on { background: var(--primary-bg); color: var(--primary-fg); }
+
+  @media (max-width: 860px) {
+    body.projects-open #projectsView { grid-template-columns: 1fr; grid-template-rows: auto 1fr; }
+    .pj-rail { flex-direction: row; align-items: center; gap: var(--s-3);
+      border-right: 0; border-bottom: 1px solid var(--line); overflow-x: auto; }
+    .pj-nav { flex-direction: row; }
+    .pj-rail-foot { display: none; }
+    .pj-main { padding: var(--s-5) var(--s-4) var(--s-8); }
+  }

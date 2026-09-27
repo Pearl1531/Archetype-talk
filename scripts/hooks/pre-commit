@@ -1,0 +1,94 @@
+#!/bin/sh
+# pre-commit — stop a transcript from entering git history un-scrubbed.
+#
+# OPT-IN. Nothing installs this for you:
+#     ln -s ../../scripts/hooks/pre-commit .git/hooks/pre-commit
+# Remove it the same way (rm .git/hooks/pre-commit). One-off bypass:
+#     git commit --no-verify
+#
+# Why this exists: git history is effectively permanent. A transcript committed
+# raw stays retrievable from old commits in every clone and fork, long after you
+# "delete" it — which is the single hardest thing to undo in this whole repo.
+# The steady state is not the risk; the accident is: one hurried `git add -A`
+# after dropping a file into the folder.
+#
+# What it checks: files under Transcripts/ that are being ADDED or MODIFIED must
+# declare `anonymization:` with something other than `none`. It does NOT judge
+# scrub quality — no tool can. It only stops the case where nobody even claims a
+# scrub happened. Demo files and the template are exempt.
+
+set -e
+FAIL=0
+
+for f in $(git diff --cached --name-only --diff-filter=AM | grep '^Transcripts/.*\.md$' || true); do
+  case "$(basename "$f")" in _*|README.md) continue ;; esac
+  [ -f "$f" ] || continue
+
+  # frontmatter only: everything up to the closing --- of the first block
+  head="$(awk 'NR==1 && $0!="---" { exit } NR>1 && $0=="---" { exit } { print }' "$f")"
+
+  echo "$head" | grep -qiE '^demo:[[:space:]]*true' && continue
+
+  state="$(echo "$head" | sed -n 's/^anonymization:[[:space:]]*\([a-z_]*\).*/\1/p' | head -1)"
+  case "$state" in
+    ai_assisted|tool_assisted|manual_verified) ;;
+    "")
+      echo "BLOCKED  $f — no 'anonymization:' field in frontmatter."
+      FAIL=1
+      ;;
+    *)
+      echo "BLOCKED  $f — anonymization: $state"
+      FAIL=1
+      ;;
+  esac
+done
+
+# Second guard: no unmasked email address in any staged knowledge file. Once a
+# commit lands — and especially once a repo goes public — an address in there is
+# harvestable and effectively permanent. The app never writes one (updated_by is
+# a display name; author emails are masked to m***@g***.com), so a hit here came
+# in another way: a pasted transcript, a hand-edited line, a copied signature.
+EMAIL_RE='[A-Za-z0-9._%+-]+@[A-Za-z0-9-]+\.[A-Za-z][A-Za-z]*'
+for f in $(git diff --cached --name-only --diff-filter=AM | grep -E '^(Personas|Signals|Evidence|Archetypes|Transcripts|Ideas|Hypotheses|Competitors)/.*\.md$|^(Participants|Research backlog|Product Context)\.md$' || true); do
+  [ -f "$f" ] || continue
+  hits="$(grep -oE "$EMAIL_RE" "$f" 2>/dev/null | grep -v '\*\*\*' | grep -viE '@example\.(com|org)$' || true)"
+  if [ -n "$hits" ]; then
+    echo "BLOCKED  $f — unmasked email address:"
+    echo "$hits" | sed 's/^\(.\)[^@]*@\(.\).*$/           \1***@\2***/' | sort -u
+    EMAIL_FAIL=1
+  fi
+done
+
+if [ "${EMAIL_FAIL:-0}" -eq 1 ]; then
+  cat <<'MSG'
+
+An email address is about to enter git history. Committed history is effectively
+permanent, and public repos get scraped.
+
+  - a participant's address     → remove it; contact details never belong in the graph
+  - a teammate's address        → mask it (m***@g***.com), the way the app writes author:
+  - an organisation's address   → usually still unnecessary; prefer a link
+
+Deliberate exception: git commit --no-verify
+MSG
+  exit 1
+fi
+
+if [ "$FAIL" -eq 1 ]; then
+  cat <<'MSG'
+
+A transcript is about to enter git history without a recorded scrub state.
+
+Fix it in one of these ways:
+  1. Scrub it, then record how:   anonymization: tool_assisted   (or manual_verified)
+     Local pre-scrub is the strong option — see README > Anonymization & GDPR.
+  2. Keep it out of git:          add the file to .gitignore, or work in a
+     profile where Transcripts/ is not versioned (docs/DATA-BOUNDARY.md).
+  3. It is example content:       mark it demo: true.
+
+If you are certain and accept the consequence: git commit --no-verify
+MSG
+  exit 1
+fi
+
+exit 0

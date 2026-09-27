@@ -1,0 +1,134 @@
+  /* ── Shared skin ─────────────────────────────────────────────────────────
+     What the whole app looks like now: the language IA Builder uses, so the
+     two products read as one family. Two steps of surface lift on a near-black
+     canvas, hairline borders instead of shadows, pill controls, one accent
+     reserved for state and links — never as a fill for whole surfaces.
+
+     This file used to be the "Signal skin" (serif display type, mono uppercase
+     controls, a crosshair tick on every page head, a 2px keyline for the active
+     nav item). Those are gone — the pages that had already moved were fighting
+     them — but the two families it introduced stay available: --font-serif for
+     the persona poster's display name, --font-mono for code, commands and
+     keycaps, where a monospace is information rather than decoration.
+
+     Everything here is written to sit ON TOP of 04-skin.css, so the selectors
+     carry the same `body.lin-all` / `body.lin-side` prefixes: equal specificity,
+     later file wins. */
+  :root {
+    --accent: #ff4d00;
+    --font-serif: 'Iowan Old Style', Georgia, 'Times New Roman', serif;
+    --font-mono: ui-monospace, 'SF Mono', Menlo, Consolas, monospace;
+  }
+
+  /* ---- page head: one sans title, no rule, no tick ---- */
+  .page-head { position: relative; padding-top: 0; }
+  .page-head::before, .page-head::after { content: none; }
+  body.lin-all .page-head h1, .page-head h1 {
+    font-family: var(--font-ui); font-weight: 600;
+    font-size: var(--fs-4xl); line-height: 1.2; letter-spacing: var(--tracking-display); }
+  body.lin-all .page-head p { color: var(--text-dim); }
+
+  /* ---- controls: pill, sentence case, primary = inverted surface ---- */
+  body.lin-all .btn, body.lin-all .btn-sm, body.lin-all .btn-primary,
+  body.lin-all .btn-outline, body.lin-all .btn-ghost,
+  body.lin-side .side-foot .btn, .btn, .btn-sm, .cg-open, .hypo-promote {
+    font-family: var(--font-ui); text-transform: none; letter-spacing: var(--tracking-tight);
+    font-size: var(--text-body); font-weight: 500; border-radius: var(--r-pill); }
+  body.lin-all .btn-primary, body.lin-side .side-foot .btn-primary {
+    background: var(--primary-bg); color: var(--primary-fg); border: 1px solid var(--primary-bg); box-shadow: none; }
+  body.lin-all .btn-primary:hover, body.lin-side .side-foot .btn-primary:hover {
+    background: var(--primary-bg); opacity: .88; }
+  body.lin-all .btn-outline, body.lin-all .btn-ghost,
+  body.lin-side .side-foot .btn-outline {
+    background: var(--bg-elev-2); color: var(--text); border: 1px solid transparent; box-shadow: none; }
+  body.lin-all .btn-outline:hover, body.lin-all .btn-ghost:hover,
+  body.lin-side .side-foot .btn-outline:hover {
+    background: var(--hover-bg); border-color: var(--line); color: var(--text); }
+  body.lin-all .btn-sm, .btn-sm { height: 30px; padding: 0 var(--s-3); font-size: var(--fs-md); }
+  body.lin-all .cg-open, body.lin-all .hypo-promote {
+    background: var(--bg-elev-2); color: var(--text); border-radius: var(--r-pill); }
+  body.lin-all .cg-open:hover, body.lin-all .hypo-promote:hover { background: var(--hover-bg); color: var(--text); }
+
+  /* ---- sidebar: lifted rail, accent-tinted active row ---- */
+  body.lin-side .sidebar { background: var(--bg-elev); border-right: 1px solid var(--line); }
+  body.lin-side .nav-item { border-radius: var(--r-sm); color: var(--text-soft); box-shadow: none; }
+  body.lin-side .nav-item:hover { background: var(--hover-bg); color: var(--text); }
+  body.lin-side .nav-item.active, .nav-item.active {
+    background: var(--accent-soft); color: var(--text); font-weight: 600; box-shadow: none; }
+  body.lin-side .nav-item .n { background: var(--bg-elev-2); color: var(--text-mute); border-radius: var(--r-pill); }
+  body.lin-side .nav-item.active .n { background: var(--bg-elev-2); color: var(--text-soft); }
+  body.lin-side .ws-btn { border-radius: var(--r-sm); }
+  body.lin-side .ws-btn:hover { background: var(--hover-bg); }
+  body.lin-side .ws-menu { background: var(--bg-elev); border: 1px solid var(--line);
+    border-radius: var(--r-md); box-shadow: var(--shadow); }
+  body.lin-side .ws-item { border-radius: var(--r-sm); }
+  body.lin-side .ws-item:hover, body.lin-side .ws-item.on { background: var(--bg-elev-2); }
+  body.lin-side .ws-connect { border-top: 1px solid var(--line); border-radius: 0; }
+  body.lin-side .lang-switch { border-color: var(--line); border-radius: var(--r-pill); }
+  body.lin-side .lang-opt.on { background: var(--primary-bg); color: var(--primary-fg); }
+
+  /* ---- surfaces: every card family gets the same hairline + radius ---- */
+  body.lin-all .detail-card, body.lin-all .set-card, body.lin-all .qa,
+  body.lin-all .help-filter, body.lin-all .map, body.lin-all .aff-col,
+  body.lin-all .hl-item, body.lin-all .didyouknow, body.lin-all .tableview,
+  body.lin-all .modal-card, body.lin-all .card.slot, body.lin-mm .mm-canvas,
+  body.lin-mm .mm-tip, body.lin-mm .mm-focus-bar {
+    border: 1px solid var(--line); box-shadow: none; }
+  body.lin-all .modal-card { box-shadow: var(--shadow); }
+  body.lin-mm .mm-tip { box-shadow: var(--shadow); }
+  body.lin-all .card:hover, body.lin-all .hl-item:hover { border-color: var(--hover-border); box-shadow: none; }
+  body.lin-mm .mm-drawer { border-left: 1px solid var(--line); }
+
+  /* ---- chips, tags, badges: pills on the second surface ---- */
+  body.lin-all .tag, body.lin-mm .mm-chip, body.lin-all .cg-prox, body.lin-all .aff-count {
+    background: var(--bg-elev-2); color: var(--text-soft); border: none; border-radius: var(--r-pill); }
+  body.lin-all .hypo-status { border-radius: var(--r-pill); }
+  body.lin-all .type-badge { border-radius: 0; }
+
+  /* ---- inputs ---- */
+  body.lin-all .filter-pill { background: var(--bg-elev-2); border: 1px solid transparent;
+    border-radius: var(--r-pill); box-shadow: none; }
+  body.lin-all .filter-pill:focus-within { border-color: var(--line); }
+  body.lin-all .set-input, body.lin-all .idea-field input, body.lin-all .idea-field textarea,
+  body.lin-all .idea-pick, body.lin-all .idea-pick-search {
+    border-radius: var(--r-sm); border: 1px solid var(--line); background: var(--bg-elev-2); }
+  body.lin-all .view-toggle { background: var(--bg-elev); border: 1px solid var(--line); border-radius: var(--r-pill); }
+  body.lin-all .view-toggle button { border-radius: var(--r-pill); }
+  body.lin-all .view-toggle button.active { background: var(--bg-elev-2); box-shadow: none; }
+  body.lin-all .seg { border-radius: var(--r-pill); }
+  body.lin-all .seg button { border-radius: var(--r-pill); }
+  body.lin-all .seg button.active { background: var(--bg-elev); box-shadow: none; }
+  body.lin-all .help-nav button.active { background: var(--primary-bg); color: var(--primary-fg); }
+
+  /* ---- tables: header on the second surface, hairline rows ---- */
+  body.lin-all .tableview th { background: var(--bg-elev-2); border-bottom: 1px solid var(--line); }
+  body.lin-all .tableview td { border-bottom: 1px solid var(--line-soft); }
+  body.lin-all .tableview tbody tr:hover { background: var(--bg-elev-2); }
+
+  /* ---- code and commands keep the mono voice ---- */
+  body.lin-all .doc code, body.lin-all .doc pre, body.lin-all .qa .a code,
+  body.lin-all .set-card code, kbd {
+    font-family: var(--font-mono); border-radius: var(--r-sm); }
+
+  /* ---- craft details ---- */
+  ::selection { background: color-mix(in srgb, var(--accent) 30%, transparent); color: #fff; }
+  * { scrollbar-width: thin; scrollbar-color: var(--edge) transparent; }
+  ::-webkit-scrollbar { width: 10px; height: 10px; }
+  ::-webkit-scrollbar-track { background: transparent; }
+  ::-webkit-scrollbar-thumb { background: var(--edge); border-radius: var(--r-pill);
+    border: 2px solid var(--bg); background-clip: padding-box; }
+  ::-webkit-scrollbar-thumb:hover { background: var(--hover-border); background-clip: padding-box; }
+  @media (prefers-reduced-motion: no-preference) {
+    .card, .btn, .nav-item, .tag { transition: border-color .12s, background .12s, color .12s; }
+  }
+  .btn:active, .btn-primary:active, .btn-outline:active, .btn-sm:active,
+  .cg-open:active, .hypo-promote:active, .nav-item:active { transform: translateY(1px); }
+  .btn:disabled, .btn-primary:disabled { opacity: .45; cursor: not-allowed; transform: none; }
+  /* cursor-tracked spotlight on cards (hover-capable pointers only) */
+  @media (hover: hover) and (prefers-reduced-motion: no-preference) {
+    .card::after { content: ""; position: absolute; inset: -1px; border-radius: inherit;
+      pointer-events: none; opacity: 0; transition: opacity .25s;
+      background: radial-gradient(340px circle at var(--mx, 50%) var(--my, 50%),
+        rgba(255,255,255,.055), transparent 62%); }
+    .card:hover::after { opacity: 1; }
+  }

@@ -1,0 +1,64 @@
+# Environment variables — never commit
+.env
+.env.local
+.env*.local
+
+# OS files
+.DS_Store
+.DS_Store?
+._*
+.AppleDouble
+.LSOverride
+Thumbs.db
+
+# IDE / Editor
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+
+# Claude Code / MCP (local config only)
+.claude/settings.local.json
+.claude/*.log
+.claude/onboarded.local
+
+# Inbox drops are local/transient — only the README is versioned
+Inbox/*
+!Inbox/README.md
+
+# ElevenLabs voice output (persona-voice) — generated audio, never versioned
+.claude/voice-cache/
+
+# Dependencies
+node_modules/
+.npm/
+
+# Python (scripts/ are stdlib-only, but a venv or bytecode can still appear)
+__pycache__/
+*.pyc
+.venv/
+
+# Build / Output
+dist/
+build/
+*.min.js
+*.min.css
+
+# Logs
+*.log
+logs/
+
+# Temporary files
+*.tmp
+tmp/
+temp/
+
+# Prebuilt persona cards (persona-talk Step 0) — derived cache, rebuilt on demand
+.claude/cache/
+
+# Demo-data decision marker (demo-data skill) — local, per-install
+.claude/demo-decision.local
+
+# User preferences saved from the app Settings page — personal, per-install
+.claude/preferences.local.md

@@ -1,0 +1,330 @@
+<!DOCTYPE html>
+<!-- GENERATED FILE — do not edit by hand.  Archetype Talk v__VERSION__
+     Sources: app/src/{shell.html, css/*, js/*, embedded-graph.html}
+     Build:   python3 scripts/build_app.py   (embed_demo.py rebuilds too)
+     Verify:  python3 scripts/embed_demo.py && git diff --exit-code app/index.html
+              — an empty diff proves this file is what the sources build to.
+              See docs/BUILD.md; CI runs the same check on every push. -->
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<!-- The egress policy, stated in the artifact itself so a reviewer can verify
+     it without reading 600KB of generated HTML:
+       default-src 'none'  nothing loads unless listed below
+       img-src             own origin, inline images (avatars, competitor icons)
+                           and blob: (zip export previews) — no remote hosts
+       connect-src         only Google's favicon service, and only when the user
+                           turns it on in Settings ▸ Privacy & network
+       'unsafe-inline'     forced by the single-file design: all CSS and JS are
+                           inlined into this file, there is nothing to hash to.
+                           Removing it would mean shipping separate .css/.js and
+                           giving up "one file you can email".
+     Frame/form/base are pinned shut: nothing here submits or embeds anything. -->
+<meta http-equiv="Content-Security-Policy" content="default-src 'none'; img-src 'self' data: blob:; style-src 'self' 'unsafe-inline'; script-src 'self' 'unsafe-inline'; connect-src 'self' https://www.google.com; font-src 'self'; frame-src 'none'; object-src 'none'; form-action 'none'; base-uri 'none'" />
+<title>Archetype Talk — Research graph</title>
+<!-- No webfonts by design: the app is fully offline/self-contained — system font
+     stack only (privacy: opening the file must not call any external host). -->
+<style>
+/*__STYLES__*/
+</style>
+</head>
+<body class="lin-all lin-side">
+
+<a href="#mainContent" class="skip-link" data-i18n="Skip to content">Skip to content</a>
+
+<!-- Account nav — the one component that stays put across every view. It holds
+     what is about YOU rather than about the graph: who you are, the language,
+     a copy of everything, and the way out. Keeping these three out of the left
+     rail leaves that rail as pure navigation (and room for more of it). -->
+<div class="topnav" id="topNav">
+  <button class="topnav-ava" id="avatarBtn" aria-haspopup="menu" aria-expanded="false" aria-label="Account menu" data-i18n-aria="Account menu"><span id="avatarInitials">A</span></button>
+  <div class="topnav-menu" id="avatarMenu" role="menu" style="display:none">
+    <div class="topnav-who">
+      <span class="topnav-ava sm" aria-hidden="true"><span id="avatarInitials2">A</span></span>
+      <span class="topnav-who-txt"><b id="avatarName">Anonymous</b><small id="avatarWs"></small></span>
+    </div>
+    <div class="topnav-row">
+      <span data-i18n="Language">Language</span>
+      <div class="lang-switch" role="group" aria-label="Language" data-i18n-aria="Language">
+        <button type="button" class="lang-opt on" data-lang="en">EN</button><button type="button" class="lang-opt" data-lang="pl">PL</button>
+      </div>
+    </div>
+    <button class="topnav-item" id="exportBtn" role="menuitem" title="Download everything currently loaded as .md files in a zip — share the graph without GitHub" data-i18n-title="Download everything currently loaded as .md files in a zip — share the graph without GitHub">
+      <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+      <span data-i18n="Export .md">Export .md</span>
+    </button>
+    <button class="topnav-item" id="exitBtn" role="menuitem" title="Leave the project — back to the welcome screen" data-i18n-title="Leave the project — back to the welcome screen">
+      <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></svg>
+      <span data-i18n="Exit">Exit</span>
+    </button>
+  </div>
+</div>
+
+<div id="galleryView">
+  <div class="shell">
+    <aside class="sidebar" id="sideNav">
+      <div class="side-top">
+      <div class="brand ws-wrap">
+        <button class="ws-btn" id="wsBtn" aria-haspopup="listbox" aria-expanded="false" title="Switch workspace" data-i18n-title="Switch workspace">
+          <span class="mark"></span><span class="ws-label" id="wsLabel">Demo</span>
+          <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M6 9l6 6 6-6"/></svg>
+        </button>
+        <div class="ws-menu" id="wsMenu" style="display:none" role="listbox">
+          <div class="ws-menu-head">Archetype Talk — workspaces</div>
+        </div>
+      </div>
+      <button class="nav-burger" id="navBurger" aria-label="Menu" data-i18n-aria="Menu" aria-expanded="false" aria-controls="sideNav">
+        <svg class="ic-burger" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><line x1="3" y1="6" x2="21" y2="6"/><line x1="3" y1="12" x2="21" y2="12"/><line x1="3" y1="18" x2="21" y2="18"/></svg>
+        <svg class="ic-close" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+      </button>
+      </div>
+      <!-- no "Home" label above the first item: one entry does not need a
+           section head, and the row it saves goes to the nav itself -->
+      <button class="nav-item" id="dashBtn"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21.21 15.89A10 10 0 1 1 8 2.83"/><path d="M22 12A10 10 0 0 0 12 2v10z"/></svg><span data-i18n="Overview">Overview</span></button>
+      <div class="side-label" data-i18n="Research graph">Research graph</div>
+      <nav id="tabs"></nav>
+      <div class="side-label" data-i18n="Planning">Planning</div>
+      <button class="nav-item" id="backlogBtn" title="Research backlog.md — the questions your persona conversations left open" data-i18n-title="Research backlog.md — the questions your persona conversations left open"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M10 6h11"/><path d="M10 12h11"/><path d="M10 18h11"/><path d="m3 6 1.4 1.4L7 4.8"/><path d="m3 12 1.4 1.4L7 10.8"/><path d="m3 18 1.4 1.4L7 16.8"/></svg><span data-i18n="Research backlog">Research backlog</span><span class="n" id="backlogCount"></span></button>
+      <div class="side-label" data-i18n="Views">Views</div>
+      <button class="nav-item" id="mindmapBtn"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="18" cy="5" r="3"/><circle cx="6" cy="12" r="3"/><circle cx="18" cy="19" r="3"/><line x1="8.59" y1="13.51" x2="15.42" y2="17.49"/><line x1="15.41" y1="6.51" x2="8.59" y2="10.49"/></svg><span data-i18n="Mind Map">Mind Map</span></button>
+      <div class="side-label" data-i18n="Support">Support</div>
+      <button class="nav-item" id="settingsBtn"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 2.83-2.83l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg><span data-i18n="Settings">Settings</span></button>
+      <button class="nav-item" id="helpBtn"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><path d="M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg><span data-i18n="Help &amp; guide">Help &amp; guide</span></button>
+      <div class="side-foot">
+        <!-- Export, language and Exit moved to the account nav (top right):
+             they are about you, not about the graph, and the rail is nav. -->
+        <button class="btn btn-primary" id="loadBtn" title="Point the app at your project's root folder — everything stays on this computer" data-i18n-title="Point the app at your project's root folder — everything stays on this computer">
+          <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z"/></svg>
+          <span id="loadBtnLabel" data-i18n="Connect folder">Connect folder</span>
+        </button>
+        <!-- The tour no longer greets anyone (the welcome card does) — so this
+             nag is hidden rather than deleted: unhide it together with
+             TOUR_AUTO in 14-boot-router.js to bring the tour back. -->
+        <div class="side-hint" style="display:none"><button type="button" class="linklike" id="tourLink" style="font-size:inherit" data-i18n="▶ New here? Take the 1-minute tour">▶ New here? Take the 1-minute tour</button></div>
+        <div class="side-credit">
+          <a href="https://www.linkedin.com/in/matjedux/" target="_blank" rel="noopener noreferrer">Golden Ratio — Mateusz Jędraszczyk</a>
+          <span><a href="https://github.com/Pearl1531/Archetype-talk/blob/main/LICENSE" target="_blank" rel="noopener" data-i18n="Open source, MIT licence">Open source, MIT licence</a> · <span title="Build version — the same string is in the header comment of this file and in CHANGELOG.md" data-i18n-title="Build version — the same string is in the header comment of this file and in CHANGELOG.md">v__VERSION__</span></span>
+        </div>
+      </div>
+      <input type="file" id="fileInput" multiple style="display:none" />
+      <input type="file" id="folderInput" webkitdirectory directory multiple style="display:none" />
+    </aside>
+    <div class="nav-scrim" id="navScrim"></div>
+
+    <main class="main" id="mainContent">
+      <!-- topbar removed — the in-view filter bar is the single search surface.
+           searchInput stays as a hidden state holder (one source of truth for the
+           filter query across the many renderGrid(searchInput.value) call sites). -->
+      <input id="searchInput" style="display:none" aria-hidden="true" tabindex="-1" />
+      <span id="count" style="display:none"></span>
+      <div class="content">
+        <!-- last session's folder is remembered, but the permission may not be:
+             the browser only re-grants disk access inside a click, so this bar
+             offers that one click instead of the whole folder picker -->
+        <div id="reconnectBar" class="ro-banner" style="display:none">
+          <span>📂</span><span><span data-i18n="Last time you were working in">Last time you were working in</span> <b id="reconnectName"></b><span data-i18n=". Reconnect it to load your files and save edits again.">. Reconnect it to load your files and save edits again.</span></span>
+          <button class="btn btn-primary btn-sm" id="reconnectBtn" data-i18n="Reconnect">Reconnect</button>
+          <button id="reconnectX" aria-label="Dismiss" data-i18n-aria="Dismiss">✕</button>
+        </div>
+        <div id="roBanner" class="ro-banner" style="display:none">
+          <span>👁</span><span data-i18n="This browser can browse and search, but <b>can't save</b> — editing, Settings and demo cleanup need Chrome or Edge (File System Access API). Your files are never modified here.">This browser can browse and search, but <b>can't save</b> — editing, Settings and demo cleanup need Chrome or Edge (File System Access API). Your files are never modified here.</span>
+          <button id="roBannerX" aria-label="Dismiss" data-i18n-aria="Dismiss">✕</button>
+        </div>
+        <div class="page-head">
+          <h1 id="pageTitle">All entities</h1>
+          <p id="pageSub">Everything in the research graph, grouped by type. Click any card to read the full file — and follow the links: every claim leads back to its source.</p>
+        </div>
+        <div id="sampleStat" style="max-width:760px"></div>
+        <div class="fresh-bar" id="freshBar">
+          <button class="btn btn-outline btn-sm" id="freshToggle"></button>
+        </div>
+        <div class="idea-bar" id="ideaBar" style="display:none">
+          <button class="btn btn-primary btn-sm" id="newIdeaBtn" data-i18n="＋ New idea">＋ New idea</button>
+          <button class="btn btn-outline btn-sm" id="ideaSortBtn" title="Order ideas by votes (request board) or A–Z" data-i18n-title="Order ideas by votes (request board) or A–Z"></button>
+          <span class="idea-bar-note" data-i18n="Everyone gets one vote. Back the ideas worth building next — the count lives right in each file, so it travels with the repo.">Everyone gets one vote. Back the ideas worth building next — the count lives right in each file, so it travels with the repo.</span>
+        </div>
+        <!-- manual creation for the types with no bar of their own — every type
+             can be added by hand, the AI prompt next to it is the shortcut -->
+        <div class="idea-bar" id="newBar" style="display:none">
+          <button class="btn btn-primary btn-sm" id="newEntBtn"></button>
+          <button class="btn btn-outline btn-sm" id="newPromptBtn"></button>
+          <span class="idea-bar-note" id="newBarNote"></span>
+        </div>
+        <div class="idea-bar" id="hypoBar" style="display:none">
+          <button class="btn btn-primary btn-sm" id="newHypoBtn" data-i18n="＋ New hypothesis">＋ New hypothesis</button>
+          <span class="idea-bar-note" data-i18n="A hunch, not a plan. It needs no proof to live here — the day it earns a Signal or Evidence, promote it to an Idea.">A hunch, not a plan. It needs no proof to live here — the day it earns a Signal or Evidence, promote it to an Idea.</span>
+        </div>
+        <div class="idea-bar" id="compBar" style="display:none">
+          <button class="btn btn-primary btn-sm" id="newCompBtn" data-i18n="＋ New competitor">＋ New competitor</button>
+          <span class="idea-bar-note" data-i18n="Just the name will do. Next time you open Claude Code it offers to do the reading for you — you choose how far back to look, 1 to 3 years.">Just the name will do. Next time you open Claude Code it offers to do the reading for you — you choose how far back to look, 1 to 3 years.</span>
+        </div>
+        <div class="filter-bar" id="filterBar" style="display:none">
+          <label class="filter-pill">
+            <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M4 5h16"/><path d="M7 12h10"/><path d="M10 19h4"/></svg>
+            <input id="filterInput" autocomplete="off" aria-label="Filter this view" data-i18n-aria="Filter this view">
+            <kbd>/</kbd>
+            <span id="filterCount"></span>
+            <button id="filterClear" title="Clear filter" data-i18n-title="Clear filter" aria-label="Clear filter" data-i18n-aria="Clear filter" style="display:none">✕</button>
+          </label>
+          <div class="view-toggle" role="group" aria-label="View">
+            <button id="viewCardsBtn" title="Card grid" data-i18n-title="Card grid"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/></svg></button>
+            <button id="viewListBtn" title="Single column" data-i18n-title="Single column"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="8" y1="6" x2="21" y2="6"/><line x1="8" y1="12" x2="21" y2="12"/><line x1="8" y1="18" x2="21" y2="18"/><line x1="3" y1="6" x2="3.01" y2="6"/><line x1="3" y1="12" x2="3.01" y2="12"/><line x1="3" y1="18" x2="3.01" y2="18"/></svg></button>
+            <button id="viewTableBtn" title="Table view" data-i18n-title="Table view"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="18" height="18" rx="2" ry="2"/><line x1="3" y1="9" x2="21" y2="9"/><line x1="3" y1="15" x2="21" y2="15"/><line x1="9" y1="3" x2="9" y2="21"/></svg></button>
+            <button id="viewMapBtn" title="Market map (Competitors)" data-i18n-title="Market map (Competitors)" style="display:none"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polygon points="1 6 1 22 8 18 16 22 23 18 23 2 16 6 8 2 1 6"/><line x1="8" y1="2" x2="8" y2="18"/><line x1="16" y1="6" x2="16" y2="22"/></svg></button>
+            <button id="viewCompareBtn" title="Compare side by side (Competitors)" data-i18n-title="Compare side by side (Competitors)" style="display:none"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="18" height="18" rx="2"/><line x1="9" y1="3" x2="9" y2="21"/><line x1="15" y1="3" x2="15" y2="21"/></svg></button>
+            <button id="viewAffinityBtn" title="Affinity groups (Signals)" data-i18n-title="Affinity groups (Signals)" style="display:none"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="7" height="9"/><rect x="14" y="3" width="7" height="5"/><rect x="14" y="12" width="7" height="9"/><rect x="3" y="16" width="7" height="5"/></svg></button>
+            <button id="viewHlBtn" title="Highlights by tag (Transcripts)" data-i18n-title="Highlights by tag (Transcripts)" style="display:none"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 20h9"/><path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5z"/></svg></button>
+          </div>
+        </div>
+        <div class="masonry" id="grid"></div>
+      </div>
+    </main>
+  </div>
+</div>
+
+<dialog class="modal" id="ideaModal" aria-label="New idea">
+  <div class="modal-card">
+    <div class="modal-head"><h2 data-i18n="New idea">New idea</h2><button id="ideaClose" class="modal-x" aria-label="Close" data-i18n-aria="Close">✕</button></div>
+    <div class="modal-body" id="ideaBody"></div>
+    <div class="modal-foot">
+      <span class="idea-valid" id="ideaValid"></span>
+      <button class="btn btn-ghost btn-sm" id="ideaCancel" data-i18n="Cancel">Cancel</button>
+      <button class="btn btn-primary btn-sm" id="ideaCreate" disabled data-i18n="Create idea">Create idea</button>
+    </div>
+  </div>
+</dialog>
+
+<dialog class="modal" id="newModal" aria-label="New entry">
+  <div class="modal-card">
+    <div class="modal-head"><h2 id="newTitle">New</h2><button id="newClose" class="modal-x" aria-label="Close" data-i18n-aria="Close">✕</button></div>
+    <div class="modal-body" id="newBody"></div>
+    <div class="modal-foot">
+      <span class="idea-valid" id="newValid"></span>
+      <button class="btn btn-ghost btn-sm" id="newCancel" data-i18n="Cancel">Cancel</button>
+      <button class="btn btn-primary btn-sm" id="newCreate" disabled data-i18n="Create">Create</button>
+    </div>
+  </div>
+</dialog>
+
+<dialog class="modal" id="hypoModal" aria-label="New hypothesis">
+  <div class="modal-card">
+    <div class="modal-head"><h2 data-i18n="New hypothesis">New hypothesis</h2><button id="hypoClose" class="modal-x" aria-label="Close" data-i18n-aria="Close">✕</button></div>
+    <div class="modal-body" id="hypoBody"></div>
+    <div class="modal-foot">
+      <span class="idea-valid" id="hypoValid"></span>
+      <button class="btn btn-ghost btn-sm" id="hypoCancel" data-i18n="Cancel">Cancel</button>
+      <button class="btn btn-primary btn-sm" id="hypoCreate" disabled data-i18n="Save hypothesis">Save hypothesis</button>
+    </div>
+  </div>
+</dialog>
+
+<dialog class="modal" id="compModal" aria-label="New competitor">
+  <div class="modal-card">
+    <div class="modal-head"><h2 data-i18n="New competitor">New competitor</h2><button id="compClose" class="modal-x" aria-label="Close" data-i18n-aria="Close">✕</button></div>
+    <div class="modal-body" id="compBody"></div>
+    <div class="modal-foot">
+      <span class="idea-valid" id="compValid"></span>
+      <button class="btn btn-ghost btn-sm" id="compCancel" data-i18n="Cancel">Cancel</button>
+      <button class="btn btn-primary btn-sm" id="compCreate" disabled data-i18n="Add competitor">Add competitor</button>
+    </div>
+  </div>
+</dialog>
+
+<dialog class="modal" id="tourModal" aria-label="Intro tour">
+  <div class="modal-card tour-card">
+    <button class="modal-x" id="tourSkip" aria-label="Skip the tour" data-i18n-aria="Skip the tour">✕</button>
+    <div class="tour-body" id="tourBody"></div>
+    <div class="tour-foot">
+      <div class="tour-dots" id="tourDots"></div>
+      <div class="tour-nav">
+        <button class="btn btn-ghost btn-sm" id="tourBack" data-i18n="Back">Back</button>
+        <button class="btn btn-primary btn-sm" id="tourNext" data-i18n="Next">Next</button>
+      </div>
+    </div>
+  </div>
+</dialog>
+
+<div id="posterView" aria-hidden="true"></div>
+
+<!-- Projects — rendered by 13c-projects.js; owns the window while it is open -->
+<div id="projectsView" aria-hidden="true"></div>
+<!-- first run only: the welcome card + its particle field (13d-welcome.js) -->
+<div id="welcomeView" aria-hidden="true"></div>
+
+<div class="detail" id="detailView">
+  <div class="detail-wrap">
+    <div class="crumbs">
+      <button class="crumb" id="backBtn" data-i18n="Graph">Graph</button>
+      <span class="sep">/</span>
+      <button class="crumb" id="crumbType"></button>
+      <span class="sep">/</span>
+      <span class="here" id="crumbHere"></span>
+      <span class="spacer"></span>
+      <button class="btn btn-ghost btn-sm" id="mapHereBtn" title="See this entity in the context of its connections" data-i18n-title="See this entity in the context of its connections" data-i18n="◎ Map">◎ Map</button>
+      <button class="btn btn-ghost btn-sm" id="deleteDraftBtn" style="display:none" title="Delete this local draft" data-i18n-title="Delete this local draft" data-i18n="Delete draft">Delete draft</button>
+      <button class="btn btn-outline btn-sm" id="editBtn" style="display:none" data-i18n="Edit">Edit</button>
+    </div>
+    <div class="detail-card">
+      <div class="p-hero" id="pHero" style="display:none"></div>
+      <div class="detail-head">
+        <div class="detail-head-main">
+          <div class="kicker" id="dKicker"></div>
+          <h2 id="dName"></h2>
+          <div class="sub" id="dSub"></div>
+          <div class="ground-row" id="dGround"></div>
+          <div class="detail-vote" id="dVote"></div>
+          <div class="icon-ctl" id="dIconCtl" style="display:none">
+            <button class="btn btn-outline btn-sm" id="icFetch" data-i18n="Fetch favicon">Fetch favicon</button>
+            <button class="btn btn-outline btn-sm" id="icUpload" data-i18n="Upload icon…">Upload icon…</button>
+            <button class="btn btn-ghost btn-sm" id="icRemove" data-i18n="Remove">Remove</button>
+            <input type="file" id="icFile" accept="image/*" style="display:none">
+          </div>
+          <div class="source-note" id="dSource"></div>
+        </div>
+        <div class="detail-avatar" id="dAvatar"></div>
+      </div>
+      <div class="doc-tools" id="docTools" style="display:none">
+        <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><circle cx="11" cy="11" r="7"/><path d="M21 21l-4.3-4.3"/></svg>
+        <input id="findInput" placeholder="Find in transcript…" data-i18n-ph="Find in transcript…" autocomplete="off">
+        <span id="findCount"></span>
+        <button id="findPrev" title="Previous match (Shift+Enter)" data-i18n-title="Previous match (Shift+Enter)">↑</button>
+        <button id="findNext" title="Next match (Enter)" data-i18n-title="Next match (Enter)">↓</button>
+        <span class="doc-tools-spacer"></span>
+        <label class="use-wrap" id="useWrap">
+          <span class="use-label" data-i18n="Use in analysis">Use in analysis</span>
+          <span class="switch"><input type="checkbox" id="useChk" aria-label="Use this transcript in analyses and stats" data-i18n-aria="Use this transcript in analyses and stats"><i></i></span>
+        </label>
+      </div>
+      <div class="p-body" id="pBody">
+        <nav class="p-toc" id="pToc" style="display:none"></nav>
+        <div class="doc" id="doc"></div>
+      </div>
+      <div id="editorWrap" style="display:none">
+        <textarea class="editor" id="editor" spellcheck="false"></textarea>
+        <div class="edit-actions">
+          <button class="btn btn-primary btn-sm" id="saveBtn" data-i18n="Save">Save</button>
+          <button class="btn btn-ghost btn-sm" id="cancelEditBtn" data-i18n="Cancel">Cancel</button>
+          <span class="edit-note" data-i18n="Writes straight to the .md file on disk.">Writes straight to the .md file on disk.</span>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- The page-wide footer is gone: it said the same thing as the credit at the
+     foot of the rail, ran the full width under the sidebar, and the only line
+     of its own — the build version — now sits with that credit. -->
+
+<div class="toast" id="toast" role="status" aria-live="polite"></div>
+<div class="dropmask" id="dropmask"><div class="inner" data-i18n="Drop .md files">Drop .md files</div></div>
+
+<!-- EMBEDDED-GRAPH:START (generated by scripts/embed_demo.py — do not edit by hand) -->
+<!--__EMBEDDED__-->
+<!-- EMBEDDED-GRAPH:END -->
+
+<script>
+//__APP_JS__
+</script>
+</body>
+</html>

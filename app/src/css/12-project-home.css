@@ -1,0 +1,202 @@
+  /* ── Project home (Overview) ─────────────────────────────────────────────
+     The first screen inside a project: elevated cards on the canvas, hairline
+     borders, pill buttons, Inter throughout. The `body.dash-open` overrides
+     below date from when this page migrated ahead of the rest of the app —
+     08-shared-skin.css now says the same things globally, and they are kept
+     only where this page needs a tighter value than the shared default.
+
+     Data-viz keeps its own three colours: green = healthy, ember = attention,
+     hairline = the empty part of a track. Numbers are tabular everywhere. */
+  .dash-wrap {
+    display: flex; flex-direction: column; gap: var(--s-6);
+    columns: initial; max-width: var(--width-content);
+    font-family: var(--font-ui); letter-spacing: var(--tracking-tight);
+    --dv-good: #35c46f; --dv-warn: var(--accent); --dv-track: #262626;
+  }
+
+  /* page chrome — only while this page owns the screen */
+  body.dash-open .page-head { padding-top: 0; }
+  body.dash-open .page-head::before, body.dash-open .page-head::after { display: none; }
+
+  /* Controls: pill, sentence case, primary = inverted surface. Scoped through
+     body.dash-open so these outrank the `body.lin-all .btn-*` skin rules —
+     same class count, and the body element is what breaks the tie. */
+  body.dash-open .dash-wrap .btn, body.dash-open .dash-wrap .btn-sm,
+  body.dash-open .dash-wrap .btn-primary, body.dash-open .dash-wrap .btn-outline {
+    font-family: var(--font-ui); text-transform: none; letter-spacing: var(--tracking-tight);
+    font-size: var(--fs-md); font-weight: 500;
+    height: auto; padding: 7px 13px; border-radius: var(--r-pill);
+    border: 1px solid transparent; box-shadow: none;
+  }
+  body.dash-open .dash-wrap .btn-outline { background: var(--bg-elev-2); color: var(--text); }
+  body.dash-open .dash-wrap .btn-outline:hover { background: var(--hover-bg); border-color: var(--line); color: var(--text); }
+  body.dash-open .dash-wrap .btn-primary { background: var(--primary-bg); border-color: var(--primary-bg); color: var(--primary-fg); }
+  body.dash-open .dash-wrap .btn-primary:hover { background: var(--primary-bg); opacity: .88; }
+
+  /* sections */
+  .dash-sec { margin: 0; display: flex; flex-direction: column; gap: var(--s-4); }
+  .dash-sec-h { display: flex; align-items: baseline; gap: 10px; margin-bottom: var(--s-3); }
+  .dash-sec-h h2 { font-size: var(--fs-xl); font-weight: 600; letter-spacing: var(--tracking-display); }
+  .dash-sec-note { font-family: var(--font-ui); font-size: var(--fs-sm); color: var(--text-mute); }
+  .dash-muted, .dv-empty { color: var(--text-mute); font-size: var(--fs-md); padding: var(--s-4) 0; line-height: 1.55; }
+  /* the way out of an empty state — never just "nothing here", always the move
+     that ends it, in the reading colour so the eye lands on it */
+  .dash-wayout { color: var(--text-dim); display: block; margin-top: 4px; font-size: var(--fs-sm); }
+
+  .dash-card {
+    background: var(--bg-elev); border: 1px solid var(--line);
+    border-radius: var(--r-lg); padding: var(--s-6); box-shadow: none;
+    transition: border-color .12s;
+  }
+
+  /* Snapshot strip — one full-width band, laid out along the reading line:
+     who you are and what to do on top, the two headline numbers and the
+     composition underneath. Cards stopped being stretched to a neighbour's
+     height, which is where the empty space on this page used to come from. */
+  .dash-strip { display: flex; flex-direction: column; gap: var(--s-4); }
+  .dash-strip-top { display: flex; align-items: center; justify-content: space-between; gap: var(--s-4); flex-wrap: wrap; }
+  .dash-strip-btns { display: flex; gap: var(--s-2); flex-wrap: wrap; }
+  .dash-strip-bot { display: flex; align-items: baseline; gap: var(--s-6) var(--s-8); flex-wrap: wrap; }
+  .dash-stat { display: flex; align-items: baseline; gap: 10px; }
+  .dash-stat b { font-size: 40px; line-height: 1; font-weight: 600; letter-spacing: -1.4px;
+    color: var(--text); font-variant-numeric: tabular-nums; }
+  .dash-stat span { font-size: var(--fs-sm); color: var(--text-mute); max-width: 15ch; line-height: 1.35; }
+
+  .dash-hero-hi { display: flex; align-items: center; gap: 10px; }
+  .dash-hero-ava { width: 40px; height: 40px; border-radius: 50%; flex: none; display: grid; place-items: center;
+    background: var(--primary-bg); color: var(--primary-fg); font-size: var(--fs-lg); font-weight: 600; }
+  .dash-hero-hey b { display: block; font-size: var(--fs-lg); font-weight: 600; letter-spacing: var(--tracking-tight); }
+  .dash-hero-hey span { font-size: var(--fs-sm); color: var(--text-mute); }
+
+  /* micro-label — the one uppercase voice on this page, same as the Projects screen */
+  .dash-mini-h {
+    font-family: var(--font-ui); font-size: var(--fs-xs); font-weight: 500;
+    text-transform: uppercase; letter-spacing: .08em; color: var(--text-mute); }
+  .dash-hero-legend { display: flex; flex-wrap: wrap; gap: 6px 16px; margin-left: auto; }
+  .dash-leg { font-size: var(--fs-sm); color: var(--text-dim); display: inline-flex; align-items: center; gap: 6px; }
+  .dash-leg b { color: var(--text); font-weight: 600; }
+  .dash-leg-i { width: 9px; height: 9px; border-radius: var(--r-xs); display: inline-block; }
+  .dash-leg-i.l0 { background: var(--accent); } .dash-leg-i.l1 { background: var(--dv-good); }
+  .dash-leg-i.l2 { background: var(--warn); } .dash-leg-i.l3 { background: #eab308; }
+
+  /* freshness ring — donut beside its reading, not stacked above it */
+  .dash-ring-card { display: flex; flex-direction: column; gap: var(--s-3); }
+  .dash-ring-row { display: flex; align-items: center; gap: var(--s-5); flex-wrap: wrap; }
+  .dash-ring-wrap { position: relative; width: 118px; height: 118px; flex: none; }
+  .dv-donut { width: 118px; height: 118px; display: block; }
+  .dash-ring-center { position: absolute; inset: 0; display: flex; flex-direction: column; align-items: center; justify-content: center; }
+  .dash-ring-center b { font-size: 26px; font-weight: 600; letter-spacing: -0.8px; font-variant-numeric: tabular-nums; }
+  .dash-ring-center span { font-size: var(--fs-sm); color: var(--text-mute); }
+  .dash-ring-foot { display: flex; flex-direction: column; gap: 6px; font-size: var(--fs-sm); color: var(--text-dim); }
+  .dash-ring-foot > span { display: inline-flex; align-items: center; gap: 6px; }
+  /* nothing to count — the ring says why, and what ends it */
+  .dash-ring-note { font-size: var(--fs-sm); color: var(--text-mute); line-height: 1.5; flex: 1; min-width: 180px; }
+
+  /* the inventory tiles that used to sit here are gone: every count on them was
+     already on the hero legend and in the sidebar */
+  .dash-dot { width: 7px; height: 7px; border-radius: 50%; display: inline-block; background: var(--text-mute); }
+  .dash-dot.ok { background: var(--dv-good); } .dash-dot.bad { background: var(--dv-warn); }
+
+  /* two-column rows — align-items: start is the rule that keeps every card at
+     the height of its own content instead of its neighbour's */
+  .dash-two { display: grid; grid-template-columns: 1.5fr 1fr; gap: var(--s-4); align-items: start; }
+  .dash-two.dash-two-wide { grid-template-columns: 1fr 1.35fr; }
+  .dash-col { display: flex; flex-direction: column; gap: var(--s-4); min-width: 0; }
+  .dash-two > .dash-card { margin: 0; }
+
+  /* transcripts-over-time area */
+  .dash-area-card { display: flex; flex-direction: column; }
+  .dv-area { width: 100%; height: auto; max-height: 190px; display: block; overflow: visible; margin-top: var(--s-2); }
+  .dash-axis { display: flex; justify-content: space-between; font-size: var(--fs-sm); color: var(--text-mute); margin-top: var(--s-2); }
+
+  /* research cadence bars */
+  .dash-tl { display: flex; align-items: flex-end; gap: 6px; height: 150px; padding-top: 14px; }
+  .dash-tl-col { flex: 1; display: flex; flex-direction: column; align-items: center; justify-content: flex-end; height: 100%; gap: 4px; }
+  .dash-tl-v { font-size: var(--fs-xs); color: var(--text-mute); font-variant-numeric: tabular-nums; height: 12px; }
+  .dash-tl-bar { width: 100%; max-width: 26px; background: var(--text); border-radius: var(--r-xs); min-height: 4px; transition: opacity .12s; }
+  .dash-tl-bar.empty { background: var(--dv-track); }
+  .dash-tl-col:hover .dash-tl-bar:not(.empty) { opacity: .78; }
+  .dash-tl-x { font-size: 14px; color: var(--text-mute); white-space: nowrap; }
+
+  /* refresh gauge */
+  .dash-gauge-card { display: flex; flex-direction: column; }
+  .dv-gauge-head { display: flex; align-items: baseline; gap: 8px; margin-bottom: var(--s-3); }
+  .dv-gauge-n { font-size: 40px; font-weight: 600; letter-spacing: -1.4px; color: var(--text); font-variant-numeric: tabular-nums; }
+  .dv-gauge-n small { font-size: var(--fs-xl); font-weight: 500; color: var(--text-mute); margin-left: 2px; }
+  .dv-gauge-lbl { font-size: var(--fs-sm); color: var(--text-mute); }
+  .dv-gauge { position: relative; height: 12px; border-radius: var(--r-pill); background: var(--dv-track); overflow: visible; margin: auto 0 var(--s-2); }
+  .dv-gauge-fill { position: absolute; left: 0; top: 0; bottom: 0; border-radius: var(--r-pill); min-width: 6px; transition: width .3s ease; }
+  .dv-gauge-tick { position: absolute; top: -4px; bottom: -4px; width: 2px; background: var(--text); border-radius: 1px; }
+  .dv-gauge-foot { display: flex; justify-content: space-between; font-size: var(--fs-sm); margin-top: var(--s-2); }
+  .dv-gauge-foot .warn { color: var(--dv-warn); font-weight: 600; } .dv-gauge-foot .ok { color: var(--dv-good); font-weight: 600; }
+  .dv-gauge-scale { color: var(--text-mute); }
+
+  /* health check rows */
+  .dash-health { display: flex; flex-direction: column; }
+  /* Every block on the health card speaks the same grammar: label, a number
+     you can say out loud, a bar, one line of what to do about it. Ember is
+     always the desirable half — heard by us, current, covered. */
+  .dash-health > .dash-mix + .dash-mix { padding-top: var(--s-4); border-top: 1px solid var(--line); }
+  .dash-mix { display: flex; flex-direction: column; gap: 7px; margin: var(--s-2) 0 var(--s-4); cursor: help; }
+  .dash-mix-top { display: flex; align-items: baseline; justify-content: space-between; gap: var(--s-3); }
+  .dash-mix-k { font-size: var(--fs-md); font-weight: 500; color: var(--text); }
+  .dash-mix-pct { font-size: var(--fs-lg); font-weight: 600; color: var(--text); font-variant-numeric: tabular-nums; }
+  .dash-mix-bar { height: 10px; border-radius: var(--r-pill); background: var(--edge); overflow: hidden; }
+  .dash-mix-sig { display: block; height: 100%; background: var(--accent); border-radius: var(--r-pill); }
+  .dash-mix-legend { display: flex; flex-wrap: wrap; gap: 6px 18px; font-size: var(--fs-sm); color: var(--text-dim); }
+  .dash-mix-legend small { color: var(--text-mute); }
+  .dash-mix-i { width: 9px; height: 9px; border-radius: var(--r-xs); display: inline-block; margin-right: 7px; }
+  .dash-mix-i.sig { background: var(--accent); }
+  .dash-mix-i.ev { background: var(--edge); }
+  .dash-mix-note { font-size: var(--fs-sm); color: var(--text-mute); line-height: 1.5; }
+  .dash-mix-note b { color: var(--text-dim); font-weight: 600; }
+
+  /* per-persona grounding: its own box on the hero row, one stacked row per
+     persona, thinnest at the top — the answer to "which persona can actually
+     talk to me", where a bare "Personas 5" used to sit */
+  .dash-pg-card { display: flex; flex-direction: column; gap: 2px; cursor: help; }
+  /* narrow column: the sub-label sits under the title instead of fighting it for the line */
+  .dash-pg-card .dash-sec-h { flex-direction: column; align-items: flex-start; gap: 2px; margin-bottom: var(--s-3); }
+  .dash-pg-card .dash-sec-h h2 { font-size: var(--fs-lg); }
+  .dash-pg-foot { font-size: var(--fs-sm); color: var(--text-mute); line-height: 1.5; padding-top: var(--s-3); }
+  .dash-pg { display: flex; flex-direction: column; gap: 5px; margin-top: 2px; }
+  .dash-pg-row { display: grid; grid-template-columns: 72px 1fr auto; align-items: center; gap: var(--s-3);
+    padding: 3px 4px; margin: 0 -4px; border-radius: var(--r-sm); text-decoration: none; }
+  .dash-pg-row:hover { background: var(--bg-elev-2); }
+  .dash-pg-n { font-size: var(--fs-sm); color: var(--text-dim); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+  .dash-pg-row:hover .dash-pg-n { color: var(--accent-text); }
+  .dash-pg-bar { display: flex; height: 8px; border-radius: var(--r-pill); overflow: hidden; background: var(--line); }
+  .dash-pg-bar i { display: block; height: 100%; }
+  .dash-pg-bar i.sig { background: var(--accent); }
+  .dash-pg-bar i.ev { background: var(--edge); }
+  .dash-pg-v { font-size: var(--fs-sm); color: var(--text); font-variant-numeric: tabular-nums; min-width: 46px; text-align: right; }
+  .dash-pg-v small { color: var(--text-mute); }
+
+  /* next-research call to action */
+  .dash-cta {
+    background: var(--bg-elev); border: 1px solid var(--line);
+    border-radius: var(--r-lg); padding: var(--s-5) var(--s-6); box-shadow: none; }
+  .dash-cta.warn {
+    border-color: color-mix(in srgb, var(--accent) 35%, var(--line));
+    background: linear-gradient(180deg, color-mix(in srgb, var(--accent) 6%, var(--bg-elev)), var(--bg-elev)); }
+  .dash-cta-h { display: flex; gap: 14px; align-items: flex-start; }
+  .dash-cta-i { font-size: 22px; line-height: 1.2; flex: none; color: var(--accent); }
+  .dash-cta-i.ok { color: var(--dv-good); }
+  .dash-cta-h h3 { font-size: var(--fs-lg); font-weight: 600; letter-spacing: var(--tracking-tight); margin-bottom: 4px; }
+  .dash-cta-h p { font-size: var(--fs-md); color: var(--text-soft); max-width: 68ch; line-height: 1.5; }
+  .dash-cta-btns { display: flex; flex-wrap: wrap; gap: var(--s-2); margin-top: var(--s-4); align-items: center; }
+  .dash-cta-row { display: grid; grid-template-columns: 1fr 1fr; gap: var(--s-4); align-items: stretch; }
+  .dash-cta-row .dash-cta { display: flex; flex-direction: column; }
+  .dash-cta-row .dash-cta-btns { margin-top: auto; padding-top: var(--s-4); }
+  .dash-cmd { font-family: var(--font-mono); font-size: var(--fs-md);
+    color: var(--text); background: var(--bg); border: 1px solid var(--line);
+    border-radius: var(--r-sm); padding: 5px 10px; }
+
+  @media (max-width: 900px) {
+    .dash-two, .dash-two.dash-two-wide { grid-template-columns: 1fr; }
+    .dash-cta-row { grid-template-columns: 1fr; }
+  }
+  @media (max-width: 560px) {
+    .dash-hero-legend { margin-left: 0; }
+    .dash-stat b { font-size: 34px; }
+  }

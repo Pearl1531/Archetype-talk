@@ -1,0 +1,164 @@
+  /* ── First run — the welcome (.wc-*) ─────────────────────────────────────
+     One card on a dark field, above everything else. Same tokens as the rest
+     of the app: no new colours, no new type, just a different arrangement —
+     the card is the only lit thing on the screen, so the one decision it asks
+     for is the only one available. */
+  #welcomeView { display: none; }
+  body.welcome-open { overflow: hidden; }
+  body.welcome-open #welcomeView {
+    display: grid; place-items: center;
+    position: fixed; inset: 0; z-index: 620;    /* above the Projects screen (470) */
+    background: var(--bg); color: var(--text);
+    font-family: var(--font-ui); letter-spacing: var(--tracking-tight);
+    padding: var(--s-5);
+  }
+  /* the still layer under the drifting one: a fine dot grid, faded out toward
+     the edges so the card sits in the lit part of it */
+  body.welcome-open #welcomeView::before {
+    content: ''; position: absolute; inset: 0; pointer-events: none;
+    background: radial-gradient(circle at 1px 1px, rgba(255,255,255,.07) 1px, transparent 1.5px) 0 0 / 26px 26px;
+    -webkit-mask-image: radial-gradient(ellipse 70% 65% at 50% 45%, #000 0%, rgba(0,0,0,.35) 55%, transparent 100%);
+    mask-image: radial-gradient(ellipse 70% 65% at 50% 45%, #000 0%, rgba(0,0,0,.35) 55%, transparent 100%);
+  }
+  .wc-field { position: absolute; inset: 0; width: 100%; height: 100%; display: block; }
+
+  /* Language, pinned to the corner for the whole walk-through. Above the field
+     (which is absolute at z-0) and quiet enough not to compete with the card:
+     dim until hovered, lit only on the side you are actually on. */
+  /* `fixed`, not `absolute`: on a short window #welcomeView scrolls (see the
+     max-height rule below) and an absolute switch would scroll away with the
+     card — losing it exactly on the screens where the card is longest. */
+  .wc-lang {
+    position: fixed; z-index: 2;
+    top: var(--s-5); right: var(--s-5);
+    border-color: var(--line); border-radius: var(--r-pill);
+    background: var(--bg-elev);
+  }
+  .wc-lang .lang-opt { padding: 5px 11px; font-size: var(--fs-xs); color: var(--text-dim); }
+  .wc-lang .lang-opt + .lang-opt { border-left-color: var(--line); }
+  .wc-lang .lang-opt:hover { color: var(--text); }
+  .wc-lang .lang-opt.on { background: var(--primary-bg); color: var(--primary-fg); }
+  /* On a short screen the card already reaches the top edge; tuck the switch in
+     so it never lands on top of the progress dots. */
+  @media (max-height: 640px), (max-width: 560px) {
+    .wc-lang { top: var(--s-3); right: var(--s-3); }
+  }
+
+  .wc-card {
+    position: relative; z-index: 1;
+    width: 100%; max-width: 420px;
+    display: flex; flex-direction: column; gap: var(--s-3);
+    padding: var(--s-6) var(--s-6) var(--s-5);
+    border: 1px solid var(--line); border-radius: var(--r-xl);
+    background: linear-gradient(180deg, var(--bg-elev-2), var(--bg-elev));
+    box-shadow: var(--shadow);
+  }
+  /* the tile: our monogram on a dotted texture, lit from the top-left the way
+     an app icon is */
+  .wc-mark {
+    width: 60px; height: 60px; display: grid; place-items: center;
+    border: 1px solid var(--line); border-radius: var(--r-lg);
+    background:
+      radial-gradient(circle at 1px 1px, rgba(255,255,255,.10) 1px, transparent 1.6px) 0 0 / 7px 7px,
+      linear-gradient(150deg, var(--bg-elev-2), var(--bg));
+    box-shadow: 0 0 0 1px rgba(255,255,255,.03), 0 8px 24px rgba(0,0,0,.5);
+    margin-bottom: var(--s-2);
+  }
+  .wc-mark span {
+    font-size: var(--fs-lg); font-weight: 700; letter-spacing: var(--tracking-display);
+    color: var(--text); text-shadow: 0 0 18px var(--accent-soft);
+  }
+  .wc-card h1 { margin: 0; font-size: var(--fs-3xl); font-weight: 600; letter-spacing: var(--tracking-display); }
+  .wc-sub { margin: -6px 0 var(--s-3); color: var(--text-dim); font-size: var(--fs-lg); }
+
+  /* the walk-through: a wider card once the greeting is behind you, because
+     three explained bullets do not read at 420px */
+  .wc-card.wc-wide { max-width: 560px; }
+  .wc-card.wc-wide h1 { font-size: var(--fs-2xl); }
+
+  .wc-prog { display: flex; align-items: center; justify-content: space-between; gap: var(--s-3); margin-bottom: var(--s-2); }
+  .wc-dots { display: flex; align-items: center; gap: 6px; }
+  .wc-dot-step {
+    width: 22px; height: 4px; padding: 0; border: 0; border-radius: 999px;
+    background: var(--line); cursor: pointer; transition: background .18s, width .18s;
+  }
+  .wc-dot-step.done { background: var(--text-mute); }
+  .wc-dot-step.on { width: 34px; background: var(--accent); }
+  .wc-dot-step:hover { background: var(--text-dim); }
+  .wc-count { color: var(--text-mute); font-size: var(--fs-xs); white-space: nowrap; }
+
+  .wc-lead { margin: -2px 0 var(--s-2); color: var(--text-dim); font-size: var(--fs-sm); line-height: 1.55; }
+  .wc-lead code, .wc-list code {
+    font-family: var(--font-mono); font-size: .92em;
+    padding: 1px 4px; border-radius: var(--r-sm); background: var(--bg-elev-2); color: var(--text);
+  }
+
+  .wc-list { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; gap: var(--s-3); }
+  .wc-list li { display: flex; gap: 12px; align-items: flex-start; }
+  .wc-ico {
+    flex: none; width: 30px; height: 30px; display: grid; place-items: center;
+    border: 1px solid var(--line); border-radius: var(--r-md);
+    background: var(--bg-elev-2); color: var(--accent-text);
+  }
+  .wc-ico svg { width: 16px; height: 16px; }
+  .wc-li-txt { display: flex; flex-direction: column; gap: 2px; min-width: 0; }
+  .wc-li-txt b { font-size: var(--fs-sm); font-weight: 600; }
+  .wc-li-txt span { color: var(--text-dim); font-size: var(--fs-xs); line-height: 1.55; }
+
+  .wc-nav { display: flex; gap: 10px; margin-top: var(--s-2); }
+  .wc-nav .btn { flex: 1; justify-content: center; padding: 10px 16px; }
+  .wc-nav-end { justify-content: center; margin-top: 2px; }
+  .wc-nav-end .btn {
+    flex: 0 0 auto; padding: 6px 16px;
+    background: none; border-color: transparent; color: var(--text-dim);
+  }
+  .wc-nav-end .btn:hover { color: var(--text); border-color: var(--line); }
+
+  .wc-btn { width: 100%; justify-content: center; padding: 11px 16px; font-size: var(--fs-md); }
+  /* the one button that moves you forward says so */
+  .wc-btn-go svg { width: 17px; height: 17px; flex: none; margin-left: 2px; }
+
+  /* The screenshot above the title. It never widens the card: it fills the
+     width it is given and is capped to a fixed band. The files are already cut
+     to this band's proportion (see app/src/img/README.md), which is why they
+     are small — cropping in the source beats shipping a whole screenshot and
+     hiding most of it. A picture that had to be read in full would need to be
+     a lightbox; this is a preview, here to show the shape of the thing. */
+  .wc-shot {
+    margin: 0 0 var(--s-1); height: 132px; overflow: hidden;
+    border: 1px solid var(--line); border-radius: var(--r-md);
+    background: var(--bg);
+  }
+  .wc-shot img { display: block; width: 100%; height: 100%; object-fit: cover; object-position: 50% 50%; }
+  /* a card with no picture keeps its old rhythm; one with a picture loses a
+     little air above the title so the step does not grow taller */
+  .wc-shot + h1 { margin-top: 2px; }
+  @media (max-height: 720px) { .wc-shot { height: 104px; } }
+  .wc-note { margin: 0; color: var(--text-mute); font-size: var(--fs-xs); line-height: 1.5; }
+
+  .wc-links { display: flex; align-items: center; justify-content: center; gap: 8px; margin-top: var(--s-1); }
+  .wc-link {
+    border: 0; padding: 0; background: none; font: inherit;
+    font-size: var(--fs-sm); color: var(--text-dim); text-decoration: none; cursor: pointer;
+  }
+  .wc-link:hover { color: var(--accent-text); text-decoration: underline; }
+  .wc-dot { color: var(--text-mute); font-size: var(--fs-sm); }
+
+  .wc-foot {
+    display: flex; align-items: center; justify-content: center; gap: 7px;
+    margin-top: var(--s-3); padding-top: var(--s-4);
+    border-top: 1px solid var(--line);
+    color: var(--text-mute); font-size: var(--fs-xs);
+  }
+  .wc-foot svg { width: 12px; height: 12px; flex: none; }
+
+  @media (max-width: 480px) {
+    .wc-card { padding: var(--s-5) var(--s-4); }
+    .wc-card h1, .wc-card.wc-wide h1 { font-size: var(--fs-xl); }
+    .wc-count { display: none; }              /* the dots already say where you are */
+  }
+  /* A five-step card is taller than a one-button card: on a short window it
+     scrolls inside itself rather than running off the screen. */
+  @media (max-height: 760px) {
+    body.welcome-open #welcomeView { align-items: start; overflow-y: auto; }
+  }

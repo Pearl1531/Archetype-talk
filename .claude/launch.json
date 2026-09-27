@@ -1,0 +1,12 @@
+{
+  "version": "0.0.1",
+  "configurations": [
+    {
+      "name": "graph-app",
+      "runtimeExecutable": "npx",
+      "runtimeArgs": ["--yes", "serve", "app"],
+      "port": 8743,
+      "autoPort": true
+    }
+  ]
+}

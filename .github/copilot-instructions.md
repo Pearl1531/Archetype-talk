@@ -1,0 +1,29 @@
+# Archetype Talk — read this before doing anything
+
+This repo has **one** ruleset for every AI agent and model. It is not
+Claude-specific: the `.claude/` folder name is historical, not a scope. If you
+are Cline, Roo, Continue, Copilot, Qwen, Codex, Gemini or anything else, all of
+it applies to you.
+
+1. Read [AGENTS.md](../AGENTS.md) — the cross-tool entry point.
+2. Then [CLAUDE.md](../CLAUDE.md) — the full working rules: grounding and Levels,
+   Signal vs Evidence, never inventing quotes/statistics/sources, demo-data
+   isolation, link changes only after the user approves them.
+3. Workflows are plain instructions in `.claude/skills/<name>/SKILL.md`; the
+   index is [.claude/skills/INDEX.md](../.claude/skills/INDEX.md). Claude Code, Copilot and
+   Cursor list them as slash-commands (`/persona-talk`); Codex and Gemini CLI find
+   the same files through `.agents/skills/` (Codex: `$persona-talk`). In any other
+   agent, open the matching `SKILL.md` and follow its steps by hand. Same result.
+4. **Follow a skill silently — never narrate it.** The user gets the result in
+   the format that skill defines: not your plan, not your step numbers, not a
+   summary of what a file held before you used it. VS Code custom modes and local
+   reasoning models emit `<think>`/`<reasoning>` tags as plain text the client
+   does not strip — in `persona-talk` that prints the persona's cheat sheet above
+   her own answer and the interview is over. Can't hide the tags? Keep what is
+   inside them to a few words.
+5. Fresh checkout, first session: no other tool runs Claude Code's SessionStart
+   hook, so do its job yourself — check `Inbox/` for unprocessed files, and if
+   `.claude/onboarded.local` is missing, follow `.claude/skills/welcome/SKILL.md`.
+6. Never read or edit `app/index.html` or `app/src/embedded-graph.html` — 300 KB+
+   generated build artifacts. Edit the partials in `app/src/` (map:
+   [app/src/README.md](../app/src/README.md)) and rebuild with `python3 scripts/build_app.py`.

@@ -1,0 +1,69 @@
+name: verify
+
+# Three checks, no dependencies to install (Python stdlib only, no npm):
+#   1. the shipped app/index.html really is what app/src/ builds to
+#   2. the embedded demo graph is in sync with the demo .md files
+#   3. the knowledge graph itself is structurally sound (graph_lint)
+#
+# Check 1 is the one that matters to a security reviewer: index.html is a 600KB
+# generated file nobody reads in a diff, so CI proves it was not hand-edited.
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  verify:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.x'
+
+      - name: Rebuild the app from sources
+        run: python3 scripts/build_app.py
+
+      - name: Rebuild the embedded demo graph
+        run: python3 scripts/embed_demo.py
+
+      - name: The shipped artifact must match its sources
+        run: |
+          if ! git diff --quiet -- app/index.html app/src/embedded-graph.html; then
+            echo "::error::app/index.html (or embedded-graph.html) differs from what app/src/ builds to."
+            echo "Run: python3 scripts/embed_demo.py   and commit the result."
+            git diff --stat -- app/index.html app/src/embedded-graph.html
+            exit 1
+          fi
+          echo "Artifact matches sources."
+
+      - name: Publish the artifact checksum
+        run: |
+          sha256sum app/index.html | tee -a "$GITHUB_STEP_SUMMARY"
+
+      - name: Graph lint
+        run: python3 scripts/graph_lint.py
+
+      - name: No remotely-loaded assets in the shipped app
+        run: |
+          # Assets the browser fetches on its own: img/script src, stylesheet
+          # link, CSS url(). Anchor hrefs are fine — a citation link is only
+          # followed when a human clicks it. This is the regression guard for an
+          # avatar URL slipping back into a demo file's picture: field.
+          if grep -nE '(src="https?://|<link[^>]+href="https?://|url\(["'"'"']?https?://)' app/index.html; then
+            echo "::error::app/index.html loads a remote asset — it must be fully self-contained."
+            exit 1
+          fi
+          echo "No remotely-loaded assets."
+
+      - name: CSP present in the shipped app
+        run: |
+          grep -q 'http-equiv="Content-Security-Policy"' app/index.html \
+            || { echo "::error::the Content-Security-Policy meta is missing from app/index.html"; exit 1; }
+          echo "CSP present."

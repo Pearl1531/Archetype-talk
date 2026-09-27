@@ -1,0 +1,74 @@
+  /* ── Top bar ──────────────────────────────────────────────────────────────
+     A real bar, not a floating button: its own row, closed by a hairline so
+     the app below it starts at a line rather than under a shape. It holds one
+     thing — you: the account button opens language, Export .md and Exit, the
+     three controls that are about you rather than about the graph.
+
+     It runs from the rail to the right edge and stops there: the rail is
+     full-height navigation and nothing should push it down. The one view with
+     no rail is the detail page — there the bar takes the whole width instead
+     (`body.detail-open`), so it never ends in mid-air. */
+  :root { --topbar-h: 52px; }
+
+  .topnav {
+    position: fixed; top: 0; left: var(--sidebar-w); right: 0; height: var(--topbar-h); z-index: 445;
+    display: flex; align-items: center; justify-content: flex-end;
+    gap: var(--s-4); padding: 0 var(--s-5);
+    background: var(--bg); border-bottom: 1px solid var(--line);
+  }
+  body.detail-open .topnav { left: 0; }
+  body.projects-open .topnav, body.welcome-open .topnav, body.nav-open .topnav { display: none; }
+
+  /* only what the bar actually covers moves down — never the rail */
+  .main { padding-top: var(--topbar-h); }
+  .detail { padding-top: var(--topbar-h); }
+
+  /* Ember, the same one the wizard's step dots use — the app has one accent
+     and this is it. Dark ink on it rather than white: white on ember clears
+     only 3.3:1, and two bold initials at this size are not large text. */
+  .topnav-ava {
+    display: grid; place-items: center; width: 34px; height: 34px; border-radius: 50%;
+    background: var(--accent, #ff4d00); color: var(--bg); border: 0;
+    font-family: var(--font-ui); font-size: var(--fs-sm); font-weight: 700;
+    letter-spacing: .02em; cursor: pointer; transition: box-shadow .12s, filter .12s;
+  }
+  .topnav-ava:hover { filter: brightness(1.1); }
+  .topnav-ava[aria-expanded="true"] { box-shadow: 0 0 0 3px var(--accent-soft); }
+  .topnav-ava.sm { width: 34px; height: 34px; cursor: default; }
+
+  .topnav-menu {
+    position: absolute; top: calc(100% + 6px); right: var(--s-4); width: 252px;
+    display: flex; flex-direction: column; gap: 2px; padding: var(--s-2);
+    background: var(--bg-elev); border: 1px solid var(--line);
+    border-radius: var(--r-md); box-shadow: var(--shadow);
+  }
+  /* who you are — read from `name:` in .claude/preferences.local.md */
+  .topnav-who { display: flex; align-items: center; gap: 10px; padding: var(--s-2) var(--s-2) var(--s-3); }
+  .topnav-who-txt { display: flex; flex-direction: column; min-width: 0; }
+  .topnav-who b { font-size: var(--fs-md); font-weight: 600; color: var(--text);
+    overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+  .topnav-who small { font-size: var(--fs-sm); color: var(--text-mute); }
+
+  .topnav-row {
+    display: flex; align-items: center; justify-content: space-between; gap: var(--s-3);
+    padding: var(--s-2); font-size: var(--fs-md); color: var(--text-dim);
+    border-top: 1px solid var(--line);
+  }
+  .topnav-item {
+    display: flex; align-items: center; gap: 10px; width: 100%; text-align: left;
+    padding: 9px var(--s-2); border-radius: var(--r-sm); background: transparent;
+    font-family: var(--font-ui); font-size: var(--fs-md); color: var(--text-soft); cursor: pointer;
+    transition: background .12s, color .12s;
+  }
+  .topnav-item:hover { background: var(--hover-bg); color: var(--text); }
+  .topnav-item svg { flex: none; opacity: .8; }
+  .topnav-menu .lang-switch { border-color: var(--line); }
+  .topnav-menu .lang-opt { padding: 5px 12px; font-size: var(--fs-sm); }
+
+  /* Below 860px the rail folds into a strip in the flow, so the bar spans the
+     width again and the whole shell — strip included — starts under it. */
+  @media (max-width: 860px) {
+    .topnav { left: 0; padding: 0 var(--s-3); }
+    .shell { padding-top: var(--topbar-h); }
+    .main { padding-top: 0; }
+  }
