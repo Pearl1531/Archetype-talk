@@ -15,7 +15,10 @@ let MM_SELECTED = null; // node whose details are open in the drawer
 let MM_PERSONA = null;  // persona id → only nodes connected to her (2 hops: signals/evidence/ideas + the transcripts behind them)
 let MM_MONTHS = 0;      // 0 = all time; 3/6/12 = hide Transcripts/Evidence dated older
                         // (GDPR art. 5(1)(e) storage limitation — predefined windows, no calendar; undated files stay visible)
-let MM_VIEW = store.get('at-mm-view') || 'map'; // 'map' | 'flow' — via store, so it
+/* the persona the filter should show as picked: the filter's own, or the one
+   the map is focused on — a "Focused on Emma" bar over "Persona: all" contradicts itself */
+function mmPersonaShown(){ return MM_PERSONA || (MM_FOCUS && ENTITIES[MM_FOCUS] && ENTITIES[MM_FOCUS].type==='Persona' ? MM_FOCUS : ''); }
+let MM_VIEW = store.get('at-mm-view') || 'flow'; // 'map' | 'flow' — via store, so it
   // stays namespaced per project copy and is covered by "Clear local data"
 // Flow view reads left→right in research order: raw input → grounding → claims → bets
 const MM_FLOW_ORDER = ['Transcript','Competitor','Evidence','Signal','Persona','Archetype','Hypothesis','IdeaForImprovement'];
@@ -228,7 +231,7 @@ function renderMindMap(){
   const { nodes, edges } = mindmapData(MM_FOCUS, MM_DEPTH);
   grid.className = 'mindmap-wrap';
   if(!nodes.length){
-    grid.innerHTML = `<div class="didyouknow"><div class="kicker">${tr('Mind Map')}</div><h3>${tr('Nothing to map in this workspace yet.')}</h3><p>${tr('The map draws itself from the links your files already have — bring research in and it appears here.')}</p></div>`;
+    grid.innerHTML = `<div class="didyouknow"><div class="kicker">${tr('Research map')}</div><h3>${tr('Nothing to map in this workspace yet.')}</h3><p>${tr('The map draws itself from the links your files already have — bring research in and it appears here.')}</p></div>`;
     return;
   }
   const L = mmLayout(nodes, edges);
@@ -241,7 +244,7 @@ function renderMindMap(){
   const filters = `
     <select class="mm-filter${MM_PERSONA?' on':''}" id="mmPersonaF" title="${esc(tr("Show only this persona's graph — her signals, evidence, ideas and the sessions behind them (2 hops). Clicking nodes still never hides anything."))}">
       <option value="">${tr('Persona: all')}</option>
-      ${personas.map(p=>`<option value="${p.id}"${p.id===MM_PERSONA?' selected':''}>${tr('Persona:')} ${esc(p.title)}</option>`).join('')}
+      ${personas.map(p=>`<option value="${p.id}"${p.id===mmPersonaShown()?' selected':''}>${tr('Persona:')} ${esc(p.title)}</option>`).join('')}
     </select>
     <select class="mm-filter${MM_MONTHS?' on':''}" id="mmDateF" title="${esc(tr("Freshness window for dated raw data (Transcript date:, Evidence retrieved:). Predefined periods only — GDPR art. 5(1)(e) storage limitation: don't lean on research data indefinitely; the repo flags anything older than 3 months for a refresh round. Undated files stay visible."))}">
       <option value="0">${tr('Data: all time')}</option>
@@ -376,7 +379,8 @@ function mmWireBar(){
     renderMindMap();
   });
   const pf = grid.querySelector('#mmPersonaF');
-  if(pf) pf.onchange = ()=>{ MM_PERSONA = pf.value || null; renderMindMap(); };
+  // one way to narrow the map to a persona: picking here also drops a focus set from the drawer
+  if(pf) pf.onchange = ()=>{ MM_PERSONA = pf.value || null; if(MM_FOCUS){ MM_FOCUS = null; suppressRoute = true; location.hash = '#mindmap'; } renderMindMap(); };
   const df = grid.querySelector('#mmDateF');
   if(df) df.onchange = ()=>{ MM_MONTHS = +df.value || 0; renderMindMap(); };
 }
@@ -472,15 +476,24 @@ function mmCloseDrawer(){
   const dr = document.getElementById('mmDrawer');
   if(dr) dr.classList.remove('open');
 }
+/* The whole graph at once is 70 dots and 150 lines — true, and unreadable.
+   The first visit starts on one persona's slice (the Primary one), with the
+   filter showing it, so "Persona: all" is one pick away rather than the default. */
+let MM_DEFAULTED = false;
 function mindmapEnter(focusId){
   MM_FOCUS = focusId || null;
+  if(!MM_DEFAULTED && !focusId && !MM_PERSONA){
+    const lead = wsEntities().find(e=>e.type==='Persona' && /primary/i.test(e.fm.category||''));
+    if(lead) MM_PERSONA = lead.id;
+  }
+  MM_DEFAULTED = true;
   if(focusId) MM_HIDDEN.clear();   // a focused view must never hide its own center
   settingsExit(); helpExit();
   MINDMAP_ACTIVE = true;
   syncLinTheme();
   document.getElementById('mindmapBtn').classList.add('active');
   galleryView.style.display=""; detailView.classList.remove('active');
-  pageTitle.textContent = tr('Mind Map');
+  pageTitle.textContent = tr('Research map');
   pageSub.textContent = tr('Every connection your files already have — signals to evidence, ideas to their grounding, hypotheses to the ideas they became. A map to read, not an editor: change links in the files and the map follows.');
   pageSub.style.display='';
   hideGalleryChrome();

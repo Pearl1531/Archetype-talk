@@ -16,6 +16,20 @@
     justify-content: center; background: none; border: 1px solid var(--line);
     border-radius: var(--r-md); color: var(--text); font-size: 16px; cursor: pointer; }
   .pp-close:hover { border-color: var(--hover-border); }
+  .pp-top-acts { display: inline-flex; align-items: center; gap: var(--s-2); }
+  .pp-print { height: 44px; padding: 0 var(--s-4); background: none; border: 1px solid var(--line);
+    border-radius: var(--r-md); color: var(--text); font: inherit; font-size: var(--text-caption); cursor: pointer; }
+  .pp-print:hover { border-color: var(--hover-border); }
+  /* printing the poster prints the poster: the app behind it, the buttons and
+     the per-section actions stay off the page; colours print as seen */
+  @media print {
+    @page { margin: 10mm; }
+    body.poster-open > *:not(#posterView) { display: none !important; }
+    body.poster-open #posterView { position: static; overflow: visible; padding: 0 8mm;
+      -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+    body.poster-open .pp-top-acts, body.poster-open .pp-acts { display: none !important; }
+    body.poster-open .pp-hero, body.poster-open section { break-inside: avoid; }
+  }
 
   /* hero: identity | photo | jobs to be done */
   .pp-hero { display: grid; grid-template-columns: 1.1fr .8fr 1.1fr;

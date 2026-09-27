@@ -712,7 +712,10 @@ function renderBacklog(){
       </button>
       <a class="bl-help-link" href="#help:interface" title="${esc(tr('How this page works, and what the terms mean'))}">${BL_ICONS.help} ${tr('Help')}</a>
       ${sandbox ? `<span class="bl-sandbox">${tr('Demo — edits stay in this browser')}</span>` : ''}
-      <button class="btn btn-primary btn-sm" data-act="new">＋ ${tr('Add a research question')}</button>
+      <span class="bl-bar-acts">
+        ${BL_LIST==='open' && nOpen ? `<button class="btn btn-outline btn-sm" data-act="guide" title="${esc(tr('Copies a prompt that turns the questions on screen into a discussion guide for real interviews'))}">⧉ ${tr('Interview guide prompt')}</button>` : ''}
+        <button class="btn btn-primary btn-sm" data-act="new">＋ ${tr('Add a research question')}</button>
+      </span>
     </div>
     ${BL_FILTERS_OPEN ? `<div class="bl-filters">
       <div class="bl-filters-row">
@@ -778,6 +781,18 @@ grid.addEventListener('click', ev=>{
   if(act==='new'){ BL_EDIT='new'; BL_MODE='new'; renderBacklog(); return; }
   if(act==='cancel'){ BL_EDIT=null; BL_MODE='edit'; renderBacklog(); return; }
   if(act==='edit'){ BL_EDIT=key; BL_MODE='edit'; renderBacklog(); return; }
+  /* The backlog's way out: the questions on screen, handed to /interview-guide
+     in the dialect of the agent you use. A persona conversation leaves
+     questions; this is where they become a real session. */
+  if(act==='guide'){
+    const t = BL.open.table, agent = pjAgent();
+    const qs = blShown().map(({r})=> '- ' + (blGet(t,r,'question') || r.find(c=>c))).join('\n');
+    const cmd = agent==='codex' ? '$interview-guide' : (agent==='gemini' || agent==='other') ? tr('Follow .claude/skills/interview-guide/SKILL.md.') : '/interview-guide';
+    const txt = cmd + '\n\n' + tr('Build the discussion guide for our next real interviews from these open questions in Research backlog.md, most urgent first:') + '\n' + qs + promptLang();
+    const done = ()=> toast(tr('Prompt copied — paste it into your AI assistant ✓'));
+    if(navigator.clipboard && navigator.clipboard.writeText) navigator.clipboard.writeText(txt).then(done, ()=> fallbackCopy(txt, done)); else fallbackCopy(txt, done);
+    return;
+  }
   if(act==='sel'){ BL_SEL = key; BL_EDIT = null; BL_SHEET = null; renderBacklog(); return; }
   if(act==='list'){ BL_LIST = b.dataset.list; BL_SEL = null; BL_EDIT = null; renderBacklog(); return; }
   if(act==='kindfilter'){ BL_KIND_FILTER = b.dataset.kind; renderBacklog(); return; }

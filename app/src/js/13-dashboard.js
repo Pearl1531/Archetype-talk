@@ -40,6 +40,56 @@ function dashStats(){
   };
 }
 
+/* ---------- three things to try (demo only) ----------
+   Someone arriving from a link has a minute, not a manual. Three moves show
+   the whole idea — a persona, a claim traced to its source, the line that
+   starts a conversation, the questions it leaves for real people — and the
+   card goes away for good once dismissed. */
+function dashTipsHtml(){
+  if(WS!=='demo' || store.get('at-demo-tips')==='off') return '';
+  const lead = wsEntities().find(e=>e.type==='Persona' && /primary/i.test(e.fm.category||'')) || wsEntities().find(e=>e.type==='Persona');
+  if(!lead) return '';
+  const tip = (n, href, h, p)=> `<a class="dash-tip" href="${href}"><span class="dash-tip-n">${n}</span><span><b>${h}</b><span>${p}</span></span></a>`;
+  return `<section class="dash-card dash-tips">
+    <div class="dash-sec-h"><h2>${tr('Three things to try in this demo')}</h2><button class="btn btn-ghost btn-sm" id="dashTipsOff">${tr('Hide')}</button></div>
+    <div class="dash-tips-row">
+      ${tip(1, '#'+lead.id, esc(tr('Open {name} and point at a source').replace('{name}', lead.title)), esc(tr('Every pain carries its level; hover a signal to see the verbatim quote behind it.')))}
+      ${tip(2, '#'+lead.id, esc(tr('Copy “Talk to {name}”').replace('{name}', lead.title)), esc(tr('Paste the line into your AI agent, in this folder — the persona answers only from her data.')))}
+      ${tip(3, '#backlog', esc(tr('See what she could not answer')), esc(tr('Gaps become questions for real interviews, not invented answers.')))}
+    </div>
+  </section>`;
+}
+
+/* ---------- where the data disagrees ----------
+   The same rule graph_lint applies: on one feature, some participants stand
+   against it and some for it. Contradictions are data — this card does not
+   average them, it puts both sides next to each other and links every Signal. */
+const DASH_NEG = ['dealbreaker','resents','frustrated','wary'];
+const DASH_POS = ['curious','appreciates','relies_on','relies on','advocates'];
+function dashSplits(){
+  const by = {};
+  wsEntities().filter(e=>e.type==='Signal' && e.fm.sentiment && typeof e.fm.sentiment==='object').forEach(e=>{
+    const f = String(e.fm.sentiment.feature||'').trim(), st = String(e.fm.sentiment.stance||'').trim().toLowerCase();
+    if(!f) return; (by[f] = by[f] || {neg:[], pos:[]});
+    if(DASH_NEG.includes(st)) by[f].neg.push(e); else if(DASH_POS.includes(st)) by[f].pos.push(e);
+  });
+  return Object.entries(by).filter(([,v])=> v.neg.length && v.pos.length)
+    .sort((a,b)=> (b[1].neg.length+b[1].pos.length)-(a[1].neg.length+a[1].pos.length));
+}
+function dashSplitsHtml(){
+  const sp = dashSplits(); if(!sp.length) return '';
+  const chip = e => `<a class="xref" data-goto="${e.id}">${ICONS.Signal}${esc(e.title)}</a>`;
+  return `<section class="dash-card dash-splits">
+    <div class="dash-sec-h"><h2>${tr('Where your data disagrees')}</h2><span class="dash-sec-note">${tr('two sides, never an average')}</span></div>
+    ${sp.map(([f,v])=>`<div class="dash-split">
+      <div class="dash-split-f">${esc(f)}</div>
+      <div class="dash-split-side neg"><b>${trn(v.neg.length,'{n} against','{n} against','{n} przeciw','{n} przeciw','{n} przeciw')}</b>${v.neg.map(chip).join('')}</div>
+      <div class="dash-split-side pos"><b>${trn(v.pos.length,'{n} for','{n} for','{n} za','{n} za','{n} za')}</b>${v.pos.map(chip).join('')}</div>
+    </div>`).join('')}
+    <p class="dash-note-line">${tr('A split is a finding, not noise: ask your AI assistant to run /contradictions on it, or take it to the next interview round.')}</p>
+  </section>`;
+}
+
 /* ---------- empty states, with the way out ----------
    An empty box that only says "nothing here" leaves you exactly where you
    were. Every one on this page names the state AND the single next move —
@@ -463,7 +513,7 @@ function renderDashboard(){
         : tr('Enrich your data with the latest from the internet')}</h3><p>${tr('This prompt sends the AI on a desk-research refresh: re-verify stale Evidence at its sources, research flagged competitors, close Comparison gaps. Web finds land as cited Evidence — never as Signals — and nothing is written without your approval.')}</p></div></div>
        <div class="dash-cta-btns"><button class="btn btn-primary btn-sm" id="dashEnrichCopy">${tr('⧉ Copy AI prompt')}</button><button class="btn btn-outline btn-sm" id="dashEnrichDl">${tr('↓ Prompt .md')}</button></div></div>`;
 
-  grid.innerHTML = `
+  grid.innerHTML = `${dashTipsHtml()}
     <section class="dash-sec">
       <div class="dash-sec-h"><h2>${tr("What's in your graph")}</h2><span class="dash-sec-note">${WS==='demo' ? tr('as of {d}').replace('{d}', DEMO_AS_OF.toLocaleDateString(LANG==='pl'?'pl-PL':'en-GB',{day:'numeric',month:'short',year:'numeric'})) : tr('right now')} · ${tr(WS==='demo'?'Demo workspace':'your project workspace')}</span></div>
       <!-- One horizontal strip instead of a tall hero column: the greeting and
@@ -534,7 +584,12 @@ function renderDashboard(){
       </section>
     </div>
 
+    ${dashSplitsHtml()}
+
     <section class="dash-sec" id="dashCta"><div class="dash-cta-row">${refresh}${aiCard}</div></section>`;
+  const tipsOff = grid.querySelector('#dashTipsOff');
+  if(tipsOff) tipsOff.onclick = ()=>{ store.set('at-demo-tips','off'); grid.querySelector('.dash-tips').remove(); };
+  grid.querySelectorAll('.dash-splits a.xref[data-goto]').forEach(a=> a.onclick = ev=>{ ev.preventDefault(); location.hash = '#'+a.dataset.goto; });
 
   const plan = grid.querySelector('#dashPlan'); if(plan) plan.onclick = ()=>{ const c=grid.querySelector('#dashCta'); if(c) c.scrollIntoView({behavior:'smooth', block:'center'}); };
   const conn = grid.querySelector('#dashConnect'); if(conn) conn.onclick = ()=>{ const l=document.getElementById('loadBtn'); if(l) l.click(); };

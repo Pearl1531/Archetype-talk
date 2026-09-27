@@ -861,6 +861,10 @@
     .p-toc { position: static; flex-direction: row; flex-wrap: wrap; gap: 6px; margin-bottom: 20px; }
     .p-toc a { background: var(--bg-elev-2); }
     .p-hero-quote { font-size: 27px; }
+    /* on a phone the persona's own words come first — the face and the
+       buttons follow, instead of pushing the quote below the fold */
+    .p-hero-main { order: -1; }
+    .p-hero-avatar .avatar { max-width: 120px; }
   }
 
   /* ---------- Mind Map ---------- */
@@ -927,13 +931,14 @@
     color: var(--text-dim); cursor: pointer; }
   .mm-seg button.on { background: var(--bg-elev); color: var(--text); font-weight: 600; box-shadow: 0 1px 3px rgba(0,0,0,.12); }
   .mm-canvas-flow > svg.mm-flow-svg { height: auto; max-height: none; cursor: default; }
+  .mm-canvas-flow .mm-colhead { font-size: 11px; letter-spacing: .8px; }
   .mm-fband { opacity: .15; transition: opacity .15s; cursor: pointer; }
   .mm-fband.on { opacity: .5; }
   svg.mm-dimming .mm-fband:not(.on) { opacity: .04; }
   .mm-fnode rect { transition: opacity .15s; }
-  .mm-fnode text { font-size: 10.5px; fill: var(--text-soft); pointer-events: none;
+  .mm-fnode text { font-size: 13px; fill: var(--text-soft); pointer-events: none;
     paint-order: stroke; stroke: var(--bg-elev); stroke-width: 3px; }
-  .mm-fnode .mm-fcount { fill: var(--text-dim); font-size: 9.5px; }
+  .mm-fnode .mm-fcount { fill: var(--text-dim); font-size: 11px; }
   .mm-fnode.mm-exc rect { opacity: .4; stroke: var(--text-dim); stroke-dasharray: 3 3; }
 
   /* ---------- intro tour ---------- */
@@ -1497,6 +1502,10 @@
       overflow-x: auto; -webkit-overflow-scrolling: touch; scrollbar-width: none;
       margin: 0 calc(-1 * var(--s-4)); padding: var(--s-1) var(--s-4); }
     #tabs::-webkit-scrollbar { display: none; }
+    /* the strip scrolls sideways: fade its right edge so a cut-off tab reads
+       as "more this way", not as a clipping bug */
+    #tabs { -webkit-mask-image: linear-gradient(90deg, #000 85%, transparent);
+            mask-image: linear-gradient(90deg, #000 85%, transparent); }
     .nav-item { width: auto; white-space: nowrap; flex: none; min-height: 44px; }
     .nav-item .n { margin-left: 6px; }
     .detail-card { padding: var(--s-6); }
@@ -1690,6 +1699,20 @@
     justify-content: center; background: none; border: 1px solid var(--line);
     border-radius: var(--r-md); color: var(--text); font-size: 16px; cursor: pointer; }
   .pp-close:hover { border-color: var(--hover-border); }
+  .pp-top-acts { display: inline-flex; align-items: center; gap: var(--s-2); }
+  .pp-print { height: 44px; padding: 0 var(--s-4); background: none; border: 1px solid var(--line);
+    border-radius: var(--r-md); color: var(--text); font: inherit; font-size: var(--text-caption); cursor: pointer; }
+  .pp-print:hover { border-color: var(--hover-border); }
+  /* printing the poster prints the poster: the app behind it, the buttons and
+     the per-section actions stay off the page; colours print as seen */
+  @media print {
+    @page { margin: 10mm; }
+    body.poster-open > *:not(#posterView) { display: none !important; }
+    body.poster-open #posterView { position: static; overflow: visible; padding: 0 8mm;
+      -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+    body.poster-open .pp-top-acts, body.poster-open .pp-acts { display: none !important; }
+    body.poster-open .pp-hero, body.poster-open section { break-inside: avoid; }
+  }
 
   /* hero: identity | photo | jobs to be done */
   .pp-hero { display: grid; grid-template-columns: 1.1fr .8fr 1.1fr;
@@ -2041,6 +2064,17 @@
     .bl-d-head { grid-template-columns: 1fr; }
     .bl-d-acts { grid-column: 1; grid-row: auto; }
   }
+  .bl-bar-acts { display: inline-flex; gap: var(--s-2); margin-left: auto; flex-wrap: wrap; }
+  /* on a phone the priority tiles are a compact strip, not a screenful —
+     the questions are what you came for */
+  @media (max-width: 760px){
+    .bl-tiles { grid-template-columns: repeat(4, minmax(0, 1fr)); gap: var(--s-2); }
+    .bl-tile { padding: var(--s-2); min-width: 0; }
+    .bl-tile-top { font-size: 10px; letter-spacing: .02em; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; max-width: 100%; }
+    .bl-tile-static { display: none; }
+    .bl-tile-n { font-size: 18px; }
+  }
+
   /* ── Projects — the screen you land on ───────────────────────────────────
      Not a view inside a project: a separate screen that owns the window, the
      way IA Builder's dashboard does. Built entirely on the shared tokens from
@@ -2484,6 +2518,33 @@
     .dash-stat b { font-size: 34px; }
   }
   .dash-note-line { margin: 0; color: var(--text-dim); font-size: var(--fs-md); line-height: 1.55; }
+  /* where the data disagrees — both sides of one feature, side by side */
+  .dash-splits { display: flex; flex-direction: column; gap: var(--s-3); }
+  .dash-split { display: grid; grid-template-columns: 160px 1fr 1fr; gap: var(--s-3); align-items: start;
+    padding-top: var(--s-3); border-top: 1px solid var(--line); }
+  .dash-split-f { font-weight: 600; }
+  .dash-split-side { display: flex; flex-wrap: wrap; gap: 6px; align-items: center; }
+  .dash-split-side > b { width: 100%; font-size: var(--fs-sm); }
+  .dash-split-side.neg > b { color: var(--danger-text); }
+  .dash-split-side.pos > b { color: var(--accent-text); }
+  @media (max-width: 760px){ .dash-split { grid-template-columns: 1fr; } }
+  /* demo: three things to try */
+  .dash-tips { margin-bottom: var(--s-4); border-color: color-mix(in srgb, var(--accent, #ff4d00) 35%, var(--line)); }
+  .dash-tips .dash-sec-h { justify-content: space-between; }
+  .dash-tips-row { display: grid; grid-template-columns: repeat(3, 1fr); gap: var(--s-4); margin-top: var(--s-3); }
+  .dash-tip { display: flex; gap: var(--s-3); align-items: flex-start; padding: var(--s-3); border-radius: var(--r-md);
+    color: inherit; text-decoration: none; border: 1px solid var(--line); }
+  .dash-tip:hover { border-color: var(--hover-border); background: var(--bg-elev-2); }
+  .dash-tip-n { flex: none; width: 24px; height: 24px; display: grid; place-items: center; border-radius: 50%;
+    background: var(--accent-soft); color: var(--accent-text); font-weight: 700; font-size: 12px; }
+  .dash-tip b { display: block; font-size: var(--fs-md); }
+  .dash-tip b + span { display: block; margin-top: 2px; color: var(--text-dim); font-size: var(--fs-sm); line-height: 1.5; }
+  @media (max-width: 900px){ .dash-tips-row { grid-template-columns: 1fr; } }
+  .dash-split-side .xref { display: inline-flex; align-items: center; gap: 5px; padding: 3px 9px; font-size: var(--fs-sm);
+    border: 1px solid var(--line); border-radius: var(--r-pill); color: var(--text-soft); text-decoration: none; cursor: pointer; }
+  .dash-split-side .xref:hover { border-color: var(--hover-border); color: var(--text); }
+  .dash-split-side .xref svg { width: 12px; height: 12px; }
+
   /* ── First run — the welcome (.wc-*) ─────────────────────────────────────
      One card on a dark field, above everything else. Same tokens as the rest
      of the app: no new colours, no new type, just a different arrangement —
@@ -2788,7 +2849,7 @@
       <div class="side-label" data-i18n="Planning">Planning</div>
       <button class="nav-item" id="backlogBtn" title="Research backlog.md — the questions your persona conversations left open" data-i18n-title="Research backlog.md — the questions your persona conversations left open"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M10 6h11"/><path d="M10 12h11"/><path d="M10 18h11"/><path d="m3 6 1.4 1.4L7 4.8"/><path d="m3 12 1.4 1.4L7 10.8"/><path d="m3 18 1.4 1.4L7 16.8"/></svg><span data-i18n="Research backlog">Research backlog</span><span class="n" id="backlogCount"></span></button>
       <div class="side-label" data-i18n="Views">Views</div>
-      <button class="nav-item" id="mindmapBtn"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="18" cy="5" r="3"/><circle cx="6" cy="12" r="3"/><circle cx="18" cy="19" r="3"/><line x1="8.59" y1="13.51" x2="15.42" y2="17.49"/><line x1="15.41" y1="6.51" x2="8.59" y2="10.49"/></svg><span data-i18n="Mind Map">Mind Map</span></button>
+      <button class="nav-item" id="mindmapBtn"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="18" cy="5" r="3"/><circle cx="6" cy="12" r="3"/><circle cx="18" cy="19" r="3"/><line x1="8.59" y1="13.51" x2="15.42" y2="17.49"/><line x1="15.41" y1="6.51" x2="8.59" y2="10.49"/></svg><span data-i18n="Research map">Research map</span></button>
       <div class="side-label" data-i18n="Support">Support</div>
       <button class="nav-item" id="settingsBtn"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 2.83-2.83l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg><span data-i18n="Settings">Settings</span></button>
       <button class="nav-item" id="helpBtn"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><path d="M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg><span data-i18n="Help &amp; guide">Help &amp; guide</span></button>
@@ -6572,7 +6633,7 @@ const PL = {
   'Planning': 'Planowanie',
   'Research backlog': 'Backlog badawczy',
   'Views': 'Widoki',
-  'Mind Map': 'Mapa myśli',
+  'Research map': 'Mapa badań',
   'Support': 'Pomoc',
   'Settings': 'Ustawienia',
   'Help & guide': 'Pomoc i przewodnik',   // dataset.i18n hands back the DECODED attribute, so the key is the plain ampersand
@@ -6904,6 +6965,24 @@ const PL = {
   'Hey,': 'Cześć,',
   'Your research graph': 'Twój graf badań',
   'as of {d}': 'stan na {d}',
+  'Three things to try in this demo': 'Trzy rzeczy do sprawdzenia w demo',
+  'Hide': 'Ukryj',
+  'Open {name} and point at a source': 'Otwórz personę {name} i najedź na źródło',
+  'Every pain carries its level; hover a signal to see the verbatim quote behind it.': 'Każdy problem ma swój poziom; najedź na sygnał, żeby zobaczyć dosłowny cytat.',
+  'Copy “Talk to {name}”': 'Skopiuj „Porozmawiaj — {name}”',
+  'Paste the line into your AI agent, in this folder — the persona answers only from her data.': 'Wklej polecenie do swojego agenta AI w tym folderze — persona odpowiada tylko ze swoich danych.',
+  'See what she could not answer': 'Zobacz, na co nie umiała odpowiedzieć',
+  'Gaps become questions for real interviews, not invented answers.': 'Luki stają się pytaniami do prawdziwych wywiadów, a nie zmyślonymi odpowiedziami.',
+  'Where your data disagrees': 'Gdzie twoje dane się nie zgadzają',
+  'two sides, never an average': 'dwie strony, nigdy średnia',
+  'A split is a finding, not noise: ask your AI assistant to run /contradictions on it, or take it to the next interview round.': 'Rozbieżność to wynik, nie szum: poproś asystenta AI o /contradictions albo zabierz ją do następnej rundy wywiadów.',
+  'Interview guide prompt': 'Prompt: scenariusz wywiadu',
+  'Copies a prompt that turns the questions on screen into a discussion guide for real interviews': 'Kopiuje prompt, który zamienia widoczne pytania w scenariusz prawdziwych wywiadów',
+  'Follow .claude/skills/interview-guide/SKILL.md.': 'Wykonaj .claude/skills/interview-guide/SKILL.md.',
+  'Build the discussion guide for our next real interviews from these open questions in Research backlog.md, most urgent first:': 'Zbuduj scenariusz naszych następnych prawdziwych wywiadów z tych otwartych pytań z Research backlog.md, od najpilniejszych:',
+  'Save as PDF': 'Zapisz jako PDF',
+  'Opens the print dialog — pick “Save as PDF” for a one-pager you can share': 'Otwiera okno drukowania — wybierz „Zapisz jako PDF”, żeby mieć jednostronicowy plik do udostępnienia',
+  'The research map: personas, signals, evidence and hypotheses joined by their links': 'Mapa badań: persony, sygnały, dowody i hipotezy połączone linkami',
   'Checked': 'Sprawdzono',
   'Assumption': 'Założenie', 'Desk research': 'Desk research', 'Interviews': 'Wywiady', 'Correlated': 'Skorelowane', 'Ready for decisions': 'Gotowe do decyzji',
   'No data behind it yet — the persona says “I don’t know”.': 'Brak danych — persona mówi „nie wiem”.',
@@ -10261,7 +10340,7 @@ function openDetail(id){
           <div class="p-hero-name">${esc(nm)}</div>
           <div class="p-hero-role">${esc(role || e.fm.description || '')}</div>
           <div class="p-hero-chips">
-            ${e.fm.category?`<span class="tag">${esc(e.fm.category)}</span>`:''}
+            ${e.fm.category?`<span class="tag">${esc(tr(e.fm.category))}</span>`:''}
             ${participantsChip(e)}
             ${levelChip(personaLevel(e), true)}
           </div>
@@ -11238,7 +11317,10 @@ let MM_SELECTED = null; // node whose details are open in the drawer
 let MM_PERSONA = null;  // persona id → only nodes connected to her (2 hops: signals/evidence/ideas + the transcripts behind them)
 let MM_MONTHS = 0;      // 0 = all time; 3/6/12 = hide Transcripts/Evidence dated older
                         // (GDPR art. 5(1)(e) storage limitation — predefined windows, no calendar; undated files stay visible)
-let MM_VIEW = store.get('at-mm-view') || 'map'; // 'map' | 'flow' — via store, so it
+/* the persona the filter should show as picked: the filter's own, or the one
+   the map is focused on — a "Focused on Emma" bar over "Persona: all" contradicts itself */
+function mmPersonaShown(){ return MM_PERSONA || (MM_FOCUS && ENTITIES[MM_FOCUS] && ENTITIES[MM_FOCUS].type==='Persona' ? MM_FOCUS : ''); }
+let MM_VIEW = store.get('at-mm-view') || 'flow'; // 'map' | 'flow' — via store, so it
   // stays namespaced per project copy and is covered by "Clear local data"
 // Flow view reads left→right in research order: raw input → grounding → claims → bets
 const MM_FLOW_ORDER = ['Transcript','Competitor','Evidence','Signal','Persona','Archetype','Hypothesis','IdeaForImprovement'];
@@ -11451,7 +11533,7 @@ function renderMindMap(){
   const { nodes, edges } = mindmapData(MM_FOCUS, MM_DEPTH);
   grid.className = 'mindmap-wrap';
   if(!nodes.length){
-    grid.innerHTML = `<div class="didyouknow"><div class="kicker">${tr('Mind Map')}</div><h3>${tr('Nothing to map in this workspace yet.')}</h3><p>${tr('The map draws itself from the links your files already have — bring research in and it appears here.')}</p></div>`;
+    grid.innerHTML = `<div class="didyouknow"><div class="kicker">${tr('Research map')}</div><h3>${tr('Nothing to map in this workspace yet.')}</h3><p>${tr('The map draws itself from the links your files already have — bring research in and it appears here.')}</p></div>`;
     return;
   }
   const L = mmLayout(nodes, edges);
@@ -11464,7 +11546,7 @@ function renderMindMap(){
   const filters = `
     <select class="mm-filter${MM_PERSONA?' on':''}" id="mmPersonaF" title="${esc(tr("Show only this persona's graph — her signals, evidence, ideas and the sessions behind them (2 hops). Clicking nodes still never hides anything."))}">
       <option value="">${tr('Persona: all')}</option>
-      ${personas.map(p=>`<option value="${p.id}"${p.id===MM_PERSONA?' selected':''}>${tr('Persona:')} ${esc(p.title)}</option>`).join('')}
+      ${personas.map(p=>`<option value="${p.id}"${p.id===mmPersonaShown()?' selected':''}>${tr('Persona:')} ${esc(p.title)}</option>`).join('')}
     </select>
     <select class="mm-filter${MM_MONTHS?' on':''}" id="mmDateF" title="${esc(tr("Freshness window for dated raw data (Transcript date:, Evidence retrieved:). Predefined periods only — GDPR art. 5(1)(e) storage limitation: don't lean on research data indefinitely; the repo flags anything older than 3 months for a refresh round. Undated files stay visible."))}">
       <option value="0">${tr('Data: all time')}</option>
@@ -11599,7 +11681,8 @@ function mmWireBar(){
     renderMindMap();
   });
   const pf = grid.querySelector('#mmPersonaF');
-  if(pf) pf.onchange = ()=>{ MM_PERSONA = pf.value || null; renderMindMap(); };
+  // one way to narrow the map to a persona: picking here also drops a focus set from the drawer
+  if(pf) pf.onchange = ()=>{ MM_PERSONA = pf.value || null; if(MM_FOCUS){ MM_FOCUS = null; suppressRoute = true; location.hash = '#mindmap'; } renderMindMap(); };
   const df = grid.querySelector('#mmDateF');
   if(df) df.onchange = ()=>{ MM_MONTHS = +df.value || 0; renderMindMap(); };
 }
@@ -11695,15 +11778,24 @@ function mmCloseDrawer(){
   const dr = document.getElementById('mmDrawer');
   if(dr) dr.classList.remove('open');
 }
+/* The whole graph at once is 70 dots and 150 lines — true, and unreadable.
+   The first visit starts on one persona's slice (the Primary one), with the
+   filter showing it, so "Persona: all" is one pick away rather than the default. */
+let MM_DEFAULTED = false;
 function mindmapEnter(focusId){
   MM_FOCUS = focusId || null;
+  if(!MM_DEFAULTED && !focusId && !MM_PERSONA){
+    const lead = wsEntities().find(e=>e.type==='Persona' && /primary/i.test(e.fm.category||''));
+    if(lead) MM_PERSONA = lead.id;
+  }
+  MM_DEFAULTED = true;
   if(focusId) MM_HIDDEN.clear();   // a focused view must never hide its own center
   settingsExit(); helpExit();
   MINDMAP_ACTIVE = true;
   syncLinTheme();
   document.getElementById('mindmapBtn').classList.add('active');
   galleryView.style.display=""; detailView.classList.remove('active');
-  pageTitle.textContent = tr('Mind Map');
+  pageTitle.textContent = tr('Research map');
   pageSub.textContent = tr('Every connection your files already have — signals to evidence, ideas to their grounding, hypotheses to the ideas they became. A map to read, not an editor: change links in the files and the map follows.');
   pageSub.style.display='';
   hideGalleryChrome();
@@ -12797,7 +12889,10 @@ function renderBacklog(){
       </button>
       <a class="bl-help-link" href="#help:interface" title="${esc(tr('How this page works, and what the terms mean'))}">${BL_ICONS.help} ${tr('Help')}</a>
       ${sandbox ? `<span class="bl-sandbox">${tr('Demo — edits stay in this browser')}</span>` : ''}
-      <button class="btn btn-primary btn-sm" data-act="new">＋ ${tr('Add a research question')}</button>
+      <span class="bl-bar-acts">
+        ${BL_LIST==='open' && nOpen ? `<button class="btn btn-outline btn-sm" data-act="guide" title="${esc(tr('Copies a prompt that turns the questions on screen into a discussion guide for real interviews'))}">⧉ ${tr('Interview guide prompt')}</button>` : ''}
+        <button class="btn btn-primary btn-sm" data-act="new">＋ ${tr('Add a research question')}</button>
+      </span>
     </div>
     ${BL_FILTERS_OPEN ? `<div class="bl-filters">
       <div class="bl-filters-row">
@@ -12863,6 +12958,18 @@ grid.addEventListener('click', ev=>{
   if(act==='new'){ BL_EDIT='new'; BL_MODE='new'; renderBacklog(); return; }
   if(act==='cancel'){ BL_EDIT=null; BL_MODE='edit'; renderBacklog(); return; }
   if(act==='edit'){ BL_EDIT=key; BL_MODE='edit'; renderBacklog(); return; }
+  /* The backlog's way out: the questions on screen, handed to /interview-guide
+     in the dialect of the agent you use. A persona conversation leaves
+     questions; this is where they become a real session. */
+  if(act==='guide'){
+    const t = BL.open.table, agent = pjAgent();
+    const qs = blShown().map(({r})=> '- ' + (blGet(t,r,'question') || r.find(c=>c))).join('\n');
+    const cmd = agent==='codex' ? '$interview-guide' : (agent==='gemini' || agent==='other') ? tr('Follow .claude/skills/interview-guide/SKILL.md.') : '/interview-guide';
+    const txt = cmd + '\n\n' + tr('Build the discussion guide for our next real interviews from these open questions in Research backlog.md, most urgent first:') + '\n' + qs + promptLang();
+    const done = ()=> toast(tr('Prompt copied — paste it into your AI assistant ✓'));
+    if(navigator.clipboard && navigator.clipboard.writeText) navigator.clipboard.writeText(txt).then(done, ()=> fallbackCopy(txt, done)); else fallbackCopy(txt, done);
+    return;
+  }
   if(act==='sel'){ BL_SEL = key; BL_EDIT = null; BL_SHEET = null; renderBacklog(); return; }
   if(act==='list'){ BL_LIST = b.dataset.list; BL_SEL = null; BL_EDIT = null; renderBacklog(); return; }
   if(act==='kindfilter'){ BL_KIND_FILTER = b.dataset.kind; renderBacklog(); return; }
@@ -13010,6 +13117,56 @@ function dashStats(){
     participants: distinctParticipants(), dates,
     deskTotal: desk.length, staleDesk, needsRes,
   };
+}
+
+/* ---------- three things to try (demo only) ----------
+   Someone arriving from a link has a minute, not a manual. Three moves show
+   the whole idea — a persona, a claim traced to its source, the line that
+   starts a conversation, the questions it leaves for real people — and the
+   card goes away for good once dismissed. */
+function dashTipsHtml(){
+  if(WS!=='demo' || store.get('at-demo-tips')==='off') return '';
+  const lead = wsEntities().find(e=>e.type==='Persona' && /primary/i.test(e.fm.category||'')) || wsEntities().find(e=>e.type==='Persona');
+  if(!lead) return '';
+  const tip = (n, href, h, p)=> `<a class="dash-tip" href="${href}"><span class="dash-tip-n">${n}</span><span><b>${h}</b><span>${p}</span></span></a>`;
+  return `<section class="dash-card dash-tips">
+    <div class="dash-sec-h"><h2>${tr('Three things to try in this demo')}</h2><button class="btn btn-ghost btn-sm" id="dashTipsOff">${tr('Hide')}</button></div>
+    <div class="dash-tips-row">
+      ${tip(1, '#'+lead.id, esc(tr('Open {name} and point at a source').replace('{name}', lead.title)), esc(tr('Every pain carries its level; hover a signal to see the verbatim quote behind it.')))}
+      ${tip(2, '#'+lead.id, esc(tr('Copy “Talk to {name}”').replace('{name}', lead.title)), esc(tr('Paste the line into your AI agent, in this folder — the persona answers only from her data.')))}
+      ${tip(3, '#backlog', esc(tr('See what she could not answer')), esc(tr('Gaps become questions for real interviews, not invented answers.')))}
+    </div>
+  </section>`;
+}
+
+/* ---------- where the data disagrees ----------
+   The same rule graph_lint applies: on one feature, some participants stand
+   against it and some for it. Contradictions are data — this card does not
+   average them, it puts both sides next to each other and links every Signal. */
+const DASH_NEG = ['dealbreaker','resents','frustrated','wary'];
+const DASH_POS = ['curious','appreciates','relies_on','relies on','advocates'];
+function dashSplits(){
+  const by = {};
+  wsEntities().filter(e=>e.type==='Signal' && e.fm.sentiment && typeof e.fm.sentiment==='object').forEach(e=>{
+    const f = String(e.fm.sentiment.feature||'').trim(), st = String(e.fm.sentiment.stance||'').trim().toLowerCase();
+    if(!f) return; (by[f] = by[f] || {neg:[], pos:[]});
+    if(DASH_NEG.includes(st)) by[f].neg.push(e); else if(DASH_POS.includes(st)) by[f].pos.push(e);
+  });
+  return Object.entries(by).filter(([,v])=> v.neg.length && v.pos.length)
+    .sort((a,b)=> (b[1].neg.length+b[1].pos.length)-(a[1].neg.length+a[1].pos.length));
+}
+function dashSplitsHtml(){
+  const sp = dashSplits(); if(!sp.length) return '';
+  const chip = e => `<a class="xref" data-goto="${e.id}">${ICONS.Signal}${esc(e.title)}</a>`;
+  return `<section class="dash-card dash-splits">
+    <div class="dash-sec-h"><h2>${tr('Where your data disagrees')}</h2><span class="dash-sec-note">${tr('two sides, never an average')}</span></div>
+    ${sp.map(([f,v])=>`<div class="dash-split">
+      <div class="dash-split-f">${esc(f)}</div>
+      <div class="dash-split-side neg"><b>${trn(v.neg.length,'{n} against','{n} against','{n} przeciw','{n} przeciw','{n} przeciw')}</b>${v.neg.map(chip).join('')}</div>
+      <div class="dash-split-side pos"><b>${trn(v.pos.length,'{n} for','{n} for','{n} za','{n} za','{n} za')}</b>${v.pos.map(chip).join('')}</div>
+    </div>`).join('')}
+    <p class="dash-note-line">${tr('A split is a finding, not noise: ask your AI assistant to run /contradictions on it, or take it to the next interview round.')}</p>
+  </section>`;
 }
 
 /* ---------- empty states, with the way out ----------
@@ -13435,7 +13592,7 @@ function renderDashboard(){
         : tr('Enrich your data with the latest from the internet')}</h3><p>${tr('This prompt sends the AI on a desk-research refresh: re-verify stale Evidence at its sources, research flagged competitors, close Comparison gaps. Web finds land as cited Evidence — never as Signals — and nothing is written without your approval.')}</p></div></div>
        <div class="dash-cta-btns"><button class="btn btn-primary btn-sm" id="dashEnrichCopy">${tr('⧉ Copy AI prompt')}</button><button class="btn btn-outline btn-sm" id="dashEnrichDl">${tr('↓ Prompt .md')}</button></div></div>`;
 
-  grid.innerHTML = `
+  grid.innerHTML = `${dashTipsHtml()}
     <section class="dash-sec">
       <div class="dash-sec-h"><h2>${tr("What's in your graph")}</h2><span class="dash-sec-note">${WS==='demo' ? tr('as of {d}').replace('{d}', DEMO_AS_OF.toLocaleDateString(LANG==='pl'?'pl-PL':'en-GB',{day:'numeric',month:'short',year:'numeric'})) : tr('right now')} · ${tr(WS==='demo'?'Demo workspace':'your project workspace')}</span></div>
       <!-- One horizontal strip instead of a tall hero column: the greeting and
@@ -13506,7 +13663,12 @@ function renderDashboard(){
       </section>
     </div>
 
+    ${dashSplitsHtml()}
+
     <section class="dash-sec" id="dashCta"><div class="dash-cta-row">${refresh}${aiCard}</div></section>`;
+  const tipsOff = grid.querySelector('#dashTipsOff');
+  if(tipsOff) tipsOff.onclick = ()=>{ store.set('at-demo-tips','off'); grid.querySelector('.dash-tips').remove(); };
+  grid.querySelectorAll('.dash-splits a.xref[data-goto]').forEach(a=> a.onclick = ev=>{ ev.preventDefault(); location.hash = '#'+a.dataset.goto; });
 
   const plan = grid.querySelector('#dashPlan'); if(plan) plan.onclick = ()=>{ const c=grid.querySelector('#dashCta'); if(c) c.scrollIntoView({behavior:'smooth', block:'center'}); };
   const conn = grid.querySelector('#dashConnect'); if(conn) conn.onclick = ()=>{ const l=document.getElementById('loadBtn'); if(l) l.click(); };
@@ -13642,7 +13804,10 @@ function posterOpen(id){
   posterView.innerHTML = `
     <div class="pp-top">
       <span class="pp-kicker">${ICONS.Persona}${tr('Persona poster')}${e.fm.demo?`<span class="demo-badge">${tr('Demo')}</span>`:''}</span>
-      <button class="pp-close" id="ppClose" aria-label="Close poster">✕</button>
+      <span class="pp-top-acts">
+        <button class="pp-print" id="ppPrint" title="${esc(tr('Opens the print dialog — pick “Save as PDF” for a one-pager you can share'))}">⤓ ${tr('Save as PDF')}</button>
+        <button class="pp-close" id="ppClose" aria-label="Close poster">✕</button>
+      </span>
     </div>
     <section class="pp-hero">
       <div class="pp-id">
@@ -13679,6 +13844,8 @@ function posterOpen(id){
   posterView.scrollTop=0;
   const close=()=>{ document.body.classList.remove('poster-open'); posterView.setAttribute('aria-hidden','true'); posterView.innerHTML=''; };
   document.getElementById('ppClose').onclick=close;
+  // the browser's own print → "Save as PDF": no library, and the file is the page you see
+  document.getElementById('ppPrint').onclick=()=> window.print();
   document.getElementById('ppBack').onclick=close;
   posterView.querySelectorAll('[data-pp-list]').forEach(b=> b.onclick=()=> ppListOpen(e.id, b.dataset.ppList));
   posterView.querySelectorAll('[data-pp-add]').forEach(b=> b.onclick=()=> ppListOpen(e.id, b.dataset.ppAdd, {add:true}));
@@ -14442,7 +14609,7 @@ function wcSteps(){
   return [
     { kind: 'hero' },
     { kind: 'info', title: tr('What this repository is'),
-      shot: WC_SHOTS.graph, shotAlt: tr('The mind map: personas, signals, evidence and hypotheses joined by their links'),
+      shot: WC_SHOTS.graph, shotAlt: tr('The research map: personas, signals, evidence and hypotheses joined by their links'),
       lead: tr('A UX-research knowledge graph you can talk to. Your interviews and reports stay ordinary Markdown files in your folder — this app is the reading layer on top of them.'),
       bullets: [
         [WC_ICONS.graph, tr('Evidence → Signal → Persona → Idea'), tr('A persona is assembled from what people actually said, and every claim links back to the file it came from.')],

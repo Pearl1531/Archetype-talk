@@ -202,3 +202,30 @@
     .dash-stat b { font-size: 34px; }
   }
   .dash-note-line { margin: 0; color: var(--text-dim); font-size: var(--fs-md); line-height: 1.55; }
+  /* where the data disagrees — both sides of one feature, side by side */
+  .dash-splits { display: flex; flex-direction: column; gap: var(--s-3); }
+  .dash-split { display: grid; grid-template-columns: 160px 1fr 1fr; gap: var(--s-3); align-items: start;
+    padding-top: var(--s-3); border-top: 1px solid var(--line); }
+  .dash-split-f { font-weight: 600; }
+  .dash-split-side { display: flex; flex-wrap: wrap; gap: 6px; align-items: center; }
+  .dash-split-side > b { width: 100%; font-size: var(--fs-sm); }
+  .dash-split-side.neg > b { color: var(--danger-text); }
+  .dash-split-side.pos > b { color: var(--accent-text); }
+  @media (max-width: 760px){ .dash-split { grid-template-columns: 1fr; } }
+  /* demo: three things to try */
+  .dash-tips { margin-bottom: var(--s-4); border-color: color-mix(in srgb, var(--accent, #ff4d00) 35%, var(--line)); }
+  .dash-tips .dash-sec-h { justify-content: space-between; }
+  .dash-tips-row { display: grid; grid-template-columns: repeat(3, 1fr); gap: var(--s-4); margin-top: var(--s-3); }
+  .dash-tip { display: flex; gap: var(--s-3); align-items: flex-start; padding: var(--s-3); border-radius: var(--r-md);
+    color: inherit; text-decoration: none; border: 1px solid var(--line); }
+  .dash-tip:hover { border-color: var(--hover-border); background: var(--bg-elev-2); }
+  .dash-tip-n { flex: none; width: 24px; height: 24px; display: grid; place-items: center; border-radius: 50%;
+    background: var(--accent-soft); color: var(--accent-text); font-weight: 700; font-size: 12px; }
+  .dash-tip b { display: block; font-size: var(--fs-md); }
+  .dash-tip b + span { display: block; margin-top: 2px; color: var(--text-dim); font-size: var(--fs-sm); line-height: 1.5; }
+  @media (max-width: 900px){ .dash-tips-row { grid-template-columns: 1fr; } }
+  .dash-split-side .xref { display: inline-flex; align-items: center; gap: 5px; padding: 3px 9px; font-size: var(--fs-sm);
+    border: 1px solid var(--line); border-radius: var(--r-pill); color: var(--text-soft); text-decoration: none; cursor: pointer; }
+  .dash-split-side .xref:hover { border-color: var(--hover-border); color: var(--text); }
+  .dash-split-side .xref svg { width: 12px; height: 12px; }
+

@@ -100,7 +100,10 @@ function posterOpen(id){
   posterView.innerHTML = `
     <div class="pp-top">
       <span class="pp-kicker">${ICONS.Persona}${tr('Persona poster')}${e.fm.demo?`<span class="demo-badge">${tr('Demo')}</span>`:''}</span>
-      <button class="pp-close" id="ppClose" aria-label="Close poster">✕</button>
+      <span class="pp-top-acts">
+        <button class="pp-print" id="ppPrint" title="${esc(tr('Opens the print dialog — pick “Save as PDF” for a one-pager you can share'))}">⤓ ${tr('Save as PDF')}</button>
+        <button class="pp-close" id="ppClose" aria-label="Close poster">✕</button>
+      </span>
     </div>
     <section class="pp-hero">
       <div class="pp-id">
@@ -137,6 +140,8 @@ function posterOpen(id){
   posterView.scrollTop=0;
   const close=()=>{ document.body.classList.remove('poster-open'); posterView.setAttribute('aria-hidden','true'); posterView.innerHTML=''; };
   document.getElementById('ppClose').onclick=close;
+  // the browser's own print → "Save as PDF": no library, and the file is the page you see
+  document.getElementById('ppPrint').onclick=()=> window.print();
   document.getElementById('ppBack').onclick=close;
   posterView.querySelectorAll('[data-pp-list]').forEach(b=> b.onclick=()=> ppListOpen(e.id, b.dataset.ppList));
   posterView.querySelectorAll('[data-pp-add]').forEach(b=> b.onclick=()=> ppListOpen(e.id, b.dataset.ppAdd, {add:true}));

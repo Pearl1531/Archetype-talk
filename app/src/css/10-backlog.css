@@ -223,3 +223,14 @@
     .bl-d-head { grid-template-columns: 1fr; }
     .bl-d-acts { grid-column: 1; grid-row: auto; }
   }
+  .bl-bar-acts { display: inline-flex; gap: var(--s-2); margin-left: auto; flex-wrap: wrap; }
+  /* on a phone the priority tiles are a compact strip, not a screenful —
+     the questions are what you came for */
+  @media (max-width: 760px){
+    .bl-tiles { grid-template-columns: repeat(4, minmax(0, 1fr)); gap: var(--s-2); }
+    .bl-tile { padding: var(--s-2); min-width: 0; }
+    .bl-tile-top { font-size: 10px; letter-spacing: .02em; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; max-width: 100%; }
+    .bl-tile-static { display: none; }
+    .bl-tile-n { font-size: 18px; }
+  }
+

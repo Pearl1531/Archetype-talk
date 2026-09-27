@@ -277,6 +277,10 @@
     .p-toc { position: static; flex-direction: row; flex-wrap: wrap; gap: 6px; margin-bottom: 20px; }
     .p-toc a { background: var(--bg-elev-2); }
     .p-hero-quote { font-size: 27px; }
+    /* on a phone the persona's own words come first — the face and the
+       buttons follow, instead of pushing the quote below the fold */
+    .p-hero-main { order: -1; }
+    .p-hero-avatar .avatar { max-width: 120px; }
   }
 
   /* ---------- Mind Map ---------- */
@@ -343,13 +347,14 @@
     color: var(--text-dim); cursor: pointer; }
   .mm-seg button.on { background: var(--bg-elev); color: var(--text); font-weight: 600; box-shadow: 0 1px 3px rgba(0,0,0,.12); }
   .mm-canvas-flow > svg.mm-flow-svg { height: auto; max-height: none; cursor: default; }
+  .mm-canvas-flow .mm-colhead { font-size: 11px; letter-spacing: .8px; }
   .mm-fband { opacity: .15; transition: opacity .15s; cursor: pointer; }
   .mm-fband.on { opacity: .5; }
   svg.mm-dimming .mm-fband:not(.on) { opacity: .04; }
   .mm-fnode rect { transition: opacity .15s; }
-  .mm-fnode text { font-size: 10.5px; fill: var(--text-soft); pointer-events: none;
+  .mm-fnode text { font-size: 13px; fill: var(--text-soft); pointer-events: none;
     paint-order: stroke; stroke: var(--bg-elev); stroke-width: 3px; }
-  .mm-fnode .mm-fcount { fill: var(--text-dim); font-size: 9.5px; }
+  .mm-fnode .mm-fcount { fill: var(--text-dim); font-size: 11px; }
   .mm-fnode.mm-exc rect { opacity: .4; stroke: var(--text-dim); stroke-dasharray: 3 3; }
 
   /* ---------- intro tour ---------- */

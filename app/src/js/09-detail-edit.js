@@ -234,7 +234,7 @@ function openDetail(id){
           <div class="p-hero-name">${esc(nm)}</div>
           <div class="p-hero-role">${esc(role || e.fm.description || '')}</div>
           <div class="p-hero-chips">
-            ${e.fm.category?`<span class="tag">${esc(e.fm.category)}</span>`:''}
+            ${e.fm.category?`<span class="tag">${esc(tr(e.fm.category))}</span>`:''}
             ${participantsChip(e)}
             ${levelChip(personaLevel(e), true)}
           </div>

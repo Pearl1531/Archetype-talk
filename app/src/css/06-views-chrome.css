@@ -331,6 +331,10 @@
       overflow-x: auto; -webkit-overflow-scrolling: touch; scrollbar-width: none;
       margin: 0 calc(-1 * var(--s-4)); padding: var(--s-1) var(--s-4); }
     #tabs::-webkit-scrollbar { display: none; }
+    /* the strip scrolls sideways: fade its right edge so a cut-off tab reads
+       as "more this way", not as a clipping bug */
+    #tabs { -webkit-mask-image: linear-gradient(90deg, #000 85%, transparent);
+            mask-image: linear-gradient(90deg, #000 85%, transparent); }
     .nav-item { width: auto; white-space: nowrap; flex: none; min-height: 44px; }
     .nav-item .n { margin-left: 6px; }
     .detail-card { padding: var(--s-6); }

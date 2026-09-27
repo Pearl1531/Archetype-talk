@@ -9,6 +9,43 @@ Git tags start at 0.13.0. Everything before it shipped while the repo was still
 being cut for release, and is dated here rather than tagged retroactively — a tag
 should mark a release that happened, not manufacture one after the fact.
 
+## [Unreleased]
+
+A UX pass over the browser app, from a product-design audit of the first ten
+minutes a new visitor spends in it.
+
+### Added
+
+- **Talk to a persona** — every persona has a button that copies the line
+  starting the conversation in your agent's own dialect (`/persona-talk …`,
+  `$persona-talk …` for Codex, a skill request for Gemini), remembering which
+  agent you use.
+- **Levels on screen** — persona maturity (L1–L5, computed per
+  `references/levels.md`) on every persona card and hero, and a claim level on
+  every sourced bullet of a persona page.
+- **The evidence trail on hover** — pointing at a Signal shows its verbatim
+  quote, transcript and date; at an Evidence, its takeaway and check date.
+- **Where your data disagrees** — an Overview card listing features on which
+  participants split for and against, both sides linked, never averaged.
+- **Three things to try** — a dismissible card on the demo's Overview.
+- Poster **Save as PDF** (the browser's print dialog, no library); backlog
+  **Interview guide prompt** built from the questions on screen.
+
+### Changed
+
+- The demo is read as of 15 Jul 2026 and its interviews are dated June 2026,
+  so it no longer opens as months overdue; the date is shown.
+- Counts say what they leave out ("1 participant · +1 excluded").
+- The Mind Map is the **Research map**, opens on Flow and on the Primary
+  persona's slice; the persona filter and a drawer focus no longer disagree.
+- Backlog: most urgent first, top question open on arrival, one add button.
+- Welcome: fixed-height steps with Back/Next in one place, a drawn (translated)
+  conversation instead of a Polish screenshot, and "Start a new project".
+- Persona pages hide the template's writer notes, print sub-bullets as such
+  and don't repeat the opening quote; phones show the quote before the face.
+- Projects shows one set of ways in; the top bar shows a person glyph instead
+  of an anonymous "A"; single-month charts wait for a second month.
+
 ## [0.15.0] — 2026-09-28
 
 The toolkit edition: one illustrative dataset, skills every major coding agent

@@ -180,7 +180,7 @@ function wcSteps(){
   return [
     { kind: 'hero' },
     { kind: 'info', title: tr('What this repository is'),
-      shot: WC_SHOTS.graph, shotAlt: tr('The mind map: personas, signals, evidence and hypotheses joined by their links'),
+      shot: WC_SHOTS.graph, shotAlt: tr('The research map: personas, signals, evidence and hypotheses joined by their links'),
       lead: tr('A UX-research knowledge graph you can talk to. Your interviews and reports stay ordinary Markdown files in your folder — this app is the reading layer on top of them.'),
       bullets: [
         [WC_ICONS.graph, tr('Evidence → Signal → Persona → Idea'), tr('A persona is assembled from what people actually said, and every claim links back to the file it came from.')],
