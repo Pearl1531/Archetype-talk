@@ -26,6 +26,9 @@ should mark a release that happened, not manufacture one after the fact.
   when you listened, the open questions, and one dark band for the next round.
   Every explanation sits behind an ⓘ instead of on the page; the demo's
   "three things to try" card is gone until a proper onboarding replaces it.
+- **One voice for page titles.** Every page title — lists, backlog, settings,
+  projects, help — and every file's name now uses the Editorial headline:
+  heavy and tight, closed with the ember full stop.
 - **The persona page, Editorial.** The persona's name is the headline, with
   the archetypes it fits, the line that starts a conversation and four facts (in one
   line, built from, sources, how solid). Three working tables are built from

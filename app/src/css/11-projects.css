@@ -61,7 +61,8 @@
     display: flex; align-items: center; justify-content: space-between;
     gap: var(--s-4); flex-wrap: wrap; margin-bottom: var(--s-5);
   }
-  .pj-head h1 { margin: 0; font-size: var(--fs-3xl); font-weight: 600; letter-spacing: var(--tracking-display); }
+  .pj-head h1 { margin: 0; font-size: clamp(40px, 4.4vw, 60px); font-weight: 800; line-height: .95; letter-spacing: -0.045em; }
+  .pj-head h1::after { content: "."; color: var(--accent); }   /* the Editorial full stop, same as every page title */
   .pj-actions { display: flex; gap: var(--s-2); flex-wrap: wrap; }
   .pj-lead { max-width: 62ch; margin: -2px 0 var(--s-5); color: var(--text-dim); line-height: 1.55; }
 

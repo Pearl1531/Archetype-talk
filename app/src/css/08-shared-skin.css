@@ -174,3 +174,12 @@
   body.lin-side .side-foot .btn-primary { height: 44px; background: none; color: var(--text); border: 1.5px solid var(--text);
     font-size: var(--fs-md); font-weight: 600; }
   body.lin-side .side-foot .btn-primary:hover { background: var(--bg-elev); opacity: 1; }
+
+  /* ---- page titles, Editorial: the same voice as the Overview and persona
+     headlines — heavy, tight, and closed with the ember full stop ---- */
+  body.lin-all .page-head h1, body.lin-mm .page-head h1 {
+    font-size: clamp(40px, 4.4vw, 60px); font-weight: 800; line-height: .95; letter-spacing: -0.045em; }
+  body.lin-all .page-head h1::after { content: '.'; color: var(--accent); }
+  body.lin-all .page-head p { margin-top: var(--s-3); max-width: 70ch; font-size: var(--fs-md); }
+  body.lin-all #dName { font-size: clamp(34px, 3.6vw, 48px); font-weight: 800; line-height: 1.02; letter-spacing: -0.035em; }
+  @media (max-width: 720px){ body.lin-all .page-head h1 { font-size: 34px; } }
