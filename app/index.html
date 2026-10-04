@@ -1806,6 +1806,14 @@
   body.lin-all .page-head p { margin-top: var(--s-3); max-width: 70ch; font-size: var(--fs-md); }
   body.lin-all #dName { font-size: clamp(34px, 3.6vw, 48px); font-weight: 800; line-height: 1.02; letter-spacing: -0.035em; }
   @media (max-width: 720px){ body.lin-all .page-head h1 { font-size: 34px; } }
+  /* the rail on a phone: collapsed, the search spans the width under the
+     project card; opened as a drawer, counts sit right like on desktop
+     (same breakpoint as the drawer in 06-views-chrome.css) */
+  @media (max-width: 860px){
+    body.lin-side .side-search { width: 100%; order: 2; margin-bottom: 0; }
+    body.nav-open.lin-side .side-search { order: 0; margin-bottom: var(--s-3); }
+    body.lin-side.nav-open .nav-item .n, body.lin-side.nav-open #backlogCount { margin-left: auto; }
+  }
   /* ── Persona poster — full-bleed visual one-pager (Figma-board layout in the
      Signal skin: serif hero name, mono section labels, 2px cards) ── */
   #posterView { display: none; }
@@ -2440,6 +2448,21 @@
     .pj-rail-foot { display: none; }
     .pj-main { padding: var(--s-5) var(--s-4) var(--s-8); }
   }
+
+  /* ── Editorial (2026-10): the same rail as inside a project — paper one step
+     darker, an ink keyline, 40px rows, the active row a solid ink pill ── */
+  body.projects-open #projectsView { grid-template-columns: var(--sidebar-w) 1fr; }
+  .pj-rail { background: var(--bg-rail); border-right: 1.5px solid var(--text); padding: var(--s-5) var(--s-4); }
+  .pj-brand { height: 60px; padding: 0 12px; border-radius: 14px; background: var(--bg-elev); border: 1px solid rgba(10,10,10,.12);
+    box-shadow: var(--shadow-subtle); font-size: var(--fs-md); font-weight: 700; gap: 10px; }
+  .pj-mark { width: 36px; height: 36px; border-radius: 9px; background: var(--text); color: var(--bg-elev); font-size: 15px; font-weight: 800; }
+  .pj-nav-item { height: 40px; padding: 0 var(--s-3); gap: var(--s-3); border-radius: var(--r-md); font-size: var(--fs-md); font-weight: 500; }
+  .pj-nav-item svg { width: 18px; height: 18px; }
+  .pj-nav-item:hover { background: rgba(10,10,10,.05); }
+  .pj-nav-item.on, .pj-nav-item.on:hover { background: var(--text); color: var(--bg-elev); font-weight: 600; }
+  .pj-nav-item .pj-n { font-family: var(--font-mono); font-size: var(--text-caption); }
+  .pj-nav-item.on .pj-n { color: color-mix(in srgb, var(--bg-elev) 70%, transparent); }
+  .pj-note { background: var(--bg-elev); border-color: rgba(10,10,10,.12); }
   /* ── Project home (Overview), Editorial ─────────────────────────────────
      Paper, ink and one ember accent. The project's name is the headline and
      its personas stand beside it; below, four numbers, the personas, four

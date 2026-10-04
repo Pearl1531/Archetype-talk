@@ -183,3 +183,11 @@
   body.lin-all .page-head p { margin-top: var(--s-3); max-width: 70ch; font-size: var(--fs-md); }
   body.lin-all #dName { font-size: clamp(34px, 3.6vw, 48px); font-weight: 800; line-height: 1.02; letter-spacing: -0.035em; }
   @media (max-width: 720px){ body.lin-all .page-head h1 { font-size: 34px; } }
+  /* the rail on a phone: collapsed, the search spans the width under the
+     project card; opened as a drawer, counts sit right like on desktop
+     (same breakpoint as the drawer in 06-views-chrome.css) */
+  @media (max-width: 860px){
+    body.lin-side .side-search { width: 100%; order: 2; margin-bottom: 0; }
+    body.nav-open.lin-side .side-search { order: 0; margin-bottom: var(--s-3); }
+    body.lin-side.nav-open .nav-item .n, body.lin-side.nav-open #backlogCount { margin-left: auto; }
+  }

@@ -26,6 +26,9 @@ should mark a release that happened, not manufacture one after the fact.
   when you listened, the open questions, and one dark band for the next round.
   Every explanation sits behind an ⓘ instead of on the page; the demo's
   "three things to try" card is gone until a proper onboarding replaces it.
+- **The Projects screen** — the first screen after opening — gets the same rail
+  (darker paper, ink keyline, solid ink active row). On a phone the rail's
+  search spans the width, and the drawer keeps the counts right-aligned.
 - **One voice for page titles.** Every page title — lists, backlog, settings,
   projects, help — and every file's name now uses the Editorial headline:
   heavy and tight, closed with the ember full stop.
