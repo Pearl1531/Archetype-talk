@@ -1,11 +1,13 @@
 /* ---------- Mind Map (Obsidian/Capacities-style link graph) ----------
    Strictly a VIEW: nodes are the current workspace's entities, edges are the
    links that already exist (body links, evidences:, idea:, mentioned_in:,
-   same_participant_as:). Nothing here edits anything — vanilla JS + SVG force
-   layout, offline, no packages. Hover highlights neighbors, double-click
-   opens the file, drag/pan/wheel-zoom, legend toggles types. */
+   same_participant_as:). Nothing here edits anything — vanilla JS + SVG,
+   offline, no packages. Three views of the same graph: Columns (one column
+   per type), Free (Obsidian-style force layout) and Flow (Sankey by research
+   weight). Hover lights a file's neighbours, a click keeps it lit and opens
+   the drawer, double-click opens the file, drag/pan/wheel-zoom, legend
+   toggles types. */
 let MINDMAP_ACTIVE = false;
-const MM_COLORS = { Persona:'#0ea5e9', Competitor:'#64748b', Archetype:'#8b5cf6', Hypothesis:'#f59e0b', Signal:'#e11d48', Evidence:'#10b981', IdeaForImprovement:'#eab308', Transcript:'#a1a1aa' };
 let MM_HIDDEN = new Set();
 let MM_FOCUS = null;   // entity id → local graph (Obsidian-style), null → whole workspace
 let MM_DEPTH = 1;      // neighborhood radius in focused mode (1 or 2)
@@ -18,9 +20,22 @@ let MM_MONTHS = 0;      // 0 = all time; 3/6/12 = hide Transcripts/Evidence date
 /* the persona the filter should show as picked: the filter's own, or the one
    the map is focused on — a "Focused on Emma" bar over "Persona: all" contradicts itself */
 function mmPersonaShown(){ return MM_PERSONA || (MM_FOCUS && ENTITIES[MM_FOCUS] && ENTITIES[MM_FOCUS].type==='Persona' ? MM_FOCUS : ''); }
-let MM_VIEW = store.get('at-mm-view') || 'flow'; // 'map' | 'flow' — via store, so it
+let MM_VIEW = store.get('at-mm-view') || 'flow'; // 'map' (Columns) | 'free' | 'flow' — via store, so it
   // stays namespaced per project copy and is covered by "Clear local data"
 // Flow view reads left→right in research order: raw input → grounding → claims → bets
+let MM_ALL_LINKS = store.get('at-mm-all') === '1';   // Columns: draw every link, not only the selected file's
+let MM_RO = null;       // the map's ResizeObserver
+let MM_LIGHT = null;    // the current view's "light this file" hook — the drawer calls it on open/close
+const MM_ICO = {
+  cols: '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><rect x="3" y="4" width="5" height="16" rx="1.5"/><rect x="10" y="4" width="5" height="16" rx="1.5"/><rect x="17" y="4" width="4" height="16" rx="1.5"/></svg>',
+  free: '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="12" cy="12" r="2.5"/><circle cx="5" cy="6" r="2"/><circle cx="19" cy="5" r="2"/><circle cx="18" cy="19" r="2"/><circle cx="5" cy="18" r="2"/><path d="M7 7l3 3.5M17 6.5l-3.5 4M16.5 17.5l-3-3.5M7 16.5l3-3"/></svg>',
+  flow: '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M3 5h3c6 0 6 14 12 14h3M3 12h3c3 0 4 2 6 2h9M3 19h3c4 0 5-9 9-9h6"/></svg>',
+};
+/* legend swatch = the node's own shape, so the legend reads like the map */
+function mmLegendFace(ty){
+  const face = ty==='Persona' ? '<circle class="mm-s mm-ava" r="5.5"/>' : mmNodeFace({ id:'leg', type:ty, title:'' }, 4.2);
+  return `<svg class="mm-legsw" width="14" height="14" viewBox="-7 -7 14 14" aria-hidden="true">${face}</svg>`;
+}
 const MM_FLOW_ORDER = ['Transcript','Competitor','Evidence','Signal','Persona','Archetype','Hypothesis','IdeaForImprovement'];
 /* Every first-degree connection in a set of entities — body links + the
    linking frontmatter fields. Shared by the map and the drawer stats. */
@@ -87,10 +102,14 @@ let MM_RAF = null; // kept for mindmapExit compatibility (layout is static now)
    so every group has a fixed, findable place. Rows are ordered by a few
    barycenter sweeps (Sugiyama-lite) to untangle the edges. Pure function —
    mutates n.x/n.y and returns the content extent. */
+const MM_COLW = 170;              // column width — the chip a row lives in is MM_COLW-24
 function mmLayout(nodes, edges){
   const present = TYPE_ORDER.filter(ty=> nodes.some(n=>n.type===ty));
   const colOf = {}; present.forEach((ty,i)=> colOf[ty]=i);
-  const COLW=290, ROWH=84, PADX=160, PADY=120;
+  /* rows read like a list — dot, then the label to its right — so a column of
+     24 signals fits on one screen; personas get room for their portrait */
+  const COLW=MM_COLW, PADX=28, PADY=78;
+  const rowH = ty=> ty==='Persona' ? 64 : 30;
   const cols = present.map(()=>[]);
   nodes.slice().sort((a,b)=> a.title.localeCompare(b.title)).forEach(n=> cols[colOf[n.type]].push(n));
   const adj={}; edges.forEach(([a,b])=>{ (adj[a]=adj[a]||[]).push(b); (adj[b]=adj[b]||[]).push(a); });
@@ -105,25 +124,74 @@ function mmLayout(nodes, edges){
       c.forEach((n,i)=> row[n.id]=i);
     });
   }
-  const maxRows = Math.max(1, ...cols.map(c=>c.length));
+  const colH = cols.map((c,ci)=> Math.max(0, c.length-1)*rowH(present[ci]));
+  const maxH = Math.max(0, ...colH);
   cols.forEach((c,ci)=> c.forEach((n,ri)=>{
     n.x = PADX + ci*COLW;
-    n.y = PADY + ri*ROWH + (maxRows-c.length)*ROWH/2;   // shorter columns float to the middle
+    n.y = PADY + ri*rowH(present[ci]) + (maxH-colH[ci])/2;   // shorter columns float to the middle
   }));
-  return { W: PADX*2 + Math.max(0,present.length-1)*COLW, H: PADY*2 + Math.max(0,maxRows-1)*ROWH, colTypes: present, COLW, PADX, PADY };
+  return { W: PADX*2 + present.length*COLW, H: PADY + maxH + 40, colTypes: present, COLW, PADX, PADY };
 }
-/* node face: persona avatars / competitor favicons when the file has one,
-   otherwise the entity-type icon inside the colored disc */
-function mmNodeFace(n, R){
-  const e = ENTITIES[n.id];
-  const pic = picFor(e);
-  if(pic && pic.src){
-    const r = R-2;
-    return `<clipPath id="mmclip-${n.id}"><circle r="${r}"/></clipPath>
-      <image href="${esc(pic.src)}" x="${-r}" y="${-r}" width="${2*r}" height="${2*r}" clip-path="url(#mmclip-${n.id})" preserveAspectRatio="xMidYMid slice"/>`;
+/* Free layout (Obsidian-style): no columns — files settle wherever their links
+   pull them, so clusters that share research sit together and an island that
+   shares nothing drifts off on its own. Seeded, so the same graph always lands
+   the same way. Files with no links at all are parked in a row underneath. */
+function mmForceLayout(nodes, edges){
+  // ponytail: O(n²) per step — fine for a few hundred files; past ~600 nodes switch to a grid/Barnes–Hut repulsion
+  let seed = 7; const rnd = ()=> (seed = (seed*16807) % 2147483647) / 2147483647;
+  const W0 = 1200, H0 = 800, k = 70;
+  const byId = {}; nodes.forEach(n=>{ byId[n.id]=n; n.x = 200 + rnd()*(W0-400); n.y = 150 + rnd()*(H0-300); });
+  const deg = {}; edges.forEach(([a,b])=>{ deg[a]=(deg[a]||0)+1; deg[b]=(deg[b]||0)+1; });
+  const live = nodes.filter(n=> deg[n.id]), lone = nodes.filter(n=> !deg[n.id]);
+  const STEPS = 500;
+  for(let it=0; it<STEPS; it++){
+    const t = 12*(1-it/STEPS) + 0.3;
+    live.forEach(n=>{ n.dx=0; n.dy=0; });
+    for(let i=0; i<live.length; i++) for(let j=i+1; j<live.length; j++){
+      const a=live[i], b=live[j]; let dx=a.x-b.x, dy=a.y-b.y; const d=Math.hypot(dx,dy)||0.01;
+      if(d>260) continue;                              // cutoff keeps separate clusters from flying apart
+      let f = k*k/d; const gap = mmFreeR(a)+mmFreeR(b)+30; if(d<gap) f += (gap-d)*5;
+      dx/=d; dy/=d; a.dx+=dx*f; a.dy+=dy*f; b.dx-=dx*f; b.dy-=dy*f;
+    }
+    edges.forEach(([ia,ib])=>{
+      const a=byId[ia], b=byId[ib]; let dx=a.x-b.x, dy=a.y-b.y; const d=Math.hypot(dx,dy)||0.01;
+      const f = d*d/k; dx/=d; dy/=d; a.dx-=dx*f; a.dy-=dy*f; b.dx+=dx*f; b.dy+=dy*f;
+    });
+    live.forEach(n=>{
+      n.dx += (W0/2-n.x)*0.045; n.dy += (H0/2-n.y)*0.075;   // gentle gravity
+      const l = Math.hypot(n.dx,n.dy)||0.01; n.x += n.dx/l*Math.min(l,t); n.y += n.dy/l*Math.min(l,t);
+    });
   }
-  const s = Math.round(R*1.15);
-  return ICONS[n.type].replace('<svg width="14" height="14"', `<svg x="${-s/2}" y="${-s/2}" width="${s}" height="${s}" style="color:#fff"`);
+  const xs = live.map(n=>n.x), ys = live.map(n=>n.y);
+  const x0 = xs.length? Math.min(...xs) : 0, y0 = ys.length? Math.min(...ys) : 0;
+  live.forEach(n=>{ n.x = n.x-x0+60; n.y = n.y-y0+60; });
+  const W = (xs.length? Math.max(...xs)-x0 : 0) + 120, Hc = (ys.length? Math.max(...ys)-y0 : 0) + 120;
+  lone.forEach((n,i)=>{ n.x = 60 + i*170; n.y = Hc + 30; });
+  return { W: Math.max(W, lone.length*170+60), H: Hc + (lone.length? 70 : 0), colTypes: [] };
+}
+/* in the free view a dot grows with its links, like Obsidian */
+function mmFreeR(n){ return n.type==='Persona' ? 17 : 4 + Math.min(7, Math.sqrt(n.deg||0)*1.8); }
+/* One shape per type, the same language as the persona page: solid = heard
+   (signal), ring = read (evidence), dashed = an assumption or a session set
+   aside. Personas show their portrait. r = the shape's radius. */
+function mmNodeFace(n, r){
+  const e = ENTITIES[n.id];
+  if(n.type==='Persona'){
+    const pic = picFor(e);
+    return `<circle class="mm-s mm-ava" r="${r}"/>` + (pic && pic.src
+      ? `<clipPath id="mmclip-${n.id}"><circle r="${r-1.5}"/></clipPath><image href="${esc(pic.src)}" x="${-r}" y="${-r}" width="${2*r}" height="${2*r}" clip-path="url(#mmclip-${n.id})" preserveAspectRatio="xMidYMid slice"/>`
+      : `<text class="mm-ini" dy="5">${esc(initialsFor(n.title).slice(0,1))}</text>`);
+  }
+  const s = r*0.9;
+  switch(n.type){
+    case 'Signal':     return `<circle class="mm-s mm-solid" r="${r}"/>`;
+    case 'Evidence':   return `<circle class="mm-s mm-ring" r="${r}"/>`;
+    case 'Hypothesis': return `<circle class="mm-s mm-ring mm-dash" r="${r}"/>`;
+    case 'Archetype':  return `<circle class="mm-s mm-muted" r="${r*1.15}"/>`;
+    case 'Competitor': return `<rect class="mm-s mm-muted" x="${-s}" y="${-s}" width="${2*s}" height="${2*s}" transform="rotate(45)"/>`;
+    case 'Transcript': return `<rect class="mm-s mm-paper${n.excluded?' mm-dash':''}" x="${-r}" y="${-r}" width="${2*r}" height="${2*r}" rx="2"/>`;
+    default:           return `<rect class="mm-s mm-ring" x="${-r}" y="${-r}" width="${2*r}" height="${2*r}" rx="3"/>`;   // Idea
+  }
 }
 /* Flow view: Sankey-style ribbons over the same graph data. Every raw file
    carries weight 1; a node's weight is whatever arrives from the left, split
@@ -181,15 +249,15 @@ function mmRenderFlow(nodes, edges, seg, legend, focusBar, filters){
   };
   const VH = PADT + totalH + PADB;
   const heads = present.map(ty=>`<text class="mm-colhead" x="${r2(X[ty]+BARW/2)}" y="${PADT-34}">${tr(TYPES[ty].label)} (${cols[colOf[ty]].length})</text>`).join('');
-  const bands = dir.map(e=>`<path class="mm-fband" data-a="${e.a}" data-b="${e.b}" d="${band(e)}" fill="${MM_COLORS[byId[e.a].type]}"/>`).join('');
+  const bands = dir.map(e=>`<path class="mm-fband" data-a="${e.a}" data-b="${e.b}" d="${band(e)}"/>`).join('');
   const bars = nodes.map(n=>{
     const last = colOf[n.type]===present.length-1;
     return `<g class="mm-node mm-fnode${n.excluded?' mm-exc':''}" data-id="${n.id}" transform="translate(${r2(X[n.type])},${r2(Y[n.id])})">
-      <rect width="${BARW}" height="${r2(barH[n.id])}" rx="4" fill="${MM_COLORS[n.type]}"/>
+      <rect class="mm-fbar t-${n.type}" width="${BARW}" height="${r2(barH[n.id])}" rx="3"/>
       ${barH[n.id]>=11?`<text x="${last?-7:BARW+7}" y="${r2(barH[n.id]/2+3.5)}" text-anchor="${last?'end':'start'}">${esc(trim(n.title,22))}<tspan class="mm-fcount">  ${n.deg}</tspan></text>`:''}
     </g>`;
   }).join('');
-  const hint = tr(dir.length ? 'thicker band = more research flowing through' : 'no cross-type links to draw yet — the Map view shows everything');
+  const hint = tr(dir.length ? 'thicker band = more research flowing through' : 'no cross-type links to draw yet — the Columns and Free views show everything');
   grid.innerHTML = `
     <div class="mm-bar">${seg}${filters||''}${legend}<span class="mm-stats">${trn(nodes.length,'{n} entity','{n} entities','{n} element','{n} elementy','{n} elementów')} · ${trn(dir.length,'{n} connection','{n} connections','{n} połączenie','{n} połączenia','{n} połączeń')} — ${hint}</span></div>
     ${focusBar}
@@ -203,6 +271,13 @@ function mmRenderFlow(nodes, edges, seg, legend, focusBar, filters){
   const tip = document.getElementById('mmTip');
   const bandEls = [...svg.querySelectorAll('.mm-fband')];
   const touch = id=> bandEls.forEach(p=> p.classList.toggle('on', !!id && (p.dataset.a===id || p.dataset.b===id)));
+  /* a click keeps a file lit, like in Columns and Free; hover lights on top of it */
+  const nodeEls = [...svg.querySelectorAll('.mm-fnode')];
+  const light = id=>{
+    svg.classList.toggle('mm-dimming', !!id); touch(id);
+    nodeEls.forEach(el=> el.classList.toggle('mm-sel', !!id && el.dataset.id===id));
+  };
+  MM_LIGHT = light;
   svg.querySelectorAll('.mm-fnode').forEach(el=>{
     const id=el.dataset.id, n=byId[id];
     el.addEventListener('pointerenter', ()=>{
@@ -211,7 +286,7 @@ function mmRenderFlow(nodes, edges, seg, legend, focusBar, filters){
       tip.innerHTML = `<b>${esc(n.title)}</b><small>${TYPES[n.type].singular} · ${ins} in · ${outs} out · research weight ${r2(val[id])}${n.excluded?' · excluded from analysis':''} — click for details, double-click to open</small>`;
       tip.style.display='block';
     });
-    el.addEventListener('pointerleave', ()=>{ svg.classList.remove('mm-dimming'); touch(null); tip.style.display='none'; });
+    el.addEventListener('pointerleave', ()=>{ light(MM_SELECTED); tip.style.display='none'; });
     el.addEventListener('click', ()=> mmOpenDrawer(id));
     el.addEventListener('dblclick', ()=> location.hash='#'+id);
   });
@@ -221,7 +296,7 @@ function mmRenderFlow(nodes, edges, seg, legend, focusBar, filters){
       tip.innerHTML = `<b>${esc(byId[p.dataset.a].title)} → ${esc(byId[p.dataset.b].title)}</b>`;
       tip.style.display='block';
     });
-    p.addEventListener('pointerleave', ()=>{ p.classList.remove('on'); svg.classList.remove('mm-dimming'); tip.style.display='none'; });
+    p.addEventListener('pointerleave', ()=>{ p.classList.remove('on'); light(MM_SELECTED); tip.style.display='none'; });
   });
   svg.addEventListener('pointerdown', ev=>{ if(!ev.target.closest('.mm-fnode, .mm-fband')) mmCloseDrawer(); });
   if(MM_SELECTED && byId[MM_SELECTED]) mmOpenDrawer(MM_SELECTED); else mmCloseDrawer();
@@ -234,12 +309,13 @@ function renderMindMap(){
     grid.innerHTML = `<div class="didyouknow"><div class="kicker">${tr('Research map')}</div><h3>${tr('Nothing to map in this workspace yet.')}</h3><p>${tr('The map draws itself from the links your files already have — bring research in and it appears here.')}</p></div>`;
     return;
   }
-  const L = mmLayout(nodes, edges);
+  const FREE = MM_VIEW==='free';
+  const L = FREE ? mmForceLayout(nodes, edges) : mmLayout(nodes, edges);
   const VW=1200, VH=800;
   const byId = {}; nodes.forEach(n=> byId[n.id]=n);
   const adj = {}; edges.forEach(([a,b])=>{ (adj[a]=adj[a]||new Set()).add(b); (adj[b]=adj[b]||new Set()).add(a); });
   const legend = TYPE_ORDER.filter(ty=> wsEntities().some(e=>e.type===ty)).map(ty=>
-    `<button class="mm-leg${MM_HIDDEN.has(ty)?' off':''}" data-ty="${ty}"><i style="background:${MM_COLORS[ty]}"></i>${tr(TYPES[ty].label)}</button>`).join('');
+    `<button class="mm-leg${MM_HIDDEN.has(ty)?' off':''}" data-ty="${ty}">${mmLegendFace(ty)}${tr(TYPES[ty].label)}</button>`).join('');
   const personas = wsEntities().filter(x=>x.type==='Persona').sort((a,b)=>a.title.localeCompare(b.title));
   const filters = `
     <select class="mm-filter${MM_PERSONA?' on':''}" id="mmPersonaF" title="${esc(tr("Show only this persona's graph — her signals, evidence, ideas and the sessions behind them (2 hops). Clicking nodes still never hides anything."))}">
@@ -257,27 +333,43 @@ function renderMindMap(){
       <button class="mm-depth${MM_DEPTH===1?' on':''}" data-d="1">1</button>
       <button class="mm-depth${MM_DEPTH===2?' on':''}" data-d="2">2</button>
       <button class="mm-wholemap" id="mmWhole">✕ ${tr('show the whole graph')}</button></div>` : '';
-  const seg = `<div class="mm-seg" role="tablist">
-      <button class="${MM_VIEW!=='flow'?'on':''}" data-v="map">${tr('Map')}</button>
-      <button class="${MM_VIEW==='flow'?'on':''}" data-v="flow">${tr('Flow')}</button></div>`;
+  const view = MM_VIEW==='free' || MM_VIEW==='flow' ? MM_VIEW : 'map';
+  const segBtn = (v, label, icon)=> `<button class="${view===v?'on':''}" data-v="${v}" role="tab" aria-selected="${view===v}">${icon}${tr(label)}</button>`;
+  const seg = `<div class="mm-seg" role="tablist" aria-label="${esc(tr('Map view'))}">
+      ${segBtn('map', 'Columns', MM_ICO.cols)}${segBtn('free', 'Free', MM_ICO.free)}${segBtn('flow', 'Flow', MM_ICO.flow)}</div>`;
   if(MM_VIEW==='flow'){ mmRenderFlow(nodes, edges, seg, legend, focusBar, filters); mmWireBar(); return; }
+  /* Columns draws only the selected file's links — all of them at once is a
+     haze where half the lines jump two or more columns. The switch brings the
+     full web back for anyone who wants it. Free always draws everything:
+     there the web IS the picture. */
+  const allSw = FREE ? '' : `<button class="mm-allsw${MM_ALL_LINKS?' on':''}" id="mmAll" role="switch" aria-checked="${MM_ALL_LINKS}" title="${esc(tr('Draw every link, not just the selected file’s'))}"><i></i>${tr('All links')}</button>`;
   const nCount = ty=> nodes.filter(n=>n.type===ty).length;
+  const head = ty=> `${esc(tr(TYPES[ty].label))} <tspan class="mm-colcount">${nCount(ty)}</tspan>`;
+  const CHIP = L.COLW - 24;
+  const faceR = n=> FREE ? mmFreeR(n) : (n.type==='Persona' ? 15 : 4.5);
   grid.innerHTML = `
-    <div class="mm-bar">${seg}${filters}${legend}<span class="mm-stats">${trn(nodes.length,'{n} node','{n} nodes','{n} węzeł','{n} węzły','{n} węzłów')} · ${trn(edges.length,'{n} link','{n} links','{n} połączenie','{n} połączenia','{n} połączeń')} — ${tr('click for details, double-click to open, drag / wheel to move around')}</span></div>
+    <div class="mm-bar">${seg}${filters}${allSw}${legend}<span class="mm-stats">${trn(nodes.length,'{n} node','{n} nodes','{n} węzeł','{n} węzły','{n} węzłów')} · ${trn(edges.length,'{n} link','{n} links','{n} połączenie','{n} połączenia','{n} połączeń')} — ${tr('click for details, double-click to open, drag / wheel to move around')}</span></div>
     ${focusBar}
-    <div class="mm-canvas"><svg id="mmSvg" viewBox="0 0 ${VW} ${VH}" preserveAspectRatio="xMidYMid meet"
-      role="img" aria-label="${esc(tr('Graph diagram: {n} entities in {c} columns ({cols}), joined by {l} links. Every entity and every link here is also reachable as text — use the type tabs and the table view.')
+    <div class="mm-canvas"><svg id="mmSvg" class="${FREE?'mm-free':'mm-cols'}${MM_ALL_LINKS?' mm-all':''}" viewBox="0 0 ${VW} ${VH}" preserveAspectRatio="xMidYMid meet"
+      role="img" aria-label="${esc((FREE
+        ? tr('Graph diagram: {n} entities laid out freely by how they link, joined by {l} links. Every entity and every link here is also reachable as text — use the type tabs and the table view.')
+        : tr('Graph diagram: {n} entities in {c} columns ({cols}), joined by {l} links. Every entity and every link here is also reachable as text — use the type tabs and the table view.'))
         .replace('{n}', nodes.length).replace('{c}', L.colTypes.length)
         .replace('{cols}', L.colTypes.map(ty=>`${tr(TYPES[ty].label)} ${nCount(ty)}`).join(', ')).replace('{l}', edges.length))}">
       <g id="mmWorld">
-        <g id="mmHeads">${L.colTypes.map((ty,i)=>`<text class="mm-colhead" x="${L.PADX+i*L.COLW}" y="${L.PADY-58}">${tr(TYPES[ty].label)} (${nCount(ty)})</text>`).join('')}</g>
-        <g id="mmEdges">${edges.map(([a,b])=>`<line data-ea="${a}" data-eb="${b}"/>`).join('')}</g>
+        ${FREE ? '' : `<g id="mmHeads"><rect class="mm-headband" x="0" y="0" width="${L.W}" height="${L.PADY-40}"/>
+          ${L.colTypes.map((ty,i)=>`${i?`<line class="mm-coldiv" x1="${L.PADX-20+i*L.COLW}" y1="0" x2="${L.PADX-20+i*L.COLW}" y2="${L.H}"/>`:''}<text class="mm-colhead" data-ty="${ty}" x="${L.PADX-12+i*L.COLW}" y="${(L.PADY-40)/2+5}">${head(ty)}</text>`).join('')}</g>`}
+        <g id="mmEdges">${edges.map(([a,b])=>`<path data-ea="${a}" data-eb="${b}"/>`).join('')}</g>
         <g id="mmNodes">${nodes.map(n=>{
-          const R = 13 + Math.min(7, n.deg);
-          return `<g class="mm-node${n.excluded?' mm-exc':''}${n.id===MM_FOCUS?' mm-focus':''}" data-id="${n.id}">
-            <circle r="${R}" fill="${MM_COLORS[n.type]}"/>
-            ${mmNodeFace(n, R)}
-            <text dy="${R+13}">${esc(trim(n.title,26))}</text>
+          const r = faceR(n), P = n.type==='Persona';
+          const label = FREE
+            ? `<text class="${P?'mm-pname':''}" y="${r+15}">${esc(trim(n.title,26))}${P?'<tspan class="mm-dot">.</tspan>':''}</text>`
+            : `<text class="mm-rowlbl${P?' mm-pname':''}" x="${P?24:12}" dy="4.5">${esc(trim(n.title, P?14:21))}${P?'<tspan class="mm-dot">.</tspan>':''}</text>`;
+          const lbl = FREE && (P || n.type==='IdeaForImprovement' || !n.deg) ? ' lbl' : '';
+          return `<g class="mm-node t-${n.type}${n.excluded?' mm-exc':''}${n.deg?'':' mm-lone'}${n.id===MM_FOCUS?' mm-focus':''}${lbl}" data-id="${n.id}">
+            ${FREE||P ? '' : `<rect class="mm-chipbg" x="-12" y="-12" width="${CHIP}" height="24" rx="12"/>`}
+            ${mmNodeFace(n, r)}
+            ${label}
           </g>`; }).join('')}</g>
       </g>
     </svg><div class="mm-tip" id="mmTip" style="display:none"></div>
@@ -285,12 +377,27 @@ function renderMindMap(){
   mmWireBar();
   const svg = document.getElementById('mmSvg');
   const world = document.getElementById('mmWorld');
-  const lineEls = [...svg.querySelectorAll('#mmEdges line')];   // edges only — node icons (Feather) contain their own <line>s
+  const lineEls = [...svg.querySelectorAll('#mmEdges path')];
   const nodeEls = {}; [...svg.querySelectorAll('.mm-node')].forEach(el=> nodeEls[el.dataset.id]=el);
+  /* Columns: a link leaves the left file at the end of its row and enters the
+     right one just before its dot, so it runs through the gaps between rows,
+     never through the two labels it connects. A persona's row ends where her
+     name does. Two files in one column (one person, two sessions) get a
+     bracket on the right. */
+  if(!FREE) nodes.forEach(n=>{
+    const t = nodeEls[n.id].querySelector('text');
+    n.end = n.type==='Persona' ? 24 + t.getComputedTextLength() + 8 : CHIP - 12;
+  });
+  const edgePath = (a, b)=>{
+    if(FREE) return `M${a.x} ${a.y} L${b.x} ${b.y}`;
+    if(a.x > b.x) [a, b] = [b, a];
+    if(a.x === b.x){ const xr = a.x + a.end; return `M${xr} ${a.y} C${xr+26} ${a.y} ${xr+26} ${b.y} ${xr} ${b.y}`; }
+    const sx = a.x + a.end, ex = b.x - 12, k = Math.max(24, (ex-sx)/2);
+    return `M${sx} ${a.y} C${sx+k} ${a.y} ${ex-k} ${b.y} ${ex} ${b.y}`;
+  };
   const place = ()=>{
     nodes.forEach(n=> nodeEls[n.id].setAttribute('transform', `translate(${n.x},${n.y})`));
-    lineEls.forEach(l=>{ const a=byId[l.dataset.ea], b=byId[l.dataset.eb];
-      l.setAttribute('x1',a.x); l.setAttribute('y1',a.y); l.setAttribute('x2',b.x); l.setAttribute('y2',b.y); });
+    lineEls.forEach(l=> l.setAttribute('d', edgePath(byId[l.dataset.ea], byId[l.dataset.eb])));
   };
   place();
   /* camera: translate+scale on the world group — zoom really scales the map
@@ -300,23 +407,49 @@ function renderMindMap(){
     world.setAttribute('transform', `translate(${cam.tx},${cam.ty}) scale(${cam.k})`);
     svg.classList.toggle('mm-far', cam.k < 0.55);
   };
+  /* one SVG unit = one screen pixel, so text keeps its real size; Columns fits
+     the width and lets a long column run below the fold (pan to it), Free
+     fits the whole cloud */
+  let BW = VW, BH = VH;
   const fit = ()=>{
-    cam.k = Math.min((VW-60)/L.W, (VH-60)/L.H, 1.15);
-    cam.tx = (VW - L.W*cam.k)/2; cam.ty = (VH - L.H*cam.k)/2;
+    BW = svg.clientWidth || VW; BH = svg.clientHeight || VH;
+    svg.setAttribute('viewBox', `0 0 ${BW} ${BH}`);
+    /* Columns never shrinks text below 80% — when the drawer narrows the map,
+       the far columns slide off to the right (pan to them) instead of turning
+       into unreadable specks */
+    cam.k = FREE ? Math.min((BW-40)/L.W, (BH-40)/L.H, 1.15) : Math.max(0.8, Math.min((BW-24)/L.W, 1));
+    cam.tx = FREE || L.W*cam.k <= BW ? (BW - L.W*cam.k)/2 : 12;
+    cam.ty = FREE ? (BH - L.H*cam.k)/2 : 0;   // Columns hangs from the top: the heads are the first thing you read
+    const sel = MM_SELECTED && byId[MM_SELECTED];   // keep the selected file in view when the drawer narrows the map
+    if(sel && !FREE){ const sx = sel.x*cam.k + cam.tx; if(sx + 180 > BW) cam.tx -= sx + 200 - BW; }
     applyCam();
   };
   fit();
+  if(MM_RO) MM_RO.disconnect();                  // one observer per render, not one per visit
+  MM_RO = new ResizeObserver(()=> fit()); MM_RO.observe(svg);   // the drawer opening or closing resizes the map
   const pt = svg.createSVGPoint();
   const toSvg = ev=>{ pt.x=ev.clientX; pt.y=ev.clientY; return pt.matrixTransform(svg.getScreenCTM().inverse()); };
   const toWorld = p=>({ x:(p.x-cam.tx)/cam.k, y:(p.y-cam.ty)/cam.k });
   // hover: light up the neighborhood
   const tip = document.getElementById('mmTip');
+  /* light one file: it, its neighbours and the links between them; the rest
+     steps back. Hover lights temporarily, a click keeps it lit (MM_SELECTED).
+     Column heads say where the lit links land: "Signals 24 · 5 linked". */
+  const heads = [...svg.querySelectorAll('.mm-colhead')];
   const setFocus = id=>{
     const nb = adj[id]||new Set();
-    Object.entries(nodeEls).forEach(([nid,el])=> el.classList.toggle('dim', !!id && nid!==id && !nb.has(nid)));
+    Object.entries(nodeEls).forEach(([nid,el])=>{
+      el.classList.toggle('dim', !!id && nid!==id && !nb.has(nid));
+      el.classList.toggle('mm-sel', !!id && nid===id);
+      el.classList.toggle('mm-nb', !!id && nb.has(nid));
+    });
     lineEls.forEach(l=> l.classList.toggle('lit', !!id && (l.dataset.ea===id || l.dataset.eb===id)));
-    if(!id) lineEls.forEach(l=> l.classList.remove('lit'));
+    heads.forEach(h=>{
+      const ty = h.dataset.ty, k = id ? [...nb].filter(x=> byId[x] && byId[x].type===ty).length : 0;
+      h.innerHTML = head(ty) + (k ? ` <tspan class="mm-collinked">· ${trn(k,'{n} linked','{n} linked','{n} powiązany','{n} powiązane','{n} powiązanych')}</tspan>` : '');
+    });
   };
+  MM_LIGHT = setFocus;
   Object.entries(nodeEls).forEach(([id,el])=>{
     el.addEventListener('pointerenter', ()=>{
       setFocus(id);
@@ -324,7 +457,7 @@ function renderMindMap(){
       tip.innerHTML = `<b>${esc(n.title)}</b><small>${TYPES[n.type].singular} · ${n.deg} link${n.deg===1?'':'s'}${n.excluded?' · excluded from analysis':''} — double-click to open</small>`;
       tip.style.display='block';
     });
-    el.addEventListener('pointerleave', ()=>{ setFocus(null); tip.style.display='none'; });
+    el.addEventListener('pointerleave', ()=>{ setFocus(MM_SELECTED && nodeEls[MM_SELECTED] ? MM_SELECTED : null); tip.style.display='none'; });
     el.addEventListener('dblclick', ()=>{ location.hash='#'+id; });
     el.addEventListener('pointerdown', ev=>{           // drag a node; a still pointer = click → drawer
       ev.preventDefault(); ev.stopPropagation();
@@ -378,6 +511,8 @@ function mmWireBar(){
     if(MM_HIDDEN.has(ty)) MM_HIDDEN.delete(ty); else MM_HIDDEN.add(ty);
     renderMindMap();
   });
+  const all = grid.querySelector('#mmAll');
+  if(all) all.onclick = ()=>{ MM_ALL_LINKS = !MM_ALL_LINKS; store.set('at-mm-all', MM_ALL_LINKS ? '1' : '0'); renderMindMap(); };
   const pf = grid.querySelector('#mmPersonaF');
   // one way to narrow the map to a persona: picking here also drops a focus set from the drawer
   if(pf) pf.onchange = ()=>{ MM_PERSONA = pf.value || null; if(MM_FOCUS){ MM_FOCUS = null; suppressRoute = true; location.hash = '#mindmap'; } renderMindMap(); };
@@ -443,6 +578,7 @@ function mmOpenDrawer(id){
   const e = ENTITIES[id]; const dr = document.getElementById('mmDrawer');
   if(!e || !dr) return;
   MM_SELECTED = id;
+  if(MM_LIGHT) MM_LIGHT(id);
   const { edges } = mindmapData(MM_FOCUS, MM_DEPTH);
   const deg = edges.filter(([a,b])=> a===id||b===id).length;
   dr.innerHTML = `
@@ -473,6 +609,7 @@ function mmOpenDrawer(id){
 }
 function mmCloseDrawer(){
   MM_SELECTED = null;
+  if(MM_LIGHT) MM_LIGHT(null);
   const dr = document.getElementById('mmDrawer');
   if(dr) dr.classList.remove('open');
 }

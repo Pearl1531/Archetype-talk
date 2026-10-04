@@ -554,11 +554,18 @@ const PL = {
   'show the whole graph': 'pokaż cały graf',
   'Map': 'Mapa',
   'Flow': 'Przepływ',
+  'Columns': 'Kolumny',
+  'Free': 'Swobodny',
+  'Map view': 'Widok mapy',
+  'All links': 'Wszystkie połączenia',
+  'Draw every link, not just the selected file’s': 'Rysuj wszystkie połączenia, nie tylko zaznaczonego pliku',
+  'Graph diagram: {n} entities laid out freely by how they link, joined by {l} links. Every entity and every link here is also reachable as text — use the type tabs and the table view.':
+    'Diagram grafu: {n} elementów ułożonych swobodnie według połączeń, połączonych {l} liniami. Każdy element i każde połączenie są też dostępne jako tekst — w zakładkach typów i widoku tabeli.',
   'click for details, double-click to open, drag / wheel to move around':
     'kliknij po szczegóły, kliknij dwa razy, żeby otworzyć, przeciągaj / kółkiem przesuwaj',
   'thicker band = more research flowing through': 'grubsza wstęga = więcej badań przez nią płynie',
-  'no cross-type links to draw yet — the Map view shows everything':
-    'nie ma jeszcze połączeń między typami — widok Mapa pokazuje wszystko',
+  'no cross-type links to draw yet — the Columns and Free views show everything':
+    'nie ma jeszcze połączeń między typami — widoki Kolumny i Swobodny pokazują wszystko',
   'Close details': 'Zamknij szczegóły',
   'excluded from analysis': 'wyłączone z analizy',
   'Open file →': 'Otwórz plik →',

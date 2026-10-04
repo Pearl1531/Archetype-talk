@@ -16,6 +16,15 @@ minutes a new visitor spends in it.
 
 ### Added
 
+- **Three views of the research map** — *Columns* (one column per type with
+  its count on top), *Free* (an Obsidian-style layout where files settle by
+  how they link, dot size by link count) and *Flow* (the Sankey, band
+  thickness = research weight). All three share one shape language — solid =
+  heard, ring = read, dashed = assumption or a session set aside — and a click
+  keeps a file lit across them.
+- **Links on demand in Columns** — only the lit file's links are drawn, chip
+  edge to chip edge, and the column heads say where they land
+  ("Signals 24 · 5 linked"); an *All links* switch brings the full web back.
 - **Talk to a persona** — every persona has a button that copies the line
   starting the conversation in your agent's own dialect (`/persona-talk …`,
   `$persona-talk …` for Codex, a skill request for Gemini), remembering which

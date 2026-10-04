@@ -192,11 +192,8 @@
   body.lin-mm .mm-filter { background: var(--bg-elev); border-color: var(--bg-elev-2); color: var(--text-soft); border-radius: var(--r-pill); }
   body.lin-mm .mm-filter.on { border-color: var(--accent); color: var(--text); }
   body.lin-mm .mm-stats { color: var(--text-mute); }
-  body.lin-mm .mm-colhead { fill: var(--text-mute); letter-spacing: 1.2px; }
-  body.lin-mm #mmEdges line { stroke: var(--line); }
-  body.lin-mm #mmEdges line.lit { stroke: var(--accent); }
-  body.lin-mm .mm-node circle { stroke: var(--bg-elev); stroke-width: 2; }
-  body.lin-mm .mm-node.mm-focus circle { stroke: var(--accent); stroke-width: 3; }
+  body.lin-mm #mmEdges path { stroke: var(--text); }
+  body.lin-mm #mmEdges path.lit { stroke: var(--accent); }
   body.lin-mm .mm-node text { fill: var(--text-soft); stroke: var(--bg-elev); }
   body.lin-mm .mm-focus-bar { background: var(--bg-elev); border: none; box-shadow: 0 0 0 1px rgba(0,0,0,.05); border-radius: var(--r-md); color: var(--text-dim); }
   body.lin-mm .mm-depth { border-color: var(--bg-elev-2); border-radius: var(--r-pill); }
@@ -300,20 +297,57 @@
     border-radius: var(--r-lg); box-shadow: var(--shadow-subtle); overflow: hidden; }
   .mm-canvas > svg { display: block; flex: 1; min-width: 0; width: 100%; height: min(72vh, 780px); cursor: grab; touch-action: none; }
   .mm-canvas > svg:active { cursor: grabbing; }
-  #mmEdges line { stroke: var(--line); stroke-width: 1.1; transition: stroke .12s; }
-  #mmEdges line.lit { stroke: var(--text); stroke-width: 1.6; }
-  .mm-node { cursor: pointer; }
-  .mm-node circle { stroke: var(--bg-elev); stroke-width: 1.5; transition: opacity .12s; }
-  .mm-node text { font-size: 10.5px; fill: var(--text-dim); text-anchor: middle; pointer-events: none;
-    paint-order: stroke; stroke: var(--bg-elev); stroke-width: 3px; }
-  .mm-node.dim { opacity: .18; }
-  .mm-node.mm-exc circle { opacity: .45; stroke-dasharray: 2 2; }
-  .mm-node.mm-focus circle { stroke: var(--text); stroke-width: 3px; }
-  .mm-colhead { font-size: 14px; letter-spacing: 1.6px; text-transform: uppercase; font-weight: 600;
-    fill: var(--text-dim); text-anchor: middle; opacity: .75; }
-  .mm-node text { transition: opacity .15s; }
+  /* links: Columns draws only the lit file's (or all, with the switch);
+     Free always draws the whole web, faint */
+  #mmEdges path { fill: none; stroke: var(--text); stroke-opacity: .12; stroke-width: 1; transition: stroke-opacity .12s; }
+  #mmSvg.mm-cols #mmEdges path { display: none; }
+  #mmSvg.mm-cols.mm-all #mmEdges path, #mmSvg #mmEdges path.lit { display: inline; }
+  #mmEdges path.lit { stroke: var(--accent); stroke-opacity: 1; stroke-width: 2; }
+  .mm-node { cursor: pointer; transition: opacity .12s; }
+  .mm-node.dim { opacity: .38; }
+  /* one shape per type — solid = heard, ring = read, dashed = assumption / set aside */
+  .mm-s { stroke-width: 1.5; }
+  .mm-solid { fill: var(--text); stroke: none; }
+  .mm-ring { fill: var(--bg-elev); stroke: var(--text); }
+  .mm-muted { fill: var(--text-mute); stroke: none; opacity: .55; }
+  .mm-paper { fill: var(--bg-elev-2); stroke: var(--text); }
+  .mm-dash { stroke-dasharray: 2.5 2; }
+  .mm-ava { fill: var(--bg-elev-2); stroke: var(--text); stroke-width: 1.3; }
+  .mm-ini { font-size: 14px; font-weight: 800; fill: var(--text); text-anchor: middle; }
+  .mm-node text { font-size: 13px; fill: var(--text-soft); pointer-events: none;
+    paint-order: stroke; stroke: var(--bg-elev); stroke-width: 3.5px; stroke-linejoin: round; transition: opacity .15s; }
+  .mm-node text.mm-rowlbl { text-anchor: start; }
+  #mmSvg.mm-free .mm-node text { text-anchor: middle; font-size: 12px; opacity: 0; }
+  #mmSvg.mm-free .mm-node.lbl text, #mmSvg.mm-free .mm-node.mm-sel text,
+  #mmSvg.mm-free .mm-node.mm-nb text, #mmSvg.mm-free .mm-node:hover text { opacity: 1; }
+  .mm-node .mm-pname { font-size: 15px; font-weight: 800; fill: var(--text); letter-spacing: -.3px; }
+  .mm-node .mm-dot { fill: var(--accent); }
+  .mm-node.mm-lone text { fill: var(--accent-text); font-weight: 600; }
+  .mm-node.mm-exc text { fill: var(--text-dim); }
+  /* the lit file and its neighbours */
+  .mm-chipbg { fill: transparent; stroke: none; }
+  .mm-node.mm-nb .mm-chipbg { fill: var(--bg-elev); stroke: var(--accent); stroke-width: 1.5; }
+  .mm-node.mm-sel .mm-chipbg { fill: var(--accent); }
+  .mm-node.mm-sel text, .mm-node.mm-nb text { fill: var(--text); font-weight: 700; }
+  .mm-node.mm-sel .mm-rowlbl { stroke: none; fill: var(--primary-fg, #000); }
+  .mm-node.mm-sel .mm-s, .mm-node.mm-focus .mm-s { stroke: var(--accent); stroke-width: 3; }
+  .mm-node.mm-nb.t-Persona .mm-ava { stroke: var(--accent); stroke-width: 3; }
+  #mmSvg.mm-free .mm-node.mm-sel .mm-s { fill: var(--accent); }
+  /* column heads: the top split — one column per type, its count, and where the lit links land */
+  .mm-headband { fill: var(--bg-elev-2); }
+  .mm-coldiv { stroke: var(--line); stroke-width: 1; }
+  .mm-colhead { font-size: 13px; font-weight: 700; fill: var(--text); text-anchor: start; }
+  .mm-colhead .mm-colcount { font-weight: 500; fill: var(--text-dim); }
+  .mm-colhead .mm-collinked { font-weight: 700; fill: var(--accent-text); }
   #mmSvg.mm-far .mm-node text { opacity: 0; }
-  #mmSvg.mm-far .mm-colhead { opacity: 1; }
+  .mm-legsw { flex: none; overflow: visible; }
+  .mm-allsw { display: inline-flex; align-items: center; gap: 7px; padding: 4px 11px 4px 5px; border-radius: var(--r-pill);
+    border: 1px solid var(--line); background: var(--bg-elev); color: var(--text-soft); font: inherit; font-size: var(--text-caption); cursor: pointer; }
+  .mm-allsw i { width: 26px; height: 16px; border-radius: 99px; background: var(--line); position: relative; transition: background .15s; }
+  .mm-allsw i::after { content: ''; position: absolute; left: 2px; top: 2px; width: 12px; height: 12px; border-radius: 50%; background: var(--bg-elev); transition: transform .15s; }
+  .mm-allsw.on { color: var(--text); border-color: var(--text); }
+  .mm-allsw.on i { background: var(--text); }
+  .mm-allsw.on i::after { transform: translateX(10px); }
   .mm-focus-bar { display: flex; align-items: center; gap: 8px; font-size: var(--text-caption); color: var(--text-dim);
     padding: 6px 12px; background: var(--bg-elev-2); border: 1px solid var(--line); border-radius: var(--r-pill); }
   .mm-depth { border: 1px solid var(--line); background: var(--bg-elev); border-radius: var(--r-sm);
@@ -343,15 +377,21 @@
   .mm-tip small { color: var(--text-dim); font-size: var(--text-caption); }
   /* Flow view (Sankey) */
   .mm-seg { display: inline-flex; padding: 2px; background: var(--bg-elev-2); border: 1px solid var(--line); border-radius: var(--r-pill); }
-  .mm-seg button { border: none; background: none; padding: 3px 13px; border-radius: var(--r-pill); font-size: var(--text-caption);
+  .mm-seg button { display: inline-flex; align-items: center; gap: 6px; border: none; background: none; padding: 3px 13px; border-radius: var(--r-pill); font-size: var(--text-caption);
     color: var(--text-dim); cursor: pointer; }
   .mm-seg button.on { background: var(--bg-elev); color: var(--text); font-weight: 600; box-shadow: 0 1px 3px rgba(0,0,0,.12); }
   .mm-canvas-flow > svg.mm-flow-svg { height: auto; max-height: none; cursor: default; }
-  .mm-canvas-flow .mm-colhead { font-size: 11px; letter-spacing: .8px; }
-  .mm-fband { opacity: .15; transition: opacity .15s; cursor: pointer; }
-  .mm-fband.on { opacity: .5; }
+  .mm-canvas-flow .mm-colhead { font-size: 12px; text-anchor: middle; }
+  .mm-fband { fill: var(--text); opacity: .09; transition: opacity .15s; cursor: pointer; }
+  .mm-fband.on { fill: var(--accent); opacity: .7; }
   svg.mm-dimming .mm-fband:not(.on) { opacity: .04; }
   .mm-fnode rect { transition: opacity .15s; }
+  .mm-fbar { fill: var(--text); }
+  .mm-fbar.t-Evidence, .mm-fbar.t-Hypothesis, .mm-fbar.t-IdeaForImprovement { fill: var(--bg-elev); stroke: var(--text); stroke-width: 1.3; }
+  .mm-fbar.t-Hypothesis { stroke-dasharray: 3 2; }
+  .mm-fbar.t-Transcript, .mm-fbar.t-Competitor, .mm-fbar.t-Archetype { fill: var(--text-mute); }
+  .mm-fnode.mm-sel .mm-fbar { fill: var(--accent); stroke: none; }
+  svg.mm-dimming .mm-fnode:not(.mm-sel) { opacity: .7; }
   .mm-fnode text { font-size: 13px; fill: var(--text-soft); pointer-events: none;
     paint-order: stroke; stroke: var(--bg-elev); stroke-width: 3px; }
   .mm-fnode .mm-fcount { fill: var(--text-dim); font-size: 11px; }
