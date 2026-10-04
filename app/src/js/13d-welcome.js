@@ -59,9 +59,9 @@ function wcField(canvas){
     ctx.clearRect(0, 0, w, h);
     lines.forEach(l=>{
       const g = ctx.createLinearGradient(0, 0, w, 0);
-      g.addColorStop(0, 'rgba(255,255,255,0)');
-      g.addColorStop(0.5, 'rgba(255,255,255,' + l.a.toFixed(3) + ')');
-      g.addColorStop(1, 'rgba(255,255,255,0)');
+      g.addColorStop(0, 'rgba(10,10,10,0)');
+      g.addColorStop(0.5, 'rgba(10,10,10,' + l.a.toFixed(3) + ')');
+      g.addColorStop(1, 'rgba(10,10,10,0)');
       ctx.strokeStyle = g; ctx.lineWidth = 1;
       ctx.beginPath(); ctx.moveTo(0, l.y); ctx.lineTo(w, l.y); ctx.stroke();
     });
@@ -74,12 +74,12 @@ function wcField(canvas){
       const near = dist < WC_PULL_R ? 1 - dist / WC_PULL_R : 0;
       const a = Math.min(0.85, d.a * (0.7 + 0.3 * Math.sin(d.t)) + near * 0.42);
       if(near > 0.35){                                    // the thread back to the cursor
-        ctx.strokeStyle = 'rgba(255,255,255,' + ((near - 0.35) * 0.11).toFixed(3) + ')';
+        ctx.strokeStyle = 'rgba(10,10,10,' + ((near - 0.35) * 0.11).toFixed(3) + ')';
         ctx.lineWidth = 1;
         ctx.beginPath(); ctx.moveTo(ox, oy); ctx.lineTo(mx, my); ctx.stroke();
       }
       ctx.fillStyle = d.ember ? 'rgba(255,77,0,' + (a * 0.95).toFixed(3) + ')'
-                              : 'rgba(255,255,255,' + a.toFixed(3) + ')';
+                              : 'rgba(10,10,10,' + a.toFixed(3) + ')';
       ctx.beginPath(); ctx.arc(ox, oy, d.r + near * 0.7, 0, Math.PI * 2); ctx.fill();
     });
   }

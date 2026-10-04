@@ -150,7 +150,7 @@
 
   /* ---------- Transcript highlights (Dovetail-style) ---------- */
   mark.hl {
-    background: #2a2108; color: inherit; border-radius: 2px;
+    background: #FFF4D6; color: inherit; border-radius: 2px;
     padding: 1px 3px; cursor: pointer; box-shadow: inset 0 -2px 0 #f59e0b55;
     transition: background .12s;
   }
@@ -161,7 +161,7 @@
     font-size: 14px; font-weight: 600; letter-spacing: .3px; text-transform: uppercase;
     vertical-align: middle; user-select: none;
   }
-  .hl-count { background: #2a2108; border-color: #f59e0b55; }
+  .hl-count { background: #FFF4D6; border-color: #f59e0b55; }
   .hl-float {
     position: absolute; z-index: 620; padding: 6px 12px; border-radius: var(--r-pill);
     background: var(--text); color: var(--bg-elev); border: none;
@@ -207,7 +207,7 @@
   }
   .doc-tools button:hover { border-color: var(--text-dim); }
   #findCount { font-size: var(--text-caption); min-width: 46px; font-variant-numeric: tabular-nums; }
-  .find-hit { background: #2a1608; border-radius: 2px; box-shadow: inset 0 -2px 0 #3b82f688; }
+  .find-hit { background: #FFE7D6; border-radius: 2px; box-shadow: inset 0 -2px 0 #3b82f688; }
   .find-hit.cur { background: #ff8a50; }
   .kwic { font-size: var(--text-caption); color: var(--text-soft); margin-top: 4px; padding-left: 8px; border-left: 2px solid var(--line); }
 
@@ -268,16 +268,16 @@
     font-size: 14px; font-weight: 600; letter-spacing: .5px; text-transform: uppercase;
     border: 1px solid;
   }
-  .hypo-status.open     { color: #e8b93c; background: #2a2108; border-color: #f59e0b55; }
-  .hypo-status.promoted { color: #35c46f; background: #0f2418; border-color: #22c55e55; }
+  .hypo-status.open     { color: #8A5A00; background: #FFF4D6; border-color: #f59e0b55; }
+  .hypo-status.promoted { color: #1F7A4D; background: #E7F6EC; border-color: #22c55e55; }
   .hypo-status.rejected { color: var(--text-dim); background: var(--bg-elev-2); border-color: var(--line); }
   .hypo-promote {
     display: block; width: 100%; margin-top: var(--s-3); padding: 7px 10px;
     border: 1px solid #22c55e88; border-radius: var(--r-md);
-    background: #0f2418; color: #35c46f; font-size: var(--text-caption); font-weight: 600;
+    background: #E7F6EC; color: #1F7A4D; font-size: var(--text-caption); font-weight: 600;
     cursor: pointer; text-align: left; transition: background .12s;
   }
-  .hypo-promote:hover { background: #173a26; }
+  .hypo-promote:hover { background: #D4F0DE; }
   .hypo-promote-cell { display: inline-block; width: auto; margin: 0 0 0 6px; padding: 2px 8px; font-size: 14px; }
   .idea-pick-row .muted, .idea-field .muted { color: var(--text-dim); font-weight: 400; text-transform: none; }
   .row-acts { display: inline-flex; gap: 4px; margin-left: 6px; }
@@ -294,7 +294,7 @@
     padding: 4px 8px; margin: -4px -8px; border-radius: var(--r-md);
     max-width: 100%;
   }
-  .ws-btn:hover { background: rgba(255,255,255,0.08); }
+  .ws-btn:hover { background: rgba(10,10,10,0.06); }
   .ws-btn svg { color: var(--text-dim); flex: none; }
   .ws-label { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; max-width: 150px; }
   .ws-menu { /* fixed: escapes the sidebar's overflow clip and the sticky topbar's stacking context */
@@ -313,7 +313,7 @@
   .ws-item:hover { background: var(--bg-elev-2); }
   /* where you are — a statement, not a control */
   .ws-current { background: var(--bg-elev-2); cursor: default; }
-  .ws-item.on { background: rgba(255,255,255,0.08); }
+  .ws-item.on { background: rgba(10,10,10,0.06); }
   .ws-item-ico { flex: none; }
   .ws-item-txt { flex: 1; min-width: 0; display: flex; flex-direction: column; }
   .ws-item-txt b { font-weight: 600; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
@@ -331,11 +331,11 @@
   .empty-state .empty-note { margin-top: var(--s-3); color: var(--text-mute); font-size: var(--fs-sm); }
 
   /* ---------- local drafts ---------- */
-  .draft-badge { background: #241307 !important; border-color: #3b82f655 !important; color: #ff8a50 !important; }
+  .draft-badge { background: #FFF1E8 !important; border-color: #3b82f655 !important; color: #C23A00 !important; }
   .draft-src { color: #ff8a50; }
   .idea-draft-note {
     margin-top: var(--s-3); padding: var(--s-2) var(--s-3);
-    background: #241307; border: 1px solid #3b82f633; border-radius: var(--r-md);
+    background: #FFF1E8; border: 1px solid #3b82f633; border-radius: var(--r-md);
     font-size: var(--text-caption); color: var(--text-soft);
   }
   /* ---- Levels (L1–L5) — one badge for persona maturity and claim weight ----

@@ -16,7 +16,7 @@
      the edges so the card sits in the lit part of it */
   body.welcome-open #welcomeView::before {
     content: ''; position: absolute; inset: 0; pointer-events: none;
-    background: radial-gradient(circle at 1px 1px, rgba(255,255,255,.07) 1px, transparent 1.5px) 0 0 / 26px 26px;
+    background: radial-gradient(circle at 1px 1px, rgba(10,10,10,.09) 1px, transparent 1.5px) 0 0 / 26px 26px;
     -webkit-mask-image: radial-gradient(ellipse 70% 65% at 50% 45%, #000 0%, rgba(0,0,0,.35) 55%, transparent 100%);
     mask-image: radial-gradient(ellipse 70% 65% at 50% 45%, #000 0%, rgba(0,0,0,.35) 55%, transparent 100%);
   }
@@ -59,9 +59,9 @@
     width: 60px; height: 60px; display: grid; place-items: center;
     border: 1px solid var(--line); border-radius: var(--r-lg);
     background:
-      radial-gradient(circle at 1px 1px, rgba(255,255,255,.10) 1px, transparent 1.6px) 0 0 / 7px 7px,
+      radial-gradient(circle at 1px 1px, rgba(10,10,10,.10) 1px, transparent 1.6px) 0 0 / 7px 7px,
       linear-gradient(150deg, var(--bg-elev-2), var(--bg));
-    box-shadow: 0 0 0 1px rgba(255,255,255,.03), 0 8px 24px rgba(0,0,0,.5);
+    box-shadow: 0 0 0 1px rgba(10,10,10,.05), 0 8px 24px rgba(10,10,10,.12);
     margin-bottom: var(--s-2);
   }
   .wc-mark span {

@@ -11,6 +11,22 @@ should mark a release that happened, not manufacture one after the fact.
 
 ## [Unreleased]
 
+### Changed
+
+- **The app is light now (Editorial).** Paper, ink and one ember accent
+  across every screen: one palette swap in the shared tokens, plus the handful
+  of colours that had assumed a dark canvas.
+- **The left rail, rebuilt.** The project is a card with its own icon (the
+  Demo shows Spotify's app icon, bundled — nothing is fetched), a search field
+  that opens the filter on All files (⌘K / Ctrl+K from anywhere), Tabler icons,
+  and the active row as a solid ink pill.
+- **Overview, redesigned.** The project's name is the headline, with its
+  personas beside it. Below are four numbers, the persona cards (how solid
+  each one is, and *Ask*), four health readings, where the data disagrees,
+  when you listened, the open questions, and one dark band for the next round.
+  Every explanation sits behind an ⓘ instead of on the page; the demo's
+  "three things to try" card is gone until a proper onboarding replaces it.
+
 A UX pass over the browser app, from a product-design audit of the first ten
 minutes a new visitor spends in it.
 

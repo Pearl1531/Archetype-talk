@@ -32,8 +32,14 @@ function setWs(w){
    at: telling you where you are, and the doors out. */
 function renderWsMenu(){
   const label = document.getElementById('wsLabel');
-  const name = WS==='demo' ? tr('Demo') : projectDisplayName();
+  const name = WS==='demo' ? tr('Spotify listeners') : projectDisplayName();
   label.textContent = name;
+  /* the project's face: the demo studies Spotify, so it wears Spotify's app
+     icon (bundled, 1.8 KB WebP); a real project gets its initial on ink */
+  document.getElementById('wsSub').textContent = WS==='demo' ? tr('Example project') : tr('Your project');
+  document.getElementById('wsIco').innerHTML = WS==='demo'
+    ? '<img src="__IMG:spotify-app-icon.webp__" alt="" width="36" height="36">'
+    : `<span class="ws-ini">${esc((name.trim()[0] || '?').toUpperCase())}</span>`;
   const menu = document.getElementById('wsMenu');
   const desc = WS==='demo'
     ? tr('example dataset — a fully editable sandbox (this browser only), never mixes with your work')
@@ -159,7 +165,7 @@ function hideGalleryChrome(){   // bars are siblings of the grid; pages that rep
 function syncLinTheme(){
   document.body.classList.toggle('lin-mm', MINDMAP_ACTIVE);
 }
-const ALL_ICON = '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/></svg>';
+const ALL_ICON = '<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 4l-8 4l8 4l8 -4l-8 -4"/><path d="M4 12l8 4l8 -4"/><path d="M4 16l8 4l8 -4"/></svg>';
 function renderTabs(){
   const list = wsEntities();
   const counts = {}; list.forEach(e=> counts[e.type]=(counts[e.type]||0)+1);

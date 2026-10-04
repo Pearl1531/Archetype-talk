@@ -42,13 +42,13 @@
     --text-heading: 30px;    --leading-heading: 1.2;     --tracking-heading: -0.75px;
 
     /* Shadows */
-    --shadow-subtle: 0 0 0 1px rgba(255,255,255,0.03);
+    --shadow-subtle: 0 1px 2px rgba(10,10,10,0.06);
 
     /* Layout widths — three tiers, no per-page values:
        grid pages fill .content (--width-content); single-column lists fill it too (--width-column),
        so a list and a grid end at the same right edge;
        doc/reading pages share --width-reading */
-    --sidebar-w: 240px;   /* the left rail; the top bar starts where it ends */
+    --sidebar-w: 264px;   /* the left rail; the top bar starts where it ends */
     --width-content: 1280px;
     --width-column: 100%;
     --width-reading: 800px;
@@ -75,35 +75,36 @@
      spacing — is named once, right here. */
   :root {
     /* Surfaces — canvas, then two steps up */
-    --bg: #090909;
-    --bg-elev: #141414;
-    --bg-elev-2: #1c1c1c;
-    --line: #262626;
-    --line-soft: #1a1a1a;
-    --edge: #3a3a3a;
-    --hover-bg: #1c1c1c;
-    --hover-border: #3a3a3a;
+    --bg: #EFEDE7;        /* paper */
+    --bg-elev: #FFFFFF;   /* a sheet on the paper */
+    --bg-elev-2: #F4F2EC; /* a field inside a sheet */
+    --bg-rail: #E8E5DD;   /* the left rail, one step darker than the page */
+    --line: #DDD9D0;
+    --line-soft: #E8E5DD;
+    --edge: #C9C4B8;
+    --hover-bg: #F4F2EC;
+    --hover-border: #C9C4B8;
 
     /* Ink — four steps; --text-mute is the darkest that still clears 4.5:1 on --bg */
-    --text: #ffffff;
-    --text-soft: #d6d6d6;
-    --text-dim: #999999;
-    --text-mute: #8a8a8a;
+    --text: #0A0A0A;
+    --text-soft: #2E2C28;
+    --text-dim: #6B675F;
+    --text-mute: #6B675F;
 
     /* Accent-derived (--accent itself lives in 08-shared-skin.css) */
     --accent-soft: color-mix(in srgb, var(--accent, #ff4d00) 15%, transparent);
-    --accent-text: color-mix(in srgb, var(--accent, #ff4d00) 65%, #ffffff);
+    --accent-text: #C23A00;   /* ember dark enough for text on paper (4.9:1) */
 
     /* Status */
     --warn: #f59e0b;
-    --warn-text: #fbbf24; --danger-text: #f87171;
+    --warn-text: #8A5A00; --danger-text: #B42318;
 
     /* Primary action is an inverted surface, not a brand colour */
-    --primary-bg: #ffffff;
-    --primary-fg: #000000;
+    --primary-bg: #0A0A0A;
+    --primary-fg: #FFFFFF;
 
     /* Depth */
-    --shadow: 0 10px 30px rgba(0, 0, 0, 0.55);
+    --shadow: 0 16px 36px -14px rgba(10, 10, 10, 0.28);
 
     /* Radii — utility → pill; text buttons are always pills */
     --r-xs: 4px; --r-sm: 6px; --r-md: 10px; --r-lg: 15px; --r-xl: 20px; --r-pill: 100px;
@@ -189,7 +190,7 @@
   .nav-item svg { flex: none; color: currentColor; opacity: .75; }
   .nav-item .n {
     margin-left: auto; font-size: var(--text-caption); font-weight: 500;
-    color: var(--text-dim); background: rgba(255,255,255,0.08);
+    color: var(--text-dim); background: rgba(10,10,10,0.06);
     padding: 1px 7px; border-radius: var(--r-pill); min-width: 22px; text-align: center;
   }
   .nav-item.active .n { background: var(--bg); }
@@ -382,7 +383,7 @@
 
   /* ---------- Transcript highlights (Dovetail-style) ---------- */
   mark.hl {
-    background: #2a2108; color: inherit; border-radius: 2px;
+    background: #FFF4D6; color: inherit; border-radius: 2px;
     padding: 1px 3px; cursor: pointer; box-shadow: inset 0 -2px 0 #f59e0b55;
     transition: background .12s;
   }
@@ -393,7 +394,7 @@
     font-size: 14px; font-weight: 600; letter-spacing: .3px; text-transform: uppercase;
     vertical-align: middle; user-select: none;
   }
-  .hl-count { background: #2a2108; border-color: #f59e0b55; }
+  .hl-count { background: #FFF4D6; border-color: #f59e0b55; }
   .hl-float {
     position: absolute; z-index: 620; padding: 6px 12px; border-radius: var(--r-pill);
     background: var(--text); color: var(--bg-elev); border: none;
@@ -439,7 +440,7 @@
   }
   .doc-tools button:hover { border-color: var(--text-dim); }
   #findCount { font-size: var(--text-caption); min-width: 46px; font-variant-numeric: tabular-nums; }
-  .find-hit { background: #2a1608; border-radius: 2px; box-shadow: inset 0 -2px 0 #3b82f688; }
+  .find-hit { background: #FFE7D6; border-radius: 2px; box-shadow: inset 0 -2px 0 #3b82f688; }
   .find-hit.cur { background: #ff8a50; }
   .kwic { font-size: var(--text-caption); color: var(--text-soft); margin-top: 4px; padding-left: 8px; border-left: 2px solid var(--line); }
 
@@ -500,16 +501,16 @@
     font-size: 14px; font-weight: 600; letter-spacing: .5px; text-transform: uppercase;
     border: 1px solid;
   }
-  .hypo-status.open     { color: #e8b93c; background: #2a2108; border-color: #f59e0b55; }
-  .hypo-status.promoted { color: #35c46f; background: #0f2418; border-color: #22c55e55; }
+  .hypo-status.open     { color: #8A5A00; background: #FFF4D6; border-color: #f59e0b55; }
+  .hypo-status.promoted { color: #1F7A4D; background: #E7F6EC; border-color: #22c55e55; }
   .hypo-status.rejected { color: var(--text-dim); background: var(--bg-elev-2); border-color: var(--line); }
   .hypo-promote {
     display: block; width: 100%; margin-top: var(--s-3); padding: 7px 10px;
     border: 1px solid #22c55e88; border-radius: var(--r-md);
-    background: #0f2418; color: #35c46f; font-size: var(--text-caption); font-weight: 600;
+    background: #E7F6EC; color: #1F7A4D; font-size: var(--text-caption); font-weight: 600;
     cursor: pointer; text-align: left; transition: background .12s;
   }
-  .hypo-promote:hover { background: #173a26; }
+  .hypo-promote:hover { background: #D4F0DE; }
   .hypo-promote-cell { display: inline-block; width: auto; margin: 0 0 0 6px; padding: 2px 8px; font-size: 14px; }
   .idea-pick-row .muted, .idea-field .muted { color: var(--text-dim); font-weight: 400; text-transform: none; }
   .row-acts { display: inline-flex; gap: 4px; margin-left: 6px; }
@@ -526,7 +527,7 @@
     padding: 4px 8px; margin: -4px -8px; border-radius: var(--r-md);
     max-width: 100%;
   }
-  .ws-btn:hover { background: rgba(255,255,255,0.08); }
+  .ws-btn:hover { background: rgba(10,10,10,0.06); }
   .ws-btn svg { color: var(--text-dim); flex: none; }
   .ws-label { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; max-width: 150px; }
   .ws-menu { /* fixed: escapes the sidebar's overflow clip and the sticky topbar's stacking context */
@@ -545,7 +546,7 @@
   .ws-item:hover { background: var(--bg-elev-2); }
   /* where you are — a statement, not a control */
   .ws-current { background: var(--bg-elev-2); cursor: default; }
-  .ws-item.on { background: rgba(255,255,255,0.08); }
+  .ws-item.on { background: rgba(10,10,10,0.06); }
   .ws-item-ico { flex: none; }
   .ws-item-txt { flex: 1; min-width: 0; display: flex; flex-direction: column; }
   .ws-item-txt b { font-weight: 600; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
@@ -563,11 +564,11 @@
   .empty-state .empty-note { margin-top: var(--s-3); color: var(--text-mute); font-size: var(--fs-sm); }
 
   /* ---------- local drafts ---------- */
-  .draft-badge { background: #241307 !important; border-color: #3b82f655 !important; color: #ff8a50 !important; }
+  .draft-badge { background: #FFF1E8 !important; border-color: #3b82f655 !important; color: #C23A00 !important; }
   .draft-src { color: #ff8a50; }
   .idea-draft-note {
     margin-top: var(--s-3); padding: var(--s-2) var(--s-3);
-    background: #241307; border: 1px solid #3b82f633; border-radius: var(--r-md);
+    background: #FFF1E8; border: 1px solid #3b82f633; border-radius: var(--r-md);
     font-size: var(--text-caption); color: var(--text-soft);
   }
   /* ---- Levels (L1–L5) — one badge for persona maturity and claim weight ----
@@ -701,7 +702,7 @@
   body.lin-all .set-input { color: var(--text); }
   body.lin-all .set-input:focus { background: var(--bg-elev); border-color: var(--accent); box-shadow: 0 0 0 3px rgba(0,113,227,.15); }
   body.lin-all .set-note, body.lin-all .set-row .desc { color: var(--text-dim); }
-  body.lin-all .set-banner { background: #2a2108; border: none; color: #e8b93c; border-radius: var(--r-lg); }
+  body.lin-all .set-banner { background: #FFF4D6; border: none; color: #8A5A00; border-radius: var(--r-lg); }
   body.lin-all .switch input:checked + i { background: var(--accent); }
   body.lin-all .seg { background: var(--bg-elev-2); }
   body.lin-all .seg button { color: var(--text-soft); }
@@ -739,7 +740,7 @@
   body.lin-all .idea-field input, body.lin-all .idea-field textarea, body.lin-all .idea-pick, body.lin-all .idea-pick-search { color: var(--text); }
   body.lin-all .idea-field input:focus, body.lin-all .idea-field textarea:focus { background: var(--bg-elev); border-color: var(--accent); }
   body.lin-all .idea-pick-row:hover { background: var(--bg-elev-2); }
-  body.lin-all .idea-draft-note { background: #241307; border: none; color: #cc3e00; border-radius: var(--r-lg); }
+  body.lin-all .idea-draft-note { background: #FFF1E8; border: none; color: #C23A00; border-radius: var(--r-lg); }
   body.lin-all .toast { background: var(--text); color: var(--bg-elev); border-radius: var(--r-lg); box-shadow: 0 8px 30px rgba(0,0,0,.28); }
   body.lin-all .toast button { color: #ff8a50; }
   body.lin-all .didyouknow { background: var(--bg-elev); border-radius: var(--r-lg); }
@@ -748,7 +749,7 @@
   body.lin-all .didyouknow .kicker { color: var(--accent-text); }
   body.lin-all .card.slot { background: var(--bg-elev); border-radius: var(--r-lg); color: var(--text-dim); }
   body.lin-all .card.slot .glyph { color: var(--text-mute); }
-  body.lin-all .ro-banner { background: #2a2108; border: none; color: #e8b93c; border-radius: var(--r-lg); }
+  body.lin-all .ro-banner { background: #FFF4D6; border: none; color: #8A5A00; border-radius: var(--r-lg); }
   body.lin-all .stale-note.hard { color: var(--accent-text); }
   /* Competitors G2-style list under the Apple skin */
   body.lin-all .cg-name { color: var(--text); }
@@ -833,7 +834,7 @@
   .p-toc { grid-column: span 3; position: sticky; top: 76px; display: flex; flex-direction: column; gap: 1px; }
   .p-toc a { padding: 7px 12px; border-radius: var(--r-md); font-size: 14px; color: var(--text-dim); text-decoration: none; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; transition: background .12s, color .12s; }
   .p-toc a:hover { background: var(--bg-elev-2); color: var(--text); }
-  .p-toc a.active { background: #241307; color: var(--accent-text); font-weight: 500; }
+  .p-toc a.active { background: #FFF1E8; color: var(--accent-text); font-weight: 500; }
   /* content takes 8 cols, the 12th stays empty — air on the right, not full-bleed text */
   .persona-detail .doc { grid-column: 4 / span 8; margin-top: 0; max-width: none; }
   .persona-detail .doc p, .persona-detail .doc li { max-width: 70ch; }
@@ -913,7 +914,7 @@
   .mm-node.mm-nb .mm-chipbg { fill: var(--bg-elev); stroke: var(--accent); stroke-width: 1.5; }
   .mm-node.mm-sel .mm-chipbg { fill: var(--accent); }
   .mm-node.mm-sel text, .mm-node.mm-nb text { fill: var(--text); font-weight: 700; }
-  .mm-node.mm-sel .mm-rowlbl { stroke: none; fill: var(--primary-fg, #000); }
+  .mm-node.mm-sel .mm-rowlbl { stroke: none; fill: #0A0A0A; }   /* ink on the ember chip */
   .mm-node.mm-sel .mm-s, .mm-node.mm-focus .mm-s { stroke: var(--accent); stroke-width: 3; }
   .mm-node.mm-nb.t-Persona .mm-ava { stroke: var(--accent); stroke-width: 3; }
   #mmSvg.mm-free .mm-node.mm-sel .mm-s { fill: var(--accent); }
@@ -1005,7 +1006,7 @@
     width: 100%; height: 100%; max-width: none; max-height: none;
     border: 0; background: transparent; color: inherit; overflow: hidden; }
   .modal[open] { display: grid; place-items: center; }
-  .modal::backdrop { background: color-mix(in srgb, #ffffff 32%, transparent); }
+  .modal::backdrop { background: rgba(10,10,10,0.32); }
   .modal-card { background: var(--bg-elev); border: 1px solid var(--line); border-radius: var(--r-lg);
     box-shadow: 0 8px 40px rgba(0,0,0,0.18); width: 640px; max-width: 100%; max-height: 90vh; display: flex; flex-direction: column; }
   .modal-head { display: flex; align-items: center; justify-content: space-between; padding: var(--s-5) var(--s-6) var(--s-3); }
@@ -1225,7 +1226,7 @@
   .section-head svg { color: var(--text-dim); }
   .section-head:hover { color: var(--text); }
   .section-head:hover svg { color: var(--text); }
-  .section-head .n { font-size: var(--text-caption); background: rgba(255,255,255,0.08); color: var(--text-dim);
+  .section-head .n { font-size: var(--text-caption); background: rgba(10,10,10,0.06); color: var(--text-dim);
     padding: 1px 7px; border-radius: var(--r-pill); }
   /* competitor map */
   .map-card { background: var(--bg-elev); border: 1px solid var(--line);
@@ -1353,7 +1354,7 @@
   .aff-name-in { flex: 1; min-width: 0; font: 600 var(--text-body)/1.2 var(--font-geist); color: var(--text);
     background: var(--bg-elev); border: 1px solid var(--line); border-radius: var(--r-sm); padding: 4px 8px; outline: none; }
   .aff-name-in:focus { border-color: var(--text-dim); }
-  .aff-count { font-size: var(--text-caption); color: var(--text-dim); background: rgba(255,255,255,0.08); border-radius: var(--r-pill); padding: 1px 7px; }
+  .aff-count { font-size: var(--text-caption); color: var(--text-dim); background: rgba(10,10,10,0.06); border-radius: var(--r-pill); padding: 1px 7px; }
   .aff-badge { margin-left: auto; font-size: 14px; font-weight: 600; letter-spacing: 0.4px; text-transform: uppercase;
     color: var(--text); border: 1px solid var(--line); border-radius: var(--r-pill); padding: 1px 7px; }
   .aff-body { display: flex; flex-direction: column; gap: 8px; }
@@ -1700,7 +1701,7 @@
     font-family: var(--font-mono); border-radius: var(--r-sm); }
 
   /* ---- craft details ---- */
-  ::selection { background: color-mix(in srgb, var(--accent) 30%, transparent); color: #fff; }
+  ::selection { background: color-mix(in srgb, var(--accent) 30%, transparent); color: var(--text); }
   * { scrollbar-width: thin; scrollbar-color: var(--edge) transparent; }
   ::-webkit-scrollbar { width: 10px; height: 10px; }
   ::-webkit-scrollbar-track { background: transparent; }
@@ -1718,9 +1719,51 @@
     .card::after { content: ""; position: absolute; inset: -1px; border-radius: inherit;
       pointer-events: none; opacity: 0; transition: opacity .25s;
       background: radial-gradient(340px circle at var(--mx, 50%) var(--my, 50%),
-        rgba(255,255,255,.055), transparent 62%); }
+        rgba(10,10,10,.035), transparent 62%); }
     .card:hover::after { opacity: 1; }
   }
+
+  /* ---- the rail, Editorial (2026-10): paper one step darker, an ink keyline,
+     the project as a card with its own icon, a search that opens the filter,
+     and the active row as a solid ink pill with an ember "you are here" dot.
+     Last in the cascade on purpose: it overrides the lifted-rail block above. ---- */
+  body.lin-side .sidebar { background: var(--bg-rail); border-right: 1.5px solid var(--text); padding: var(--s-5) var(--s-4); gap: 2px; }
+  body.lin-side .side-top { margin-bottom: var(--s-3); gap: var(--s-2); }
+  body.lin-side .brand { padding: 0; flex: 1; min-width: 0; }
+  body.lin-side .ws-btn { display: flex; align-items: center; gap: 10px; width: 100%; height: 60px; box-sizing: border-box;
+    padding: 0 8px 0 12px; margin: 0; max-width: none; border-radius: 14px; border: 1px solid rgba(10,10,10,.12);
+    background: var(--bg-elev); box-shadow: var(--shadow-subtle); }
+  body.lin-side .ws-btn:hover { background: var(--bg-elev); border-color: var(--edge); }
+  .ws-ico { flex: none; width: 36px; height: 36px; border-radius: 9px; overflow: hidden; display: flex; }
+  .ws-ico img { display: block; width: 36px; height: 36px; }
+  .ws-ini { width: 36px; height: 36px; display: flex; align-items: center; justify-content: center;
+    background: var(--text); color: var(--bg-elev); font-weight: 800; font-size: 17px; }
+  .ws-txt { flex: 1; min-width: 0; display: flex; flex-direction: column; gap: 1px; line-height: 1.25; }
+  body.lin-side .ws-label { font-size: var(--fs-md); font-weight: 700; max-width: none; }
+  .ws-sub { font-size: var(--text-caption); font-weight: 400; color: var(--text-dim); letter-spacing: 0; }
+  .ws-sel { flex: none; width: 24px; display: flex; justify-content: center; color: var(--text-dim); }
+  .side-search { display: flex; align-items: center; gap: 10px; height: 40px; flex: none; padding: 0 8px 0 12px; margin-bottom: var(--s-3);
+    border: 1px solid rgba(10,10,10,.12); border-radius: 12px; background: var(--bg-elev-2); color: var(--text-dim); cursor: text; }
+  .side-search:focus-within { border-color: var(--text); background: var(--bg-elev); }
+  .side-search input { flex: 1; min-width: 0; border: 0; outline: 0; background: none; font: inherit; font-size: var(--text-body); color: var(--text); }
+  .side-search input::-webkit-search-cancel-button { display: none; }
+  .side-kbd { flex: none; height: 22px; padding: 0 6px; display: flex; align-items: center; font-family: var(--font-mono); font-size: 12px;
+    color: var(--text-dim); background: var(--bg-elev); border: 1px solid rgba(10,10,10,.12); border-radius: 6px; }
+  body.lin-side .side-label { color: var(--text-dim); font-weight: 500; padding: var(--s-4) var(--s-3) var(--s-2); }
+  body.lin-side .nav-item { height: 40px; flex: none; padding: 0 var(--s-3); gap: var(--s-3); border-radius: var(--r-md);
+    font-size: var(--fs-md); font-weight: 500; color: var(--text-soft); }
+  body.lin-side .nav-item svg { width: 18px; height: 18px; opacity: 1; }
+  body.lin-side .nav-item:hover { background: rgba(10,10,10,.05); color: var(--text); }
+  body.lin-side .nav-item.active, body.lin-side .nav-item.active:hover { background: var(--text); color: var(--bg-elev); font-weight: 600; }
+  body.lin-side .nav-item.active:not(:has(.n))::after { content: ''; margin-left: auto; width: 7px; height: 7px; border-radius: 50%; background: var(--accent); }
+  body.lin-side .nav-item .n { background: none; padding: 0; min-width: 0; font-family: var(--font-mono); font-weight: 400; color: var(--text-dim); }
+  body.lin-side .nav-item.active .n { background: none; color: color-mix(in srgb, var(--bg-elev) 70%, transparent); }
+  body.lin-side #backlogCount { min-width: 22px; padding: 0 7px; border-radius: var(--r-pill); text-align: center;
+    background: var(--text); color: var(--bg-elev); font-family: var(--font-ui); font-weight: 600; }
+  body.lin-side .nav-item.active #backlogCount { background: var(--bg-elev); color: var(--text); }
+  body.lin-side .side-foot .btn-primary { height: 44px; background: none; color: var(--text); border: 1.5px solid var(--text);
+    font-size: var(--fs-md); font-weight: 600; }
+  body.lin-side .side-foot .btn-primary:hover { background: var(--bg-elev); opacity: 1; }
   /* ── Persona poster — full-bleed visual one-pager (Figma-board layout in the
      Signal skin: serif hero name, mono section labels, 2px cards) ── */
   #posterView { display: none; }
@@ -2354,237 +2397,182 @@
     .pj-rail-foot { display: none; }
     .pj-main { padding: var(--s-5) var(--s-4) var(--s-8); }
   }
-  /* ── Project home (Overview) ─────────────────────────────────────────────
-     The first screen inside a project: elevated cards on the canvas, hairline
-     borders, pill buttons, Inter throughout. The `body.dash-open` overrides
-     below date from when this page migrated ahead of the rest of the app —
-     08-shared-skin.css now says the same things globally, and they are kept
-     only where this page needs a tighter value than the shared default.
-
-     Data-viz keeps its own three colours: green = healthy, ember = attention,
-     hairline = the empty part of a track. Numbers are tabular everywhere. */
+  /* ── Project home (Overview), Editorial ─────────────────────────────────
+     Paper, ink and one ember accent. The project's name is the headline and
+     its personas stand beside it; below, four numbers, the personas, four
+     health readings, where the data disagrees, when you listened, what is
+     still open, and one dark band for the next round. Every explanation sits
+     behind an ⓘ (.dx-tip) — the page itself carries numbers and actions. */
   .dash-wrap {
-    display: flex; flex-direction: column; gap: var(--s-6);
+    display: flex; flex-direction: column; gap: 56px;
     columns: initial; max-width: var(--width-content);
     font-family: var(--font-ui); letter-spacing: var(--tracking-tight);
-    --dv-good: #35c46f; --dv-warn: var(--accent); --dv-track: #262626;
   }
-
-  /* page chrome — only while this page owns the screen */
-  body.dash-open .page-head { padding-top: 0; }
-  body.dash-open .page-head::before, body.dash-open .page-head::after { display: none; }
-
-  /* Controls: pill, sentence case, primary = inverted surface. Scoped through
-     body.dash-open so these outrank the `body.lin-all .btn-*` skin rules —
-     same class count, and the body element is what breaks the tie. */
-  body.dash-open .dash-wrap .btn, body.dash-open .dash-wrap .btn-sm,
-  body.dash-open .dash-wrap .btn-primary, body.dash-open .dash-wrap .btn-outline {
-    font-family: var(--font-ui); text-transform: none; letter-spacing: var(--tracking-tight);
-    font-size: var(--fs-md); font-weight: 500;
-    height: auto; padding: 7px 13px; border-radius: var(--r-pill);
-    border: 1px solid transparent; box-shadow: none;
-  }
-  body.dash-open .dash-wrap .btn-outline { background: var(--bg-elev-2); color: var(--text); }
-  body.dash-open .dash-wrap .btn-outline:hover { background: var(--hover-bg); border-color: var(--line); color: var(--text); }
-  body.dash-open .dash-wrap .btn-primary { background: var(--primary-bg); border-color: var(--primary-bg); color: var(--primary-fg); }
-  body.dash-open .dash-wrap .btn-primary:hover { background: var(--primary-bg); opacity: .88; }
-
-  /* sections */
-  .dash-sec { margin: 0; display: flex; flex-direction: column; gap: var(--s-4); }
-  .dash-sec-h { display: flex; align-items: baseline; gap: 10px; margin-bottom: var(--s-3); }
-  .dash-sec-h h2 { font-size: var(--fs-xl); font-weight: 600; letter-spacing: var(--tracking-display); }
-  .dash-sec-note { font-family: var(--font-ui); font-size: var(--fs-sm); color: var(--text-mute); }
-  .dash-muted, .dv-empty { color: var(--text-mute); font-size: var(--fs-md); padding: var(--s-4) 0; line-height: 1.55; }
-  /* the way out of an empty state — never just "nothing here", always the move
-     that ends it, in the reading colour so the eye lands on it */
+  /* the hero is the page head here */
+  body.dash-open .page-head { display: none; }
   .dash-wayout { color: var(--text-dim); display: block; margin-top: 4px; font-size: var(--fs-sm); }
 
-  .dash-card {
-    background: var(--bg-elev); border: 1px solid var(--line);
-    border-radius: var(--r-lg); padding: var(--s-6); box-shadow: none;
-    transition: border-color .12s;
+  .dx .dx-dot { color: var(--accent); }
+  .dx-card { background: var(--bg-elev); border-radius: 16px; }
+  .dx-empty { padding: var(--s-6); color: var(--text-dim); font-size: var(--fs-md); }
+  .dx-sec { display: flex; flex-direction: column; gap: 20px; }
+  .dx-h2row { display: flex; align-items: center; gap: 8px; }
+  .dx-h2 { font-size: 34px; font-weight: 800; letter-spacing: -0.03em; line-height: 1; }
+  .dx-h2note { color: var(--text-dim); font-size: var(--fs-md); margin-left: 4px; }
+  .dx-spacer { flex: 1; }
+  .dx-fl { display: flex; align-items: center; gap: 4px; font-size: var(--text-caption); color: var(--text-dim); }
+
+  /* buttons — ember = the one main move, line = secondary, inv = on the dark band */
+  .dx-btn { display: inline-flex; align-items: center; gap: 8px; height: 52px; padding: 0 24px; border-radius: var(--r-pill);
+    font-size: var(--fs-lg); font-weight: 700; white-space: nowrap; text-decoration: none; color: var(--text); cursor: pointer; }
+  .dx-btn-sm { height: 40px; padding: 0 16px; font-size: var(--fs-md); font-weight: 600; }
+  .dx-btn-ember { background: var(--accent); color: #0A0A0A; }
+  .dx-btn-ember:hover { filter: brightness(1.06); }
+  .dx-btn-line { border: 1.5px solid var(--text); font-weight: 600; }
+  .dx-btn-line:hover { background: var(--bg-elev); }
+  .dx-btn-inv { border: 1.5px solid var(--bg-elev); color: var(--bg-elev); font-weight: 600; height: 46px; }
+  .dx-btn-inv:hover { background: rgba(255,255,255,.08); }
+
+  /* ⓘ popovers: hover or keyboard focus opens them */
+  .dx-tip { position: relative; display: inline-flex; }
+  .dx-tip-btn { width: 26px; height: 26px; margin: -5px 0; border-radius: 50%; display: inline-flex; align-items: center; justify-content: center; color: var(--text-dim); cursor: help; }
+  .dx-tip-btn:hover { color: var(--text); }
+  .dx-tip-pop { display: none; position: absolute; left: -8px; top: 30px; z-index: 30; width: 320px; padding: 14px 16px; border-radius: 12px;
+    background: #0A0A0A; color: #C9C5BC; font-size: var(--text-body); font-weight: 400; line-height: 1.45; letter-spacing: 0; text-transform: none;
+    text-align: left; white-space: normal; box-shadow: 0 18px 40px -12px rgba(10,10,10,.45); }
+  .dx-tip-pop b { display: block; margin-bottom: 4px; color: #FFFFFF; font-size: var(--fs-md); font-weight: 700; }
+  .dx-tip-pop b ~ b, .dx-tip-pop :not(:first-child) b { display: inline; color: #FFFFFF; font-size: inherit; }
+  .dx-tip-r .dx-tip-pop { left: auto; right: -8px; }
+  .dx-tip:hover .dx-tip-pop, .dx-tip:focus-within .dx-tip-pop { display: block; }
+
+  /* menus (Ask a persona, More) */
+  .dx-menu-wrap { position: relative; }
+  .dx-menu { position: absolute; left: 0; top: calc(100% + 8px); z-index: 30; min-width: 220px; padding: 6px; border-radius: 12px;
+    background: var(--bg-elev); border: 1px solid var(--line); box-shadow: var(--shadow); display: flex; flex-direction: column; }
+  .dx-menu[hidden] { display: none; }
+  .dx-menu-up { top: auto; bottom: calc(100% + 8px); right: 0; left: auto; }
+  .dx-menu a, .dx-menu button { display: flex; align-items: center; gap: 10px; height: 40px; padding: 0 10px; border-radius: 8px;
+    color: var(--text); text-decoration: none; font-size: var(--fs-md); text-align: left; white-space: nowrap; }
+  .dx-menu a:hover, .dx-menu button:hover { background: var(--bg-elev-2); }
+
+  /* faces */
+  .dx-face, .dx-face-md, .dx-face-xs { display: flex; align-items: flex-end; justify-content: center; overflow: hidden; border-radius: 50%; background: #E4DED2; flex: none; }
+  .dx-face img, .dx-face-md img, .dx-face-xs img { width: 94%; height: 94%; object-fit: cover; object-position: bottom; }
+  .dx-noimg { align-items: center; background: var(--bg-elev-2); border: 2px dashed var(--edge); font-weight: 800; color: var(--text); }
+  .dx-face-md { width: 72px; height: 72px; font-size: 26px; }
+  .dx-face-xs { width: 28px; height: 28px; font-size: 13px; }
+
+  /* hero */
+  .dx-hero { display: grid; grid-template-columns: minmax(0, 1fr) 440px; gap: 32px; align-items: end; }
+  .dx-kicker { display: flex; align-items: center; gap: 10px; flex-wrap: wrap; margin-bottom: 18px; font-size: var(--fs-md); color: var(--text-dim); }
+  .dx-kicker b { color: var(--text); font-weight: 600; }
+  .dx-chip { display: inline-flex; align-items: center; gap: 2px; height: 28px; padding: 0 4px 0 12px; border-radius: var(--r-pill);
+    border: 1.5px solid var(--text); color: var(--text); font-size: var(--text-caption); font-weight: 600; }
+  .dx-title { font-size: clamp(64px, 7.6vw, 120px); font-weight: 800; line-height: .88; letter-spacing: -0.06em; color: var(--text); overflow-wrap: anywhere; }
+  .dx-actions { margin-top: 36px; display: flex; gap: 10px; align-items: center; flex-wrap: wrap; }
+  .dx-cast { position: relative; height: 420px; }
+  .dx-cast > a { position: absolute; display: block; border-radius: 50%; text-decoration: none; color: var(--text); }
+  .dx-cast .dx-face { width: 100%; height: 100%; font-size: 40px; }
+  .dx-cast-0 { left: 0; top: 0; width: 280px; height: 280px; }
+  .dx-cast-0 .dx-face { background: var(--accent); }
+  .dx-cast-1 { left: 262px; top: 110px; width: 170px; height: 170px; box-shadow: 0 0 0 6px var(--bg); }
+  .dx-cast-2 { left: 118px; top: 262px; width: 150px; height: 150px; box-shadow: 0 0 0 6px var(--bg); }
+  .dx-cast-3 { left: 290px; top: 292px; width: 118px; height: 118px; box-shadow: 0 0 0 6px var(--bg); }
+
+  /* facts strip */
+  .dx-facts { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); border-top: 1.5px solid var(--text); border-bottom: 1.5px solid var(--text); margin-top: -12px; }
+  .dx-facts > div { display: flex; flex-direction: column; gap: 8px; padding: 20px 24px 22px; border-left: 1px solid var(--line); }
+  .dx-facts > div:first-child { border-left: 0; padding-left: 0; }
+  .dx-big { font-size: 52px; font-weight: 800; line-height: 1; letter-spacing: -0.04em; color: var(--text); font-variant-numeric: tabular-nums; }
+  .dx-of { color: var(--edge); }
+  .dx-fs { font-size: var(--text-body); color: var(--text-dim); }
+  .dx-fs.ok { color: #1F7A4D; font-weight: 600; }
+  .dx-link { color: var(--text); font-weight: 600; text-decoration: underline; text-underline-offset: 3px; }
+  .dx-split { display: flex; height: 8px; gap: 2px; margin-top: 4px; }
+  .dx-split i { background: var(--text); border-radius: 2px 0 0 2px; min-width: 2px; }
+  .dx-split i.ev { border-radius: 0 2px 2px 0; background: repeating-linear-gradient(135deg, var(--text) 0 2px, transparent 2px 5px); box-shadow: inset 0 0 0 1.5px var(--text); }
+
+  /* persona cards */
+  .dx-pgrid { display: grid; grid-template-columns: repeat(auto-fill, minmax(230px, 1fr)); gap: 16px; }
+  .dx-pc { background: var(--bg-elev); border-radius: 16px; padding: 20px; display: flex; flex-direction: column; gap: 12px; }
+  .dx-pc.prim { box-shadow: inset 0 0 0 1.5px var(--text); }
+  .dx-pc.prim .dx-face-md { background: var(--accent); }
+  .dx-pc-top { display: flex; align-items: flex-start; justify-content: space-between; }
+  .dx-tag { height: 24px; padding: 0 10px; border-radius: var(--r-pill); background: var(--text); color: var(--bg-elev); font-size: var(--text-caption); font-weight: 700; display: inline-flex; align-items: center; }
+  .dx-pc-name { font-size: 36px; font-weight: 800; letter-spacing: -0.05em; line-height: 1; color: var(--text); text-decoration: none; }
+  .dx-pc-desc { color: var(--text-soft); font-size: var(--fs-md); display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; min-height: 2.9em; }
+  .dx-pc-foot { margin-top: auto; display: flex; align-items: center; justify-content: space-between; gap: 10px; }
+  .dx-pc-lvl { display: flex; align-items: center; gap: 8px; font-size: var(--text-body); font-weight: 600; font-variant-numeric: tabular-nums; }
+  .dx-lvl { display: flex; gap: 3px; }
+  .dx-lvl i { width: 13px; height: 6px; border-radius: 2px; background: #E4DED2; }
+  .dx-lvl i.on { background: var(--text); }
+  .dx-lvl i.on.hot { background: var(--accent); }
+
+  /* research health */
+  .dx-health { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); overflow: hidden; }
+  .dx-ht { display: flex; flex-direction: column; gap: 10px; padding: 22px 24px; border-left: 1px solid var(--line); }
+  .dx-ht:first-child { border-left: 0; }
+  .dx-ht.warn { background: #FFF4EE; box-shadow: inset 0 3px 0 var(--accent); }
+  .dx-mid { font-size: 38px; font-weight: 800; line-height: 1; letter-spacing: -0.04em; color: var(--text); font-variant-numeric: tabular-nums; }
+  .dx-mid small { font-size: var(--fs-md); font-weight: 600; letter-spacing: 0; color: var(--text-dim); }
+  .dx-hs { font-size: var(--text-body); font-weight: 700; color: var(--text); }
+  .dx-ht.warn .dx-hs { color: var(--accent-text); }
+  .dx-ht.ok .dx-hs { color: #1F7A4D; }
+  .dx-split-sm { margin-top: 0; }
+  .dx-track { position: relative; display: block; height: 8px; border-radius: 2px; background: #F1EFEA; }
+  .dx-track i { position: absolute; left: 0; top: 0; bottom: 0; border-radius: 2px; background: var(--accent); }
+  .dx-track.ok i { background: #1F7A4D; }
+  .dx-track.ink i { background: var(--text); }
+  .dx-track b { position: absolute; top: -4px; bottom: -4px; width: 2px; background: var(--text); }
+
+  /* disagreements + sessions */
+  .dx-pair { display: grid; grid-template-columns: minmax(0, 1.55fr) minmax(0, 1fr); gap: 40px; }
+  .dx-pair.one { grid-template-columns: minmax(0, 1fr); }
+  .dx-col { display: flex; flex-direction: column; gap: 20px; min-width: 0; }
+  .dx-table { width: 100%; border-collapse: collapse; font-size: var(--text-body); }
+  .dx-table th { text-align: left; padding: 14px 16px; font-size: var(--text-caption); font-weight: 600; color: var(--text-dim); }
+  .dx-table th:first-child, .dx-table td:first-child { padding-left: 20px; }
+  .dx-table td { padding: 14px 16px; border-top: 1px solid var(--line-soft); vertical-align: top; line-height: 1.75; }
+  .dx-table a { color: var(--text); text-decoration: underline; text-decoration-color: rgba(10,10,10,.3); text-underline-offset: 3px; }
+  .dx-table a:hover { color: var(--accent-text); }
+  .dx-feat { font-weight: 700; }
+  .dx-who { color: var(--text-dim); }
+  .dx-sw { display: inline-block; width: 9px; height: 9px; border-radius: 2px; margin-right: 6px; background: var(--text); }
+  .dx-sw.ember { background: var(--accent); }
+  .dx-ses-card { padding: 24px 24px 18px; }
+  .dx-ses-plot { position: relative; height: 140px; }
+  .dx-ses-axis { position: absolute; left: 0; right: 0; bottom: 0; display: flex; justify-content: space-between; padding-top: 6px;
+    border-top: 1.5px solid var(--text); font-family: var(--font-mono); font-size: var(--text-caption); color: var(--text-dim); }
+  .dx-ses { position: absolute; bottom: 26px; width: 0; height: var(--h); text-decoration: none; }
+  .dx-ses-stem { position: absolute; left: -1px; bottom: 0; width: 2px; height: 100%; background: var(--text); }
+  .dx-ses-dot { position: absolute; left: -6px; top: -12px; width: 12px; height: 12px; border-radius: 50%; background: var(--text); }
+  .dx-ses.test .dx-ses-dot { border-radius: 3px; }
+  .dx-ses.ex .dx-ses-stem { background: none; border-left: 2px dotted var(--edge); }
+  .dx-ses.ex .dx-ses-dot { background: var(--bg-elev); border: 2px dashed var(--text); }
+  .dx-ses:first-child .dx-ses-dot { background: var(--accent); }
+  .dx-ses-lbl { position: absolute; left: 0; top: -32px; transform: translateX(-50%); font-size: var(--text-caption); font-weight: 600; color: var(--text); white-space: nowrap; }
+
+  /* open questions */
+  .dx-oq td { font-weight: 600; vertical-align: middle; }
+  .dx-oq-who { width: 1%; white-space: nowrap; text-align: right; }
+  .dx-pill { display: inline-block; padding: 2px 8px; border-radius: 6px; background: var(--bg); font-size: var(--text-caption); font-weight: 500; }
+
+  /* the next round */
+  .dx-band { display: flex; align-items: center; gap: 18px; padding: 24px 24px 24px 32px; border-radius: 20px; background: #0A0A0A; color: #FFFFFF; flex-wrap: wrap; }
+  .dx-band-k { font-family: var(--font-mono); font-size: var(--text-caption); letter-spacing: .08em; text-transform: uppercase; color: var(--accent); }
+  .dx-band-h { flex: 1; min-width: 260px; font-size: 26px; font-weight: 800; letter-spacing: -0.02em; line-height: 1.15; }
+  .dx-band-acts { display: flex; gap: 8px; align-items: center; }
+  .dx-band .dx-btn-ember { height: 46px; font-size: var(--fs-md); }
+  .dx-cmd { font-family: var(--font-mono); font-size: var(--fs-md); color: #FFFFFF; padding: 0 8px; }
+
+  @media (max-width: 1100px){
+    .dx-hero { grid-template-columns: minmax(0, 1fr); }
+    .dx-cast { display: none; }
+    .dx-health, .dx-facts { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+    .dx-facts > div:nth-child(3) { border-left: 0; padding-left: 0; }
+    .dx-ht:nth-child(3) { border-left: 0; }
+    .dx-pair { grid-template-columns: minmax(0, 1fr); }
   }
-
-  /* Snapshot strip — one full-width band, laid out along the reading line:
-     who you are and what to do on top, the two headline numbers and the
-     composition underneath. Cards stopped being stretched to a neighbour's
-     height, which is where the empty space on this page used to come from. */
-  .dash-strip { display: flex; flex-direction: column; gap: var(--s-4); }
-  .dash-strip-top { display: flex; align-items: center; justify-content: space-between; gap: var(--s-4); flex-wrap: wrap; }
-  .dash-strip-btns { display: flex; gap: var(--s-2); flex-wrap: wrap; }
-  .dash-strip-bot { display: flex; align-items: baseline; gap: var(--s-6) var(--s-8); flex-wrap: wrap; }
-  .dash-stat { display: flex; align-items: baseline; gap: 10px; }
-  .dash-stat b { font-size: 40px; line-height: 1; font-weight: 600; letter-spacing: -1.4px;
-    color: var(--text); font-variant-numeric: tabular-nums; }
-  .dash-stat span { font-size: var(--fs-sm); color: var(--text-mute); max-width: 15ch; line-height: 1.35; }
-
-  .dash-hero-hi { display: flex; align-items: center; gap: 10px; }
-  .dash-hero-ava { width: 40px; height: 40px; border-radius: 50%; flex: none; display: grid; place-items: center;
-    background: var(--primary-bg); color: var(--primary-fg); font-size: var(--fs-lg); font-weight: 600; }
-  .dash-hero-hey b { display: block; font-size: var(--fs-lg); font-weight: 600; letter-spacing: var(--tracking-tight); }
-  .dash-hero-hey span { font-size: var(--fs-sm); color: var(--text-mute); }
-
-  /* micro-label — the one uppercase voice on this page, same as the Projects screen */
-  .dash-mini-h {
-    font-family: var(--font-ui); font-size: var(--fs-xs); font-weight: 500;
-    text-transform: uppercase; letter-spacing: .08em; color: var(--text-mute); }
-  .dash-hero-legend { display: flex; flex-wrap: wrap; gap: 6px 16px; margin-left: auto; }
-  .dash-leg { font-size: var(--fs-sm); color: var(--text-dim); display: inline-flex; align-items: center; gap: 6px; }
-  .dash-leg b { color: var(--text); font-weight: 600; }
-  .dash-leg-i { width: 9px; height: 9px; border-radius: var(--r-xs); display: inline-block; }
-  .dash-leg-i.l0 { background: var(--accent); } .dash-leg-i.l1 { background: var(--dv-good); }
-  .dash-leg-i.l2 { background: var(--warn); } .dash-leg-i.l3 { background: #eab308; }
-
-  /* freshness ring — donut beside its reading, not stacked above it */
-  .dash-ring-card { display: flex; flex-direction: column; gap: var(--s-3); }
-  .dash-ring-row { display: flex; align-items: center; gap: var(--s-5); flex-wrap: wrap; }
-  .dash-ring-wrap { position: relative; width: 118px; height: 118px; flex: none; }
-  .dv-donut { width: 118px; height: 118px; display: block; }
-  .dash-ring-center { position: absolute; inset: 0; display: flex; flex-direction: column; align-items: center; justify-content: center; }
-  .dash-ring-center b { font-size: 26px; font-weight: 600; letter-spacing: -0.8px; font-variant-numeric: tabular-nums; }
-  .dash-ring-center span { font-size: var(--fs-sm); color: var(--text-mute); }
-  .dash-ring-foot { display: flex; flex-direction: column; gap: 6px; font-size: var(--fs-sm); color: var(--text-dim); }
-  .dash-ring-foot > span { display: inline-flex; align-items: center; gap: 6px; }
-  .dash-ring-foot > .dash-ring-excl { color: var(--text-mute); padding-left: 14px; }
-  /* nothing to count — the ring says why, and what ends it */
-  .dash-ring-note { font-size: var(--fs-sm); color: var(--text-mute); line-height: 1.5; flex: 1; min-width: 180px; }
-
-  /* the inventory tiles that used to sit here are gone: every count on them was
-     already on the hero legend and in the sidebar */
-  .dash-dot { width: 7px; height: 7px; border-radius: 50%; display: inline-block; background: var(--text-mute); }
-  .dash-dot.ok { background: var(--dv-good); } .dash-dot.bad { background: var(--dv-warn); }
-
-  /* two-column rows — align-items: start is the rule that keeps every card at
-     the height of its own content instead of its neighbour's */
-  .dash-two { display: grid; grid-template-columns: 1.5fr 1fr; gap: var(--s-4); align-items: start; }
-  .dash-two.dash-two-wide { grid-template-columns: 1fr 1.35fr; }
-  .dash-col { display: flex; flex-direction: column; gap: var(--s-4); min-width: 0; }
-  .dash-two > .dash-card { margin: 0; }
-
-  /* transcripts-over-time area */
-  .dash-area-card { display: flex; flex-direction: column; }
-  .dv-area { width: 100%; height: auto; max-height: 190px; display: block; overflow: visible; margin-top: var(--s-2); }
-  .dash-axis { display: flex; justify-content: space-between; font-size: var(--fs-sm); color: var(--text-mute); margin-top: var(--s-2); }
-
-  /* research cadence bars */
-  .dash-tl { display: flex; align-items: flex-end; gap: 6px; height: 150px; padding-top: 14px; }
-  .dash-tl-col { flex: 1; display: flex; flex-direction: column; align-items: center; justify-content: flex-end; height: 100%; gap: 4px; }
-  .dash-tl-v { font-size: var(--fs-xs); color: var(--text-mute); font-variant-numeric: tabular-nums; height: 12px; }
-  .dash-tl-bar { width: 100%; max-width: 26px; background: var(--text); border-radius: var(--r-xs); min-height: 4px; transition: opacity .12s; }
-  .dash-tl-bar.empty { background: var(--dv-track); }
-  .dash-tl-col:hover .dash-tl-bar:not(.empty) { opacity: .78; }
-  .dash-tl-x { font-size: 14px; color: var(--text-mute); white-space: nowrap; }
-
-  /* refresh gauge */
-  .dash-gauge-card { display: flex; flex-direction: column; }
-  .dv-gauge-head { display: flex; align-items: baseline; gap: 8px; margin-bottom: var(--s-3); }
-  .dv-gauge-n { font-size: 40px; font-weight: 600; letter-spacing: -1.4px; color: var(--text); font-variant-numeric: tabular-nums; }
-  .dv-gauge-n small { font-size: var(--fs-xl); font-weight: 500; color: var(--text-mute); margin-left: 2px; }
-  .dv-gauge-lbl { font-size: var(--fs-sm); color: var(--text-mute); }
-  .dv-gauge { position: relative; height: 12px; border-radius: var(--r-pill); background: var(--dv-track); overflow: visible; margin: auto 0 var(--s-2); }
-  .dv-gauge-fill { position: absolute; left: 0; top: 0; bottom: 0; border-radius: var(--r-pill); min-width: 6px; transition: width .3s ease; }
-  .dv-gauge-tick { position: absolute; top: -4px; bottom: -4px; width: 2px; background: var(--text); border-radius: 1px; }
-  .dv-gauge-foot { display: flex; justify-content: space-between; font-size: var(--fs-sm); margin-top: var(--s-2); }
-  .dv-gauge-foot .warn { color: var(--dv-warn); font-weight: 600; } .dv-gauge-foot .ok { color: var(--dv-good); font-weight: 600; }
-  .dv-gauge-scale { color: var(--text-mute); }
-
-  /* health check rows */
-  .dash-health { display: flex; flex-direction: column; }
-  /* Every block on the health card speaks the same grammar: label, a number
-     you can say out loud, a bar, one line of what to do about it. Ember is
-     always the desirable half — heard by us, current, covered. */
-  .dash-health > .dash-mix + .dash-mix { padding-top: var(--s-4); border-top: 1px solid var(--line); }
-  .dash-mix { display: flex; flex-direction: column; gap: 7px; margin: var(--s-2) 0 var(--s-4); cursor: help; }
-  .dash-mix-top { display: flex; align-items: baseline; justify-content: space-between; gap: var(--s-3); }
-  .dash-mix-k { font-size: var(--fs-md); font-weight: 500; color: var(--text); }
-  .dash-mix-pct { font-size: var(--fs-lg); font-weight: 600; color: var(--text); font-variant-numeric: tabular-nums; }
-  .dash-mix-bar { height: 10px; border-radius: var(--r-pill); background: var(--edge); overflow: hidden; }
-  .dash-mix-sig { display: block; height: 100%; background: var(--accent); border-radius: var(--r-pill); }
-  .dash-mix-legend { display: flex; flex-wrap: wrap; gap: 6px 18px; font-size: var(--fs-sm); color: var(--text-dim); }
-  .dash-mix-legend small { color: var(--text-mute); }
-  .dash-mix-i { width: 9px; height: 9px; border-radius: var(--r-xs); display: inline-block; margin-right: 7px; }
-  .dash-mix-i.sig { background: var(--accent); }
-  .dash-mix-i.ev { background: var(--edge); }
-  .dash-mix-note { font-size: var(--fs-sm); color: var(--text-mute); line-height: 1.5; }
-  .dash-mix-note b { color: var(--text-dim); font-weight: 600; }
-
-  /* per-persona grounding: its own box on the hero row, one stacked row per
-     persona, thinnest at the top — the answer to "which persona can actually
-     talk to me", where a bare "Personas 5" used to sit */
-  .dash-pg-card { display: flex; flex-direction: column; gap: 2px; cursor: help; }
-  /* narrow column: the sub-label sits under the title instead of fighting it for the line */
-  .dash-pg-card .dash-sec-h { flex-direction: column; align-items: flex-start; gap: 2px; margin-bottom: var(--s-3); }
-  .dash-pg-card .dash-sec-h h2 { font-size: var(--fs-lg); }
-  .dash-pg-foot { font-size: var(--fs-sm); color: var(--text-mute); line-height: 1.5; padding-top: var(--s-3); }
-  .dash-pg { display: flex; flex-direction: column; gap: 5px; margin-top: 2px; }
-  .dash-pg-row { display: grid; grid-template-columns: 72px 1fr auto; align-items: center; gap: var(--s-3);
-    padding: 3px 4px; margin: 0 -4px; border-radius: var(--r-sm); text-decoration: none; }
-  .dash-pg-row:hover { background: var(--bg-elev-2); }
-  .dash-pg-n { font-size: var(--fs-sm); color: var(--text-dim); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
-  .dash-pg-row:hover .dash-pg-n { color: var(--accent-text); }
-  .dash-pg-bar { display: flex; height: 8px; border-radius: var(--r-pill); overflow: hidden; background: var(--line); }
-  .dash-pg-bar i { display: block; height: 100%; }
-  .dash-pg-bar i.sig { background: var(--accent); }
-  .dash-pg-bar i.ev { background: var(--edge); }
-  .dash-pg-v { font-size: var(--fs-sm); color: var(--text); font-variant-numeric: tabular-nums; min-width: 46px; text-align: right; }
-  .dash-pg-v small { color: var(--text-mute); }
-
-  /* next-research call to action */
-  .dash-cta {
-    background: var(--bg-elev); border: 1px solid var(--line);
-    border-radius: var(--r-lg); padding: var(--s-5) var(--s-6); box-shadow: none; }
-  .dash-cta.warn {
-    border-color: color-mix(in srgb, var(--accent) 35%, var(--line));
-    background: linear-gradient(180deg, color-mix(in srgb, var(--accent) 6%, var(--bg-elev)), var(--bg-elev)); }
-  .dash-cta-h { display: flex; gap: 14px; align-items: flex-start; }
-  .dash-cta-i { font-size: 22px; line-height: 1.2; flex: none; color: var(--accent); }
-  .dash-cta-i.ok { color: var(--dv-good); }
-  .dash-cta-h h3 { font-size: var(--fs-lg); font-weight: 600; letter-spacing: var(--tracking-tight); margin-bottom: 4px; }
-  .dash-cta-h p { font-size: var(--fs-md); color: var(--text-soft); max-width: 68ch; line-height: 1.5; }
-  .dash-cta-btns { display: flex; flex-wrap: wrap; gap: var(--s-2); margin-top: var(--s-4); align-items: center; }
-  .dash-cta-row { display: grid; grid-template-columns: 1fr 1fr; gap: var(--s-4); align-items: stretch; }
-  .dash-cta-row .dash-cta { display: flex; flex-direction: column; }
-  .dash-cta-row .dash-cta-btns { margin-top: auto; padding-top: var(--s-4); }
-  .dash-cmd { font-family: var(--font-mono); font-size: var(--fs-md);
-    color: var(--text); background: var(--bg); border: 1px solid var(--line);
-    border-radius: var(--r-sm); padding: 5px 10px; }
-
-  @media (max-width: 900px) {
-    .dash-two, .dash-two.dash-two-wide { grid-template-columns: 1fr; }
-    .dash-cta-row { grid-template-columns: 1fr; }
-  }
-  @media (max-width: 560px) {
-    .dash-hero-legend { margin-left: 0; }
-    .dash-stat b { font-size: 34px; }
-  }
-  .dash-note-line { margin: 0; color: var(--text-dim); font-size: var(--fs-md); line-height: 1.55; }
-  /* where the data disagrees — both sides of one feature, side by side */
-  .dash-splits { display: flex; flex-direction: column; gap: var(--s-3); }
-  .dash-split { display: grid; grid-template-columns: 160px 1fr 1fr; gap: var(--s-3); align-items: start;
-    padding-top: var(--s-3); border-top: 1px solid var(--line); }
-  .dash-split-f { font-weight: 600; }
-  .dash-split-side { display: flex; flex-wrap: wrap; gap: 6px; align-items: center; }
-  .dash-split-side > b { width: 100%; font-size: var(--fs-sm); }
-  .dash-split-side.neg > b { color: var(--danger-text); }
-  .dash-split-side.pos > b { color: var(--accent-text); }
-  @media (max-width: 760px){ .dash-split { grid-template-columns: 1fr; } }
-  /* demo: three things to try */
-  .dash-tips { margin-bottom: var(--s-4); border-color: color-mix(in srgb, var(--accent, #ff4d00) 35%, var(--line)); }
-  .dash-tips .dash-sec-h { justify-content: space-between; }
-  .dash-tips-row { display: grid; grid-template-columns: repeat(3, 1fr); gap: var(--s-4); margin-top: var(--s-3); }
-  .dash-tip { display: flex; gap: var(--s-3); align-items: flex-start; padding: var(--s-3); border-radius: var(--r-md);
-    color: inherit; text-decoration: none; border: 1px solid var(--line); }
-  .dash-tip:hover { border-color: var(--hover-border); background: var(--bg-elev-2); }
-  .dash-tip-n { flex: none; width: 24px; height: 24px; display: grid; place-items: center; border-radius: 50%;
-    background: var(--accent-soft); color: var(--accent-text); font-weight: 700; font-size: 12px; }
-  .dash-tip b { display: block; font-size: var(--fs-md); }
-  .dash-tip b + span { display: block; margin-top: 2px; color: var(--text-dim); font-size: var(--fs-sm); line-height: 1.5; }
-  @media (max-width: 900px){ .dash-tips-row { grid-template-columns: 1fr; } }
-  .dash-split-side .xref { display: inline-flex; align-items: center; gap: 5px; padding: 3px 9px; font-size: var(--fs-sm);
-    border: 1px solid var(--line); border-radius: var(--r-pill); color: var(--text-soft); text-decoration: none; cursor: pointer; }
-  .dash-split-side .xref:hover { border-color: var(--hover-border); color: var(--text); }
-  .dash-split-side .xref svg { width: 12px; height: 12px; }
-
   /* ── First run — the welcome (.wc-*) ─────────────────────────────────────
      One card on a dark field, above everything else. Same tokens as the rest
      of the app: no new colours, no new type, just a different arrangement —
@@ -2603,7 +2591,7 @@
      the edges so the card sits in the lit part of it */
   body.welcome-open #welcomeView::before {
     content: ''; position: absolute; inset: 0; pointer-events: none;
-    background: radial-gradient(circle at 1px 1px, rgba(255,255,255,.07) 1px, transparent 1.5px) 0 0 / 26px 26px;
+    background: radial-gradient(circle at 1px 1px, rgba(10,10,10,.09) 1px, transparent 1.5px) 0 0 / 26px 26px;
     -webkit-mask-image: radial-gradient(ellipse 70% 65% at 50% 45%, #000 0%, rgba(0,0,0,.35) 55%, transparent 100%);
     mask-image: radial-gradient(ellipse 70% 65% at 50% 45%, #000 0%, rgba(0,0,0,.35) 55%, transparent 100%);
   }
@@ -2646,9 +2634,9 @@
     width: 60px; height: 60px; display: grid; place-items: center;
     border: 1px solid var(--line); border-radius: var(--r-lg);
     background:
-      radial-gradient(circle at 1px 1px, rgba(255,255,255,.10) 1px, transparent 1.6px) 0 0 / 7px 7px,
+      radial-gradient(circle at 1px 1px, rgba(10,10,10,.10) 1px, transparent 1.6px) 0 0 / 7px 7px,
       linear-gradient(150deg, var(--bg-elev-2), var(--bg));
-    box-shadow: 0 0 0 1px rgba(255,255,255,.03), 0 8px 24px rgba(0,0,0,.5);
+    box-shadow: 0 0 0 1px rgba(10,10,10,.05), 0 8px 24px rgba(10,10,10,.12);
     margin-bottom: var(--s-2);
   }
   .wc-mark span {
@@ -2869,8 +2857,9 @@
       <div class="side-top">
       <div class="brand ws-wrap">
         <button class="ws-btn" id="wsBtn" aria-haspopup="listbox" aria-expanded="false" title="Switch workspace" data-i18n-title="Switch workspace">
-          <span class="mark"></span><span class="ws-label" id="wsLabel">Demo</span>
-          <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M6 9l6 6 6-6"/></svg>
+          <span class="ws-ico" id="wsIco" aria-hidden="true"></span>
+          <span class="ws-txt"><span class="ws-label" id="wsLabel">Demo</span><span class="ws-sub" id="wsSub"></span></span>
+          <span class="ws-sel"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M8 9l4 -4l4 4"/><path d="M16 15l-4 4l-4 -4"/></svg></span>
         </button>
         <div class="ws-menu" id="wsMenu" style="display:none" role="listbox">
           <div class="ws-menu-head">Archetype Talk — workspaces</div>
@@ -2881,23 +2870,28 @@
         <svg class="ic-close" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
       </button>
       </div>
+      <label class="side-search" for="sideSearch">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 10a7 7 0 1 0 14 0a7 7 0 1 0 -14 0"/><path d="M21 21l-6 -6"/></svg>
+        <input id="sideSearch" type="search" placeholder="Search" data-i18n-ph="Search" aria-label="Search this workspace" data-i18n-aria="Search this workspace" autocomplete="off" />
+        <kbd class="side-kbd" aria-hidden="true">⌘K</kbd>
+      </label>
       <!-- no "Home" label above the first item: one entry does not need a
            section head, and the row it saves goes to the nav itself -->
-      <button class="nav-item" id="dashBtn"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21.21 15.89A10 10 0 1 1 8 2.83"/><path d="M22 12A10 10 0 0 0 12 2v10z"/></svg><span data-i18n="Overview">Overview</span></button>
+      <button class="nav-item" id="dashBtn"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 4h4a1 1 0 0 1 1 1v6a1 1 0 0 1 -1 1h-4a1 1 0 0 1 -1 -1v-6a1 1 0 0 1 1 -1"/><path d="M5 16h4a1 1 0 0 1 1 1v2a1 1 0 0 1 -1 1h-4a1 1 0 0 1 -1 -1v-2a1 1 0 0 1 1 -1"/><path d="M15 12h4a1 1 0 0 1 1 1v6a1 1 0 0 1 -1 1h-4a1 1 0 0 1 -1 -1v-6a1 1 0 0 1 1 -1"/><path d="M15 4h4a1 1 0 0 1 1 1v2a1 1 0 0 1 -1 1h-4a1 1 0 0 1 -1 -1v-2a1 1 0 0 1 1 -1"/></svg><span data-i18n="Overview">Overview</span></button>
       <div class="side-label" data-i18n="Research graph">Research graph</div>
       <nav id="tabs"></nav>
       <div class="side-label" data-i18n="Planning">Planning</div>
-      <button class="nav-item" id="backlogBtn" title="Research backlog.md — the questions your persona conversations left open" data-i18n-title="Research backlog.md — the questions your persona conversations left open"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M10 6h11"/><path d="M10 12h11"/><path d="M10 18h11"/><path d="m3 6 1.4 1.4L7 4.8"/><path d="m3 12 1.4 1.4L7 10.8"/><path d="m3 18 1.4 1.4L7 16.8"/></svg><span data-i18n="Research backlog">Research backlog</span><span class="n" id="backlogCount"></span></button>
+      <button class="nav-item" id="backlogBtn" title="Research backlog.md — the questions your persona conversations left open" data-i18n-title="Research backlog.md — the questions your persona conversations left open"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3.5 5.5l1.5 1.5l2.5 -2.5"/><path d="M3.5 11.5l1.5 1.5l2.5 -2.5"/><path d="M3.5 17.5l1.5 1.5l2.5 -2.5"/><path d="M11 6l9 0"/><path d="M11 12l9 0"/><path d="M11 18l9 0"/></svg><span data-i18n="Research backlog">Research backlog</span><span class="n" id="backlogCount"></span></button>
       <div class="side-label" data-i18n="Views">Views</div>
-      <button class="nav-item" id="mindmapBtn"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="18" cy="5" r="3"/><circle cx="6" cy="12" r="3"/><circle cx="18" cy="19" r="3"/><line x1="8.59" y1="13.51" x2="15.42" y2="17.49"/><line x1="15.41" y1="6.51" x2="8.59" y2="10.49"/></svg><span data-i18n="Research map">Research map</span></button>
+      <button class="nav-item" id="mindmapBtn"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5.931 6.936l1.275 4.249m5.607 5.609l4.251 1.275"/><path d="M11.683 12.317l5.759 -5.759"/><path d="M4 5.5a1.5 1.5 0 1 0 3 0a1.5 1.5 0 1 0 -3 0"/><path d="M17 5.5a1.5 1.5 0 1 0 3 0a1.5 1.5 0 1 0 -3 0"/><path d="M17 18.5a1.5 1.5 0 1 0 3 0a1.5 1.5 0 1 0 -3 0"/><path d="M4 15.5a4.5 4.5 0 1 0 9 0a4.5 4.5 0 1 0 -9 0"/></svg><span data-i18n="Research map">Research map</span></button>
       <div class="side-label" data-i18n="Support">Support</div>
-      <button class="nav-item" id="settingsBtn"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 2.83-2.83l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg><span data-i18n="Settings">Settings</span></button>
-      <button class="nav-item" id="helpBtn"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><path d="M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg><span data-i18n="Help &amp; guide">Help &amp; guide</span></button>
+      <button class="nav-item" id="settingsBtn"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M10.325 4.317c.426 -1.756 2.924 -1.756 3.35 0a1.724 1.724 0 0 0 2.573 1.066c1.543 -.94 3.31 .826 2.37 2.37a1.724 1.724 0 0 0 1.065 2.572c1.756 .426 1.756 2.924 0 3.35a1.724 1.724 0 0 0 -1.066 2.573c.94 1.543 -.826 3.31 -2.37 2.37a1.724 1.724 0 0 0 -2.572 1.065c-.426 1.756 -2.924 1.756 -3.35 0a1.724 1.724 0 0 0 -2.573 -1.066c-1.543 .94 -3.31 -.826 -2.37 -2.37a1.724 1.724 0 0 0 -1.065 -2.572c-1.756 -.426 -1.756 -2.924 0 -3.35a1.724 1.724 0 0 0 1.066 -2.573c-.94 -1.543 .826 -3.31 2.37 -2.37c1 .608 2.296 .07 2.572 -1.065"/><path d="M9 12a3 3 0 1 0 6 0a3 3 0 0 0 -6 0"/></svg><span data-i18n="Settings">Settings</span></button>
+      <button class="nav-item" id="helpBtn"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 12a9 9 0 1 0 18 0a9 9 0 0 0 -18 0"/><path d="M12 16v.01"/><path d="M12 13a2 2 0 0 0 .914 -3.782a1.98 1.98 0 0 0 -2.414 .483"/></svg><span data-i18n="Help &amp; guide">Help &amp; guide</span></button>
       <div class="side-foot">
         <!-- Export, language and Exit moved to the account nav (top right):
              they are about you, not about the graph, and the rail is nav. -->
         <button class="btn btn-primary" id="loadBtn" title="Point the app at your project's root folder — everything stays on this computer" data-i18n-title="Point the app at your project's root folder — everything stays on this computer">
-          <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z"/></svg>
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 4h4l3 3h7a2 2 0 0 1 2 2v8a2 2 0 0 1 -2 2h-14a2 2 0 0 1 -2 -2v-11a2 2 0 0 1 2 -2"/></svg>
           <span id="loadBtnLabel" data-i18n="Connect folder">Connect folder</span>
         </button>
         <!-- The tour no longer greets anyone (the welcome card does) — so this
@@ -6336,15 +6330,17 @@ _(empty)_
 /* Entity icons — Feather Icons (MIT, feathericons.com), inlined so the app
    stays offline. Keep each string starting with the exact width/height attrs:
    the mind map rescales them by replacing that prefix. */
+/* Tabler Icons (outline, MIT — tabler.io/icons), inlined: the app loads nothing remote.
+   Signal = ear (heard), Evidence = book (read), Hypothesis = flask (a bet to test). */
 const ICONS = {
-  Persona: '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>',
-  Competitor: '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M6 2 3 6v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6l-3-4z"/><line x1="3" y1="6" x2="21" y2="6"/><path d="M16 10a4 4 0 0 1-8 0"/></svg>',
-  Archetype: '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polygon points="12 2 2 7 12 12 22 7 12 2"/><polyline points="2 17 12 22 22 17"/><polyline points="2 12 12 17 22 12"/></svg>',
-  Hypothesis: '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><circle cx="12" cy="12" r="6"/><circle cx="12" cy="12" r="2"/></svg>',
-  Signal: '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/></svg>',
-  Evidence: '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="20" x2="18" y2="10"/><line x1="12" y1="20" x2="12" y2="4"/><line x1="6" y1="20" x2="6" y2="14"/></svg>',
-  IdeaForImprovement: '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/></svg>',
-  Transcript: '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/><polyline points="10 9 9 9 8 9"/></svg>'
+  Persona: '<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 12a9 9 0 1 0 18 0a9 9 0 1 0 -18 0"/><path d="M9 10a3 3 0 1 0 6 0a3 3 0 1 0 -6 0"/><path d="M6.168 18.849a4 4 0 0 1 3.832 -2.849h4a4 4 0 0 1 3.834 2.855"/></svg>',
+  Competitor: '<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M11 12a1 1 0 1 0 2 0a1 1 0 1 0 -2 0"/><path d="M7 12a5 5 0 1 0 10 0a5 5 0 1 0 -10 0"/><path d="M3 12a9 9 0 1 0 18 0a9 9 0 1 0 -18 0"/></svg>',
+  Archetype: '<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M13.192 9h6.616a2 2 0 0 1 1.992 2.183l-.567 6.182a4 4 0 0 1 -3.983 3.635h-1.5a4 4 0 0 1 -3.983 -3.635l-.567 -6.182a2 2 0 0 1 1.992 -2.183"/><path d="M15 13h.01"/><path d="M18 13h.01"/><path d="M15 16.5c1 .667 2 .667 3 0"/><path d="M8.632 15.982a4.037 4.037 0 0 1 -.382 .018h-1.5a4 4 0 0 1 -3.983 -3.635l-.567 -6.182a2 2 0 0 1 1.992 -2.183h6.616a2 2 0 0 1 2 2"/><path d="M6 8h.01"/><path d="M9 8h.01"/><path d="M6 12c.764 -.51 1.528 -.63 2.291 -.36"/></svg>',
+  Hypothesis: '<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M9 3l6 0"/><path d="M10 9l4 0"/><path d="M10 3v6l-4 11a.7 .7 0 0 0 .5 1h11a.7 .7 0 0 0 .5 -1l-4 -11v-6"/></svg>',
+  Signal: '<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M6 10a7 7 0 1 1 13 3.6a10 10 0 0 1 -2 2a8 8 0 0 0 -2 3a4.5 4.5 0 0 1 -6.8 1.4"/><path d="M10 10a3 3 0 1 1 5 2.2"/></svg>',
+  Evidence: '<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M19 4v16h-12a2 2 0 0 1 -2 -2v-12a2 2 0 0 1 2 -2h12"/><path d="M19 16h-12a2 2 0 0 0 -2 2"/><path d="M9 8h6"/></svg>',
+  IdeaForImprovement: '<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 12h1m8 -9v1m8 8h1m-15.4 -6.4l.7 .7m12.1 -.7l-.7 .7"/><path d="M9 16a5 5 0 1 1 6 0a3.5 3.5 0 0 0 -1 3a2 2 0 0 1 -4 0a3.5 3.5 0 0 0 -1 -3"/><path d="M9.7 17l4.6 0"/></svg>',
+  Transcript: '<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M14 3v4a1 1 0 0 0 1 1h4"/><path d="M17 21h-10a2 2 0 0 1 -2 -2v-14a2 2 0 0 1 2 -2h7l5 5v11a2 2 0 0 1 -2 2"/><path d="M9 9l1 0"/><path d="M9 13l6 0"/><path d="M9 17l6 0"/></svg>'
 };
 /* Archetype icons — hand-drawn object scenes (Notion-ish line style, Fallout-skill-like
    illustration, played straight). Referenced from an Archetype's frontmatter `icon:`. */
@@ -7203,6 +7199,57 @@ const PL = {
   'show the whole graph': 'pokaż cały graf',
   'Map': 'Mapa',
   'Flow': 'Przepływ',
+  // Overview + rail, Editorial (2026-10)
+  'Against': 'Przeciw',
+  'For': 'Za',
+  'All personas': 'Wszystkie persony',
+  'All {n}': 'Wszystkie {n}',
+  'Ask': 'Zapytaj',
+  'Ask a persona': 'Zapytaj personę',
+  'Asked in conversations, answered with “I don’t know”. Each one waits for a real interview.': 'Padły w rozmowach, odpowiedź brzmiała „nie wiem”. Każde czeka na prawdziwy wywiad.',
+  'Circle = interview, square = usability test, dashed = set aside by the researcher. Trend charts would need research that spans two months or more.': 'Kółko = wywiad, kwadrat = test użyteczności, przerywane = odłożone przez badacza. Wykresy trendu wymagają badań z co najmniej dwóch miesięcy.',
+  'Every persona stands on a single person.': 'Każda persona opiera się na jednej osobie.',
+  'Example data': 'Dane przykładowe',
+  'Example project': 'Projekt przykładowy',
+  'Firsthand': 'Z pierwszej ręki',
+  'Four readings': 'Cztery odczyty',
+  'Fresh': 'Świeże',
+  'Have we heard enough people?': 'Czy wysłuchaliśmy dość osób?',
+  'Heard {h} · Read {r}': 'Usłyszane {h} · Przeczytane {r}',
+  'How solid: {l} of 5 · stands on {s} heard + {e} read': 'Jak solidna: {l} z 5 · opiera się na {s} usłyszanych + {e} przeczytanych',
+  'Illustrative research on Spotify listeners, not your users. The numbers are read as of the day its research closed, and it never mixes with your own projects.': 'Poglądowe badania słuchaczy Spotify, nie Twoich użytkowników. Liczby są odczytane na dzień zamknięcia badań, a projekt nigdy nie miesza się z Twoimi.',
+  'Interviews and tests': 'Wywiady i testy',
+  'Last interview': 'Ostatni wywiad',
+  'More': 'Więcej',
+  'Next round': 'Następna runda',
+  'No dated interviews yet': 'Brak datowanych wywiadów',
+  'No research data yet — start with the founding brief.': 'Brak danych z badań — zacznij od briefu założycielskiego.',
+  'None of them claims more precision than a handful of interviews can carry. Hover each ⓘ for what it means.': 'Żaden nie udaje większej precyzji, niż udźwignie garść wywiadów. Najedź na ⓘ, żeby zobaczyć, co znaczy.',
+  'On the same feature, some participants stand against it and some for it. A split is a finding, not noise — take it to the next round, or ask your AI assistant to run /contradictions on it.': 'Przy tej samej funkcji część uczestników jest przeciw, a część za. Rozbieżność to wynik, nie szum — weź ją do następnej rundy albo poproś asystenta AI o /contradictions.',
+  'One mark per session': 'Jeden znacznik na sesję',
+  'Plan the next round': 'Zaplanuj następną rundę',
+  'Research health': 'Kondycja badań',
+  'Search': 'Szukaj',
+  'Search this workspace': 'Szukaj w tej przestrzeni',
+  'See all': 'Zobacz wszystkie',
+  'Sessions': 'Sesje',
+  'Solid = heard in your own sessions (signals). Striped = read in published research or data (evidence).': 'Pełne = usłyszane w Twoich sesjach (sygnały). W paski = przeczytane w publikacjach lub danych (dowody).',
+  'Spotify listeners': 'Słuchacze Spotify',
+  'The tick is the 3-month line. Past it, findings get flagged for a refresh round.': 'Kreska to granica 3 miesięcy. Po niej wyniki trafiają do rundy odświeżającej.',
+  'Things a persona answered with “I don’t know”. They go to real interviews, never to the AI.': 'Rzeczy, na które persona odpowiedziała „nie wiem”. Trafiają do prawdziwych wywiadów, nigdy do AI.',
+  'This is the example project': 'To jest projekt przykładowy',
+  'Transcripts younger than 3 months. Past that line, findings get flagged for a re-check before a decision leans on them.': 'Transkrypcje młodsze niż 3 miesiące. Po tej granicy wyniki są oznaczane do ponownego sprawdzenia, zanim oprze się na nich decyzja.',
+  'Two sides, never an average': 'Dwie strony, nigdy średnia',
+  'What no persona can answer yet': 'Na co żadna persona jeszcze nie odpowie',
+  'Where data disagrees': 'Gdzie dane się różnią',
+  'Your project': 'Twój projekt',
+  'current': 'aktualne',
+  'days ago': 'dni temu',
+  'everyone': 'wszyscy',
+  'five people per segment ≈ 84%': 'pięć osób na segment ≈ 84%',
+  'of patterns': 'wzorców',
+  'of sources': 'źródeł',
+  '⧉ Desk-research refresh prompt': '⧉ Prompt odświeżenia desk research',
   'Columns': 'Kolumny',
   'Free': 'Swobodny',
   'Map view': 'Widok mapy',
@@ -8209,8 +8256,14 @@ function setWs(w){
    at: telling you where you are, and the doors out. */
 function renderWsMenu(){
   const label = document.getElementById('wsLabel');
-  const name = WS==='demo' ? tr('Demo') : projectDisplayName();
+  const name = WS==='demo' ? tr('Spotify listeners') : projectDisplayName();
   label.textContent = name;
+  /* the project's face: the demo studies Spotify, so it wears Spotify's app
+     icon (bundled, 1.8 KB WebP); a real project gets its initial on ink */
+  document.getElementById('wsSub').textContent = WS==='demo' ? tr('Example project') : tr('Your project');
+  document.getElementById('wsIco').innerHTML = WS==='demo'
+    ? '<img src="data:image/webp;base64,UklGRh4HAABXRUJQVlA4IBIHAABwIwCdASqAAIAAPm0wlEYkIyIhKxRsYIANiWgA0a/tfG/k57O9a/wn4g/n/CwG/7gsj3qF/Pf+Y9wD9KPpV7hnmJ/l/+O/aD35vO69QD+kf87rJ/QA8t72X/27/dn2rv//rKHjLsatBFw14ep6Oenfe9Q+ZH+HsAhqnkZjvWbhSNfXNZMgjghJqWU3rqHPDfzx7O13uNLSlN2jqbg0vZxHb6B2hfjt/9iBkcOpSU9sRjKgZcG3yYfd4vI4E7DWL+hKDKmYje/eh/xRAEHNLFfjhbyeglHlyfyVv6P/l6Tzbb1HxVs5ZSywVM0bvy7YMwSJiYUTCfzcITgdaHxWdIo0pMBorwA2V2YnIESohdya+G6/GEtuseU+hdS0NTetEYyoDbT4AP77mApjU2puxgz/Jb/nLfzBC/hVkrRxJBsf9QL4yjuU1fvwt8yAwYIpXWAkxAO+CtNRef03oNwHtSV+CmoXLd8o/TkiyzfD/gcdzW/+2M6omPIPTbpI5jICB1f1jw9siWdyHPa71m9XmCmCmcfLsHRLyXyTmN0lbsjKTywD0L7YM698e5IGv/rtdTge1JgaX/uiZuA++EVl57S3QfmwEVSHGVQhBCVsNVQYkqrowVt+wYEF8L0xKX9QR8UFQwaHatrUfFCY2zNJYZHDzyK326EQSSMX7ToS2E82EUr5j6h50EvG/ykXmp5Z6e4SmFVDiPuZuaCRAb4f6pfqTl+mi9vNAHD846Xb5qkaKKln6C8P8G1Z7/HhxJSbquj4WP3H84uwAlhvmXVpX5LVrkaLW3Ag4YAmNc82i+NYWk39N6VTxSyIfaCEKsmGoUhctheEmT29wkDjwr6A4LjoDoiEJezXduodkONkWSZvwR77T50TbR87LDhB/4XE4ITFBoqv/XtBsvGZYhAKxN/fRLE94PH2jdgACYpFZmbYrG79IcVaPUKEVXNa2jObL973fV8tcM38vsmYiFwYi2D1snIGKn452e6FStEiJgeRtHpuuY/T+dZVzVJY4880TbJ9Huw9tzxRmIH1+7/lsSG4QGQZ+Ju/PdmwAlX+ytZhPE6ik0Fo+auNqyTsLZD8rqK/Xdopdr2oFQANLMWNIuCiIufdByr1DZkEIBF/UvbTDSqjTMlgXFV6SJdid59Pm9Z0qd4PbzjLWOGQxP6BMk3jxloDgQAegdMGWgbLBad0aRpLpqEFcwek5pEDP55GjEDhkCNz4hR1JHwS5DkZ2rWDEQjstDHX1Sztn/ezCDjGc4PuPuiCk/Iwnfe7OaYsGdaUs9p768zvLCGajfEBs6OlfqVJOz/PtCcdB0Sp8BlLJNKmHXOPXNvhDb0cRrjmV0abXHmO5vP5eapfXLklupONTQ6Ewc/GdymaCS01W6li4p3Hp3YBSfvfZLGXvuw6JCfUHWl3Swznt4rxaCp34V3HqniJ1lQP95FOMzYqJ6/KukaKPZyOUlDJx6Z0um5OceiZ6/7wy+BZZzXVvrTPZaZvbfOIc4M4f8/LUHTNvt0Ac5JKa77L7tUaOYdEGujmc/So0sFromiLvQ5EM7to/yUCfZxDeFzP56wo+ENT6QFMKx+rZhXT+mADKsTIp2WH9xBx8CJjyAi6JNK6yUTIChf8GEPF8A/d7uxmGO0nPfpsuvf4ZpeQW9kDR8QyCSHhTud/x6vKlSQMSvnuqGUIl0EOYILDL9L0J6eQ4XOCT3wYccD1zB9Ko5ZYj/bJddO25Mr2GHKCsYWBPXe7qEL4egyXsbrm+bOvBli+s/I86PVTy48ZBhbVIjywvrT2CeDOL8ZGDP+S239yoTyRP4/lID6iIxHRG6ALJ8SNjdo3YIBMpzW7/4InQYmlsc++alPzfH6qCCJJvfNV1oMSNANK4UOL/f+Wtgy3A6xzs0sDv29L+Yr4P9FWpPJIMRYvSkCYNgvTr4JA2uMkrTGOI973KsLGy0xS5GsbwGuzrf2xX1bu/Ic7gwcW67kf5Zncp/3Cd3g7Y7enUcxpEki2ATkLIjICgSXtC9TdUzqJQ9UsczZeAQRq4dImu1TSa/4g+cv5QCEqRB1vyXwTPuLNz4zl7s1P4XvpKChavLAQNjdCY22y09MuWbUOzFwliP6IRlqOByPnxs1XHz/rU3uIioJ0dUgBOKNWTyYUgyMPXUIF5lsZY6SzHkf7m3obnQaQLbARVLkR1bmgxdw0dPkPzrEwUWsGewGGo8rYix0VFZLOR784sCKbihFs/dvFmQJI2kT3IdZGEPCwW0VcYW5GVd8oi1pyvnufbBWW6MSsYTb15VoA76K4bgVq4UjXniAq9SXsYRZV3SR77YXE3dRCuqd48hArkUl0ImFfSD/WAmuq0qyBFkqlHcd8lKwvk+W0BKG0D76RECVNNaO+Ab2wCY7FjONxJQJ1NAvVJd31usLBVg6dAAAA" alt="" width="36" height="36">'
+    : `<span class="ws-ini">${esc((name.trim()[0] || '?').toUpperCase())}</span>`;
   const menu = document.getElementById('wsMenu');
   const desc = WS==='demo'
     ? tr('example dataset — a fully editable sandbox (this browser only), never mixes with your work')
@@ -8336,7 +8389,7 @@ function hideGalleryChrome(){   // bars are siblings of the grid; pages that rep
 function syncLinTheme(){
   document.body.classList.toggle('lin-mm', MINDMAP_ACTIVE);
 }
-const ALL_ICON = '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/></svg>';
+const ALL_ICON = '<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 4l-8 4l8 4l8 -4l-8 -4"/><path d="M4 12l8 4l8 -4"/><path d="M4 16l8 4l8 -4"/></svg>';
 function renderTabs(){
   const list = wsEntities();
   const counts = {}; list.forEach(e=> counts[e.type]=(counts[e.type]||0)+1);
@@ -13272,8 +13325,6 @@ const dashBtn = document.getElementById('dashBtn');
 const DASH_MON = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
 const DASH_MON_PL = ['sty','lut','mar','kwi','maj','cze','lip','sie','wrz','paź','lis','gru'];
 function dashMon(i){ return (LANG==='pl' ? DASH_MON_PL : DASH_MON)[i]; }
-const nFresh = n => trn(n, '{n} fresh', '{n} fresh', '{n} świeża', '{n} świeże', '{n} świeżych');
-const nStale = n => trn(n, '{n} stale', '{n} stale', '{n} przeterminowana', '{n} przeterminowane', '{n} przeterminowanych');
 function dashFmtDate(d){ return String(d.getDate()).padStart(2,'0')+'.'+String(d.getMonth()+1).padStart(2,'0')+'.'+d.getFullYear(); }
 
 function dashStats(){
@@ -13303,26 +13354,6 @@ function dashStats(){
   };
 }
 
-/* ---------- three things to try (demo only) ----------
-   Someone arriving from a link has a minute, not a manual. Three moves show
-   the whole idea — a persona, a claim traced to its source, the line that
-   starts a conversation, the questions it leaves for real people — and the
-   card goes away for good once dismissed. */
-function dashTipsHtml(){
-  if(WS!=='demo' || store.get('at-demo-tips')==='off') return '';
-  const lead = wsEntities().find(e=>e.type==='Persona' && /primary/i.test(e.fm.category||'')) || wsEntities().find(e=>e.type==='Persona');
-  if(!lead) return '';
-  const tip = (n, href, h, p)=> `<a class="dash-tip" href="${href}"><span class="dash-tip-n">${n}</span><span><b>${h}</b><span>${p}</span></span></a>`;
-  return `<section class="dash-card dash-tips">
-    <div class="dash-sec-h"><h2>${tr('Three things to try in this demo')}</h2><button class="btn btn-ghost btn-sm" id="dashTipsOff">${tr('Hide')}</button></div>
-    <div class="dash-tips-row">
-      ${tip(1, '#'+lead.id, esc(tr('Open {name} and point at a source').replace('{name}', lead.title)), esc(tr('Every pain carries its level; hover a signal to see the verbatim quote behind it.')))}
-      ${tip(2, '#'+lead.id, esc(tr('Copy “Talk to {name}”').replace('{name}', lead.title)), esc(tr('Paste the line into your AI agent, in this folder — the persona answers only from her data.')))}
-      ${tip(3, '#backlog', esc(tr('See what she could not answer')), esc(tr('Gaps become questions for real interviews, not invented answers.')))}
-    </div>
-  </section>`;
-}
-
 /* ---------- where the data disagrees ----------
    The same rule graph_lint applies: on one feature, some participants stand
    against it and some for it. Contradictions are data — this card does not
@@ -13339,19 +13370,6 @@ function dashSplits(){
   return Object.entries(by).filter(([,v])=> v.neg.length && v.pos.length)
     .sort((a,b)=> (b[1].neg.length+b[1].pos.length)-(a[1].neg.length+a[1].pos.length));
 }
-function dashSplitsHtml(){
-  const sp = dashSplits(); if(!sp.length) return '';
-  const chip = e => `<a class="xref" data-goto="${e.id}">${ICONS.Signal}${esc(e.title)}</a>`;
-  return `<section class="dash-card dash-splits">
-    <div class="dash-sec-h"><h2>${tr('Where your data disagrees')}</h2><span class="dash-sec-note">${tr('two sides, never an average')}</span></div>
-    ${sp.map(([f,v])=>`<div class="dash-split">
-      <div class="dash-split-f">${esc(f)}</div>
-      <div class="dash-split-side neg"><b>${trn(v.neg.length,'{n} against','{n} against','{n} przeciw','{n} przeciw','{n} przeciw')}</b>${v.neg.map(chip).join('')}</div>
-      <div class="dash-split-side pos"><b>${trn(v.pos.length,'{n} for','{n} for','{n} za','{n} za','{n} za')}</b>${v.pos.map(chip).join('')}</div>
-    </div>`).join('')}
-    <p class="dash-note-line">${tr('A split is a finding, not noise: ask your AI assistant to run /contradictions on it, or take it to the next interview round.')}</p>
-  </section>`;
-}
 
 /* ---------- empty states, with the way out ----------
    An empty box that only says "nothing here" leaves you exactly where you
@@ -13367,33 +13385,6 @@ function dashWayOut(s){
         'Wszystkie transkrypcje ({n}) są tu wyłączone z analizy — otwórz jedną i włącz „Używaj w analizie”, żeby ją liczyć.',
         'Wszystkie transkrypcje ({n}) są tu wyłączone z analizy — otwórz jedną i włącz „Używaj w analizie”, żeby ją liczyć.')
     : tr('Put your first transcript in the Inbox/ folder, then run /extract-findings with your AI.');
-}
-function dashEmptyState(s, lead, cls){
-  return `<div class="${cls||'dv-empty'}">${tr(lead)} <span class="dash-wayout">${dashWayOut(s)}</span></div>`;
-}
-
-/* research cadence — interviews per month across the span. Honest progress
-   (when we actually talked to users), not a vanity line that only goes up. */
-function dashTimeline(s){
-  const dates = s.dates;
-  if(!dates.length) return dashEmptyState(s, 'No dated interviews yet — nothing to chart.', 'dash-muted');
-  const key = d => d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0');
-  const first = dates[0], now = new Date(graphNow());
-  const buckets = []; let y=first.getFullYear(), m=first.getMonth();
-  while((y<now.getFullYear() || (y===now.getFullYear() && m<=now.getMonth())) && buckets.length<18){
-    buckets.push({ y, m, key:y+'-'+String(m+1).padStart(2,'0'), n:0 });
-    if(++m>11){ m=0; y++; }
-  }
-  const idx={}; buckets.forEach((b,i)=>idx[b.key]=i);
-  dates.forEach(d=>{ const i=idx[key(d)]; if(i!=null) buckets[i].n++; });
-  const max = Math.max(1, ...buckets.map(b=>b.n));
-  const step = buckets.length>10 ? 3 : (buckets.length>6 ? 2 : 1);
-  const bars = buckets.map((b,i)=>{
-    const h = b.n ? Math.max(10, Math.round(b.n/max*100)) : 4;
-    const lbl = (i%step===0 || i===buckets.length-1) ? dashMon(b.m)+(b.m===0?" '"+String(b.y).slice(2):'') : '';
-    return `<div class="dash-tl-col" title="${dashMon(b.m)} ${b.y}: ${trn(b.n,'{n} interview','{n} interviews','{n} wywiad','{n} wywiady','{n} wywiadów')}"><span class="dash-tl-v">${b.n||''}</span><div class="dash-tl-bar${b.n?'':' empty'}" style="height:${h}%"></div><span class="dash-tl-x">${lbl}</span></div>`;
-  }).join('');
-  return `<div class="dash-tl">${bars}</div>`;
 }
 
 /* the prompt the user pastes into Claude Code (our AI) to plan the next round.
@@ -13508,6 +13499,7 @@ function dashCopy(text, okMsg, fname){
 }
 
 /* ---------- what each persona actually stands on ----------
+/* ---------- what each persona actually stands on ----------
    "Thinnest persona: Tom" told you who was weakest and nothing about why. The
    same traversal, drawn per persona, answers both at once: how many Signals
    (heard) and how much Evidence (read) are wired to her, and — through her
@@ -13533,25 +13525,6 @@ function dashPersonaGrounding(){
     return { id: p.id, name: p.title.split(/\s+[—–-]\s+/)[0].trim(),
              sig: sig.length, ev, people: people.size, total: sig.length + ev };
   }).sort((a,b)=> a.total - b.total);          // thinnest first — that is the one to read
-}
-/* Its own box, not a row on the health card: "Personas 5 · 6 archetypes" was a
-   number you could only nod at, while the same space spent on the bars says
-   which persona can actually answer you and which one is a face on a guess. */
-function dashPgHtml(rows){
-  const tip = tr('Ember = Signals, what you heard in your own sessions. Grey = Evidence, what you read. A persona is only as good as the row behind her: the short ones answer “I don’t know” most often in a conversation.');
-  const head = `<div class="dash-sec-h"><h2>${tr('What each persona stands on')}</h2><span class="dash-sec-note">${tr('signals + evidence')}</span></div>`;
-  if(!rows.length) return `<section class="dash-card dash-pg-card">${head}
-    <div class="dv-empty">${tr('No personas yet — nothing to weigh.')} <span class="dash-wayout">${tr('Open the Personas tab and use “New persona”, or run /persona-workshop with your AI.')}</span></div></section>`;
-  const max = Math.max(1, ...rows.map(r=> r.total));
-  return `<section class="dash-card dash-pg-card" title="${esc(tip)}">${head}
-    <div class="dash-pg">${rows.map(r=>`
-      <a class="dash-pg-row" href="#${r.id}" title="${esc(r.name + ': ' + r.sig + ' ' + tr('Signals') + ' · ' + r.ev + ' ' + tr('Evidence'))}">
-        <span class="dash-pg-n">${esc(r.name)}</span>
-        <span class="dash-pg-bar"><i class="sig" style="width:${(r.sig/max*100).toFixed(1)}%"></i><i class="ev" style="width:${(r.ev/max*100).toFixed(1)}%"></i></span>
-        <span class="dash-pg-v">${r.sig}<small> + ${r.ev}</small></span>
-      </a>`).join('')}</div>
-    <p class="dash-pg-foot">${tr('Ember = Signals you heard yourself · grey = Evidence you read. The shortest row is the persona most likely to answer “I don’t know”.')}</p>
-  </section>`;
 }
 
 /* ---------- coverage, on the only curve that fits qualitative work ----------
@@ -13587,16 +13560,8 @@ function dashCoverage(rows, participants){
          + ' · ' + trn(personas, '{n} persona', '{n} personas', '{n} persona', '{n} persony', '{n} person') };
 }
 
-/* one small meter — label, a number you can say out loud, a bar, one line of
-   what to do about it. Every block on this card speaks the same grammar. */
-function dashMeter(label, value, pct, head, note, tip){
-  return `<div class="dash-mix"${tip ? ` title="${esc(tip)}"` : ''}>
-    <div class="dash-mix-top"><span class="dash-mix-k">${tr(label)}</span><span class="dash-mix-pct">${value}</span></div>
-    <div class="dash-mix-bar"><span class="dash-mix-sig" style="width:${Math.max(0, Math.min(100, pct))}%"></span></div>
-    <p class="dash-mix-note"><b>${tr(head)}.</b> ${note}</p>
-  </div>`;
-}
-
+/* ---------- signals vs evidence, as one bar ----------
+   Two counts side by side ("24 : 17") read as a score nobody knows how to
 /* ---------- signals vs evidence, as one bar ----------
    Two counts side by side ("24 : 17") read as a score nobody knows how to
    win. The same two numbers as one bar answer the question people actually
@@ -13615,253 +13580,231 @@ function dashMixVerdict(sig, ev){
   return { pct, head: 'Your own sessions are leading',
     note: 'The healthy shape: what you heard yourself carries the graph, and desk research backs it up instead of standing in for it.' };
 }
-function dashMixHtml(sig, ev){
-  const v = dashMixVerdict(sig, ev);
-  const tip = tr('A session you ran becomes a Signal; anything you read — a report, an analytics number, a public thread — is Evidence. Filing desk research as a signal is the one shortcut that quietly inflates how grounded you look.')
-            + '\n\n' + tr(v.note);
-  return `<div class="dash-mix" title="${esc(tip)}">
-    <div class="dash-mix-top">
-      <span class="dash-mix-k">${tr('What the graph stands on')}</span>
-      <span class="dash-mix-pct">${v.pct}% ${tr('firsthand')}</span>
-    </div>
-    <div class="dash-mix-bar" role="img" aria-label="${esc(sig + ' ' + tr('Signals') + ', ' + ev + ' ' + tr('Evidence'))}">
-      <span class="dash-mix-sig" style="width:${sig + ev ? v.pct : 0}%"></span>
-    </div>
-    <div class="dash-mix-legend">
-      <span><i class="dash-mix-i sig"></i>${sig} ${tr('Signals')} <small>${tr('heard by you')}</small></span>
-      <span><i class="dash-mix-i ev"></i>${ev} ${tr('Evidence')} <small>${tr('read by you')}</small></span>
-    </div>
-    <p class="dash-mix-note"><b>${tr(v.head)}.</b> ${tr(v.note)}</p>
-  </div>`;
-}
 
-/* ---- small Apple-styled data-viz primitives (vanilla inline SVG, offline).
-   Two-tone language matching the app: ink = primary, #10b981 = healthy,
-   ember = needs attention, hairline gray = the empty track. No decoration
-   for its own sake — every mark encodes a real number. ---- */
-function dashDonut(good, bad){
-  const total = good + bad, r = 46, C = 2*Math.PI*r;
-  if(total===0) return `<svg viewBox="0 0 120 120" class="dv-donut"><circle cx="60" cy="60" r="${r}" fill="none" stroke="var(--dv-track)" stroke-width="14"/></svg>`;
-  const gl = C*good/total, bl = C*bad/total;
-  return `<svg viewBox="0 0 120 120" class="dv-donut"><g transform="rotate(-90 60 60)">`
-    + `<circle cx="60" cy="60" r="${r}" fill="none" stroke="var(--dv-good)" stroke-width="14" stroke-dasharray="${gl.toFixed(1)} ${(C-gl).toFixed(1)}"/>`
-    + `<circle cx="60" cy="60" r="${r}" fill="none" stroke="var(--dv-warn)" stroke-width="14" stroke-dasharray="${bl.toFixed(1)} ${(C-bl).toFixed(1)}" stroke-dashoffset="${(-gl).toFixed(1)}"/>`
-    + `</g></svg>`;
+/* ---------- Overview, Editorial (2026-10) ----------
+   One rule shapes this page: the screen carries numbers and actions, the
+   explanations wait behind an ⓘ. A newcomer gets an onboarding later; a
+   returning researcher gets a page they can read in one look. Every number
+   is the same one the rest of the app computes (dashStats, the persona
+   grounding walk, the discovery curve, the backlog file) — nothing new is
+   estimated here. */
+const DX_INFO = '<svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><circle cx="12" cy="12" r="10"/><path d="M12 16v-4M12 8h.01"/></svg>';
+const DX_CARET = '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" aria-hidden="true"><path d="m6 9 6 6 6-6"/></svg>';
+let DX_TIP = 0;
+/* ⓘ + a popover that opens on hover and on keyboard focus (CSS :hover /
+   :focus-within) — `body` is trusted HTML built here, never file content */
+function dxTip(title, body, side){
+  const id = 'dxt' + (++DX_TIP);
+  return `<span class="dx-tip${side==='right'?' dx-tip-r':''}"><button type="button" class="dx-tip-btn" aria-label="${esc(title)}" aria-describedby="${id}">${DX_INFO}</button><span role="tooltip" id="${id}" class="dx-tip-pop"><b>${esc(title)}</b>${body}</span></span>`;
 }
-/* cumulative transcript count at the end of each month, first interview → now */
-function dashCumulative(dates){
-  if(!dates.length) return [];
-  const now = new Date(graphNow()), out = [];
-  const mk = d => d.getFullYear()*12 + d.getMonth();
-  const dkeys = dates.map(mk);
-  // begin one month before the first interview at 0, so the line rises from a
-  // real baseline instead of starting already at full height
-  let y=dates[0].getFullYear(), m=dates[0].getMonth()-1, cum=0;
-  if(m<0){ m=11; y--; }
-  while((y<now.getFullYear() || (y===now.getFullYear() && m<=now.getMonth())) && out.length<24){
-    cum += dkeys.filter(x=>x===y*12+m).length;
-    out.push({ y, m, cum });
-    if(++m>11){ m=0; y++; }
-  }
-  return out;
+function dxBars(n, of){
+  return `<span class="dx-lvl" aria-hidden="true">${Array.from({length:of},(_,i)=>`<i class="${i<n?(i===of-1?'on hot':'on'):''}"></i>`).join('')}</span>`;
 }
-function dashArea(s){
-  const S = dashCumulative(s.dates);
-  if(!S.length) return dashEmptyState(s, 'No dated interviews yet — nothing to chart.');
-  const W=580, H=150, PAD=10, n=S.length, max=Math.max(1, S[n-1].cum);
-  const X = i => n<=1 ? W/2 : PAD + i/(n-1)*(W-2*PAD);
-  const Y = v => H-16 - (v/max)*(H-36);
-  const pts = S.map((s,i)=>[X(i), Y(s.cum)]);
-  const line = pts.map((p,i)=>(i?'L':'M')+p[0].toFixed(1)+' '+p[1].toFixed(1)).join(' ');
-  const area = line + ` L ${X(n-1).toFixed(1)} ${H-2} L ${X(0).toFixed(1)} ${H-2} Z`;
-  const lp = pts[n-1];
-  return `<svg viewBox="0 0 ${W} ${H}" class="dv-area" preserveAspectRatio="xMidYMid meet">`
-    + `<defs><linearGradient id="dvAreaG" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="var(--text)" stop-opacity=".13"/><stop offset="1" stop-color="var(--text)" stop-opacity="0"/></linearGradient></defs>`
-    + `<path d="${area}" fill="url(#dvAreaG)"/>`
-    + `<path d="${line}" fill="none" stroke="var(--text)" stroke-width="2.4" stroke-linejoin="round" stroke-linecap="round"/>`
-    + `<circle cx="${lp[0].toFixed(1)}" cy="${lp[1].toFixed(1)}" r="4.5" fill="var(--bg-elev)" stroke="var(--text)" stroke-width="2.4"/>`
-    + `</svg>`;
+function dxPortrait(e, cls){
+  const pic = picFor(e);
+  const first = e.title.split(/\s+[—–-]\s+/)[0].trim();
+  return pic && pic.src
+    ? `<span class="${cls}"><img src="${esc(pic.src)}" alt=""></span>`
+    : `<span class="${cls} dx-noimg">${esc((first[0]||'?').toUpperCase())}</span>`;
 }
-/* days-since-last-interview against the 3-month refresh line */
-function dashGauge(lastAgo, s){
-  if(lastAgo===null) return dashEmptyState(s, 'No dated interviews to measure cadence.');
-  const target = 92, span = target*2, pct = Math.min(1, lastAgo/span), tickPct = target/span;
-  const over = lastAgo>target, col = over ? 'var(--dv-warn)' : 'var(--dv-good)';
-  const msg = over
-    ? trn(lastAgo-target, 'Overdue by {n} day', 'Overdue by {n} days', 'Spóźnione o {n} dzień', 'Spóźnione o {n} dni', 'Spóźnione o {n} dni')
-    : trn(target-lastAgo, 'Due in {n} day', 'Due in {n} days', 'Termin za {n} dzień', 'Termin za {n} dni', 'Termin za {n} dni');
-  return `<div class="dv-gauge-head"><span class="dv-gauge-n">${lastAgo}<small>${tr('d')}</small></span><span class="dv-gauge-lbl">${tr('since the last interview')}</span></div>`
-    + `<div class="dv-gauge"><div class="dv-gauge-fill" style="width:${(pct*100).toFixed(0)}%;background:${col}"></div><span class="dv-gauge-tick" style="left:${(tickPct*100).toFixed(0)}%"></span></div>`
-    + `<div class="dv-gauge-foot"><span class="${over?'warn':'ok'}">${msg}</span><span class="dv-gauge-scale">▲ ${tr('3-month line')}</span></div>`;
+function dxBacklogTop(){
+  const raw = backlogRaw(); if(!raw) return [];
+  const sec = parseBacklog(raw).open;
+  if(!sec || !sec.table) return [];
+  const h = sec.table.header.map(x=> x.toLowerCase());
+  const qi = h.findIndex(x=> /question|pytanie/.test(x)), pi = h.findIndex(x=> /persona/.test(x));
+  return sec.table.rows.map(r=>({ q: r[qi>=0?qi:2]||'', who: (r[pi>=0?pi:1]||'').trim() }));
+}
+/* the sessions on one axis: days when research spans under two months, months after */
+function dxSessions(){
+  const ts = wsEntities().filter(e=> e.type==='Transcript').map(e=>({ e, d: parseAnyDate(e.fm.date) })).filter(x=> x.d).sort((a,b)=> a.d-b.d);
+  if(!ts.length) return '';
+  const day = 86400000, t0 = ts[0].d.getTime(), t1 = ts[ts.length-1].d.getTime();
+  const short = t1 - t0 < 62*day;
+  const a = short ? new Date(ts[0].d.getFullYear(), ts[0].d.getMonth(), 1).getTime() : t0 - 3*day;
+  const b = short ? Math.max(new Date(ts[0].d.getFullYear(), ts[0].d.getMonth()+1, 0).getTime(), t1) : t1 + 3*day;
+  const x = t => ((t - a) / Math.max(day, b - a) * 100).toFixed(1);
+  const lift = [70, 40, 58, 28, 48, 76, 36];
+  const marks = ts.map((s,i)=>{
+    const ex = isExcluded(s.e), test = /test/i.test(String(s.e.fm.method||'')) || /^TEST/i.test(s.e.title);
+    const who = s.e.title.replace(/^[A-Z]+-\d+\s*/,'').trim();
+    const h = lift[i % lift.length];
+    return `<a class="dx-ses${ex?' ex':''}${test?' test':''}" href="#${esc(s.e.id)}" style="left:${x(s.d.getTime())}%;--h:${h}px" title="${esc(s.e.title)} · ${dashFmtDate(s.d)}${ex?' · '+esc(tr('excluded from analysis')):''}">
+        <i class="dx-ses-stem"></i><i class="dx-ses-dot"></i>${!test && !ex && who ? `<span class="dx-ses-lbl">${esc(who)}</span>` : ''}</a>`;
+  }).join('');
+  const d0 = new Date(a), d1 = new Date(b);
+  const axis = short
+    ? `<span>1 ${dashMon(d0.getMonth())}</span><span>10</span><span>20</span><span>${d1.getDate()} ${dashMon(d1.getMonth())}</span>`
+    : `<span>${dashMon(d0.getMonth())} ${d0.getFullYear()}</span><span>${dashMon(d1.getMonth())} ${d1.getFullYear()}</span>`;
+  const span = short ? `${dashMon(ts[0].d.getMonth())} ${ts[0].d.getFullYear()}` : `${dashMon(ts[0].d.getMonth())} ${ts[0].d.getFullYear()} – ${dashMon(ts[ts.length-1].d.getMonth())} ${ts[ts.length-1].d.getFullYear()}`;
+  return `<div class="dx-col">
+      <div class="dx-h2row"><h2 class="dx-h2">${tr('Sessions')}</h2><span class="dx-h2note">${esc(span)}</span>${dxTip(tr('One mark per session'), esc(tr('Circle = interview, square = usability test, dashed = set aside by the researcher. Trend charts would need research that spans two months or more.')), 'right')}</div>
+      <div class="dx-card dx-ses-card"><div class="dx-ses-plot" role="img" aria-label="${esc(trn(ts.length,'{n} session','{n} sessions','{n} sesja','{n} sesje','{n} sesji'))}">${marks}<div class="dx-ses-axis">${axis}</div></div></div>
+    </div>`;
 }
 
 function renderDashboard(){
+  DX_TIP = 0;
   const s = dashStats();
-  /* the head belongs to this render, not to dashboardEnter: switching language
-     re-renders the page but never re-enters it */
   pageTitle.textContent = tr('Overview');
-  pageSub.textContent = tr('A snapshot of what’s in your research graph right now — and what to look at next.');
-  pageSub.style.display = '';
-  grid.className = 'dash-wrap';
+  pageSub.textContent = '';
+  grid.className = 'dash-wrap dx';
+  const demo = WS==='demo';
+  const name = demo ? tr('Spotify listeners') : projectDisplayName();
   const lastAgo = s.dates.length ? Math.floor((graphNow()-s.dates[s.dates.length-1])/86400000) : null;
-  const totalEnt = wsEntities().length;
-
-  /* No inventory tiles: Signals / Evidence / Hypotheses / Ideas are already on
-     the hero legend and in the sidebar, and a number repeated three times on
-     one screen reads as three findings. */
-  const freshPct = s.transcripts ? Math.round(s.fresh/s.transcripts*100) : 0;
-  const who = (PREFS.name||'').trim();
-
-  // composition legend on the hero (ink shades — descriptive, not a score)
-  const legend = [['Signals',s.signals],['Evidence',s.evidence],['Hypotheses',s.hypotheses],['Ideas',s.ideas]]
-    .map((x,i)=>`<span class="dash-leg"><i class="dash-leg-i l${i}"></i>${tr(x[0])} <b>${x[1]}</b></span>`).join('');
-
-  const span = s.dates.length
-    ? `${dashMon(s.dates[0].getMonth())} ${s.dates[0].getFullYear()} → ${dashMon(s.dates[s.dates.length-1].getMonth())} ${s.dates[s.dates.length-1].getFullYear()}`
-    : '';
-
-  /* health — four blocks, one grammar: a label, a number you can say out loud,
-     a bar, and one line telling you what to do about it. Nothing here is a
-     figure without a reading ("grounding depth 10.3" invited a nod, never a
-     question), and nothing claims a precision the sample cannot carry. */
   const pg = dashPersonaGrounding();
+  const pgBy = {}; pg.forEach(r=> pgBy[r.id] = r);
   const cov = dashCoverage(pg, s.participants);
-  const health =
-    dashMixHtml(s.signals, s.evidence) +
-    dashMeter('Coverage', cov.value, cov.pct, cov.head, cov.note,
-      tr('Estimated from the discovery curve behind the “five users” rule — Nielsen & Landauer (1993), replicated by Faulkner (2003): 1−(1−0.31)ⁿ, the share of recurring patterns n sessions in ONE segment are expected to surface. It answers “have we heard enough people?” and says nothing about how many users have a problem — that is a survey question, and a survey answer is Evidence.')) +
-    dashMeter('Freshness', s.transcripts ? `${s.fresh} / ${s.transcripts}` : '—', freshPct,
-      s.transcripts === 0 ? (s.excluded ? 'Every transcript is switched off' : 'No interviews on file')
-        : freshPct === 0 ? 'Everything is out of date'
-        : freshPct < 50 ? 'More than half has aged out' : freshPct === 100 ? 'All current' : 'Mostly current',
-      s.transcripts === 0
-        ? (s.excluded
-            ? dashWayOut(s)
-            : tr('Nothing to age yet — the freshness clock starts with your first transcript.') + ' ' + dashWayOut(s))
-        : tr('{a} of {b} transcripts are younger than 3 months. Older sessions are not wrong, they are just no longer evidence about today — flag them for a refresh before the next decision leans on them.')
-            .replace('{a}', s.fresh).replace('{b}', s.transcripts),
-      tr('Three months is the repo’s freshness line: past it, a Signal gets flagged for a re-check rather than quietly passed off as current.'));
+  const mix = dashMixVerdict(s.signals, s.evidence);
+  const freshPct = s.transcripts ? Math.round(s.fresh/s.transcripts*100) : 0;
+  const personas = wsEntities().filter(e=> e.type==='Persona')
+    .sort((a,b)=> (/primary/i.test(b.fm.category||'') - /primary/i.test(a.fm.category||'')) || a.title.localeCompare(b.title));
+  const firstName = e => e.title.split(/\s+[—–-]\s+/)[0].trim();
+  const open = dxBacklogTop();
+  const asOf = demo ? tr('as of {d}').replace('{d}', DEMO_AS_OF.toLocaleDateString(LANG==='pl'?'pl-PL':'en-GB',{day:'numeric',month:'short',year:'numeric'})) : tr('right now');
 
-  // next-research card — strongest when nothing fresh remains
-  const ctaBtns = `
-    <div class="dash-cta-btns">
-      <button class="btn btn-primary btn-sm" id="dashCopyPrompt">${tr('⧉ Copy AI prompt')}</button>
-      <button class="btn btn-outline btn-sm" id="dashDlPrompt">${tr('↓ Prompt .md')}</button>
-      <button class="btn btn-outline btn-sm" id="dashDlBrief">${tr('↓ Agency brief .md')}</button>
-    </div>`;
-  let refresh;
-  if(s.transcripts===0 && s.excluded){
-    // files on disk, all switched off — a different problem from having none,
-    // and the fix is a toggle, not a research round
-    refresh = `<div class="dash-cta warn"><div class="dash-cta-h"><span class="dash-cta-i">⊘</span><div><h3>${trn(s.excluded,
-        '{n} transcript on file, excluded from analysis','{n} transcripts on file, all excluded from analysis',
-        '{n} transkrypcja w plikach, wyłączona z analizy','{n} transkrypcje w plikach, wszystkie wyłączone z analizy','{n} transkrypcji w plikach, wszystkie wyłączone z analizy')}</h3><p>${tr('Nothing counts toward freshness, sample stats or heard-from — that is why the numbers above read zero. Open a transcript and turn on “Use in analysis” to bring it back, or run a new round if these were meant to stay out.')}</p></div></div>${ctaBtns}</div>`;
-  } else if(s.transcripts===0){
-    refresh = `<div class="dash-cta warn"><div class="dash-cta-h"><span class="dash-cta-i">◒</span><div><h3>${tr('No interviews in the system yet')}</h3><p>${tr('Your personas have nothing to stand on. Run a first round — grab the prompt and let the AI turn your backlog into a plan (or a brief for an agency).')} ${dashWayOut(s)}</p></div></div>${ctaBtns}</div>`;
-  } else if(s.fresh===0){
-    refresh = `<div class="dash-cta warn"><div class="dash-cta-h"><span class="dash-cta-i">⏳</span><div><h3>${tr('Every transcript is older than 3 months')}</h3><p>${tr("Your personas are answering from history, not from today's users. Before the next product decision, run a refresh round — the prompt turns your backlog and open hypotheses into a plan, or an agency brief if the backlog is empty.")}</p></div></div>${ctaBtns}</div>`;
-  } else {
-    refresh = `<div class="dash-cta"><div class="dash-cta-h"><span class="dash-cta-i ok">✓</span><div><h3>${tr('{a} of {b} transcripts are fresh').replace('{a}',s.fresh).replace('{b}',s.transcripts)}${s.stale?` · ${trn(s.stale,'{n} due for a refresh','{n} due for a refresh','{n} do odświeżenia','{n} do odświeżenia','{n} do odświeżenia')}`:''}</h3><p>${tr("Grab a head start on the next round whenever you're ready — the prompt hands the AI your current state, backlog and open hypotheses to plan from.")}</p></div></div>${ctaBtns}</div>`;
-  }
+  /* hero: the project is the headline, its people beside it */
+  const cast = personas.slice(0,4).map((e,i)=> `<a class="dx-cast-${i}" href="#${esc(e.id)}" aria-label="${esc(firstName(e))}">${dxPortrait(e, 'dx-face')}</a>`).join('');
+  const askMenu = personas.map(e=> `<a role="menuitem" href="#${esc(e.id)}">${dxPortrait(e,'dx-face-xs')}<span>${esc(firstName(e))}</span></a>`).join('');
+  const hero = `<section class="dx-hero">
+      <div class="dx-hero-main">
+        <div class="dx-kicker"><b>${tr('Overview')}</b><span aria-hidden="true">·</span><span>${esc(asOf)}</span>${demo ? `<span class="dx-chip">${tr('Example data')}${dxTip(tr('This is the example project'), esc(tr('Illustrative research on Spotify listeners, not your users. The numbers are read as of the day its research closed, and it never mixes with your own projects.')))}</span>` : ''}</div>
+        <h1 class="dx-title">${esc(name)}<span class="dx-dot">.</span></h1>
+        <div class="dx-actions">
+          <button type="button" class="dx-btn dx-btn-ember" id="dashPlan">${tr('Plan the next round')}</button>
+          ${personas.length ? `<div class="dx-menu-wrap"><button type="button" class="dx-btn dx-btn-line" id="dxAsk" aria-haspopup="menu" aria-expanded="false">${TALK_ICO}${tr('Ask a persona')}${DX_CARET}</button><div class="dx-menu" id="dxAskMenu" role="menu" hidden>${askMenu}</div></div>` : ''}
+        </div>
+      </div>
+      ${cast ? `<div class="dx-cast" aria-label="${esc(tr('Personas'))}">${cast}</div>` : ''}
+    </section>`;
 
-  // the AI hand-off card: a zero-data startup gets the founding-brief protocol;
-  // a project with data gets the desk-research refresh prompt instead
+  /* four numbers, explanations behind ⓘ */
+  const sources = s.signals + s.evidence;
+  const facts = `<section class="dx-facts">
+      <div><span class="dx-fl">${tr('Interviews')}${dxTip(tr('Interviews and tests'), esc(trn(s.participants,'{n} person behind them','{n} people behind them','{n} osoba za nimi','{n} osoby za nimi','{n} osób za nimi')) + (s.excluded ? '. '+esc(trn(s.excluded,'{n} more is set aside by the researcher: on disk, counted nowhere.','{n} more are set aside by the researcher: on disk, counted nowhere.','{n} kolejna jest odłożona przez badacza: na dysku, nigdzie nie liczona.','{n} kolejne są odłożone przez badacza: na dysku, nigdzie nie liczone.','{n} kolejnych jest odłożonych przez badacza: na dysku, nigdzie nie liczonych.')) : ''))}</span>
+        <b class="dx-big">${s.transcripts}</b><span class="dx-fs">${esc(trn(s.participants,'{n} person','{n} people','{n} osoba','{n} osoby','{n} osób'))}</span></div>
+      <div><span class="dx-fl">${tr('Sources')}${dxTip(tr('Heard {h} · Read {r}').replace('{h}', s.signals).replace('{r}', s.evidence), esc(tr('Solid = heard in your own sessions (signals). Striped = read in published research or data (evidence).')))}</span>
+        <b class="dx-big">${sources}</b><span class="dx-split" aria-label="${esc(s.signals+' '+tr('Signals')+', '+s.evidence+' '+tr('Evidence'))}"><i style="flex:${s.signals||0} 1 0"></i><i class="ev" style="flex:${s.evidence||0} 1 0"></i></span></div>
+      <div><span class="dx-fl">${tr('Fresh')}${dxTip(tr('Freshness'), esc(tr('Transcripts younger than 3 months. Past that line, findings get flagged for a re-check before a decision leans on them.')))}</span>
+        <b class="dx-big">${s.transcripts ? `${s.fresh}<span class="dx-of">/${s.transcripts}</span>` : '—'}</b><span class="dx-fs ${freshPct===100?'ok':''}">${s.transcripts ? tr(freshPct===100 ? 'All current' : freshPct===0 ? 'Everything is out of date' : 'Mostly current') : esc(tr('none yet'))}</span></div>
+      <div><span class="dx-fl">${tr('Open questions')}${dxTip(tr('Open questions'), esc(tr('Things a persona answered with “I don’t know”. They go to real interviews, never to the AI.')), 'right')}</span>
+        <b class="dx-big">${open.length}</b><a class="dx-fs dx-link" href="#backlog">${tr('See all')} →</a></div>
+    </section>`;
+
+  /* personas: face, one line, how solid, ask */
+  const pcards = personas.map(e=>{
+    const lv = personaLevel(e), r = pgBy[e.id] || {sig:0, ev:0};
+    const prim = /primary/i.test(e.fm.category||'');
+    return `<article class="dx-pc${prim?' prim':''}">
+        <div class="dx-pc-top">${dxPortrait(e, 'dx-face-md')}${prim ? `<span class="dx-tag">${tr('Primary')}</span>` : ''}</div>
+        <a class="dx-pc-name" href="#${esc(e.id)}">${esc(firstName(e))}<span class="dx-dot">.</span></a>
+        <p class="dx-pc-desc" title="${esc(e.fm.description||'')}">${esc(e.fm.description||'')}</p>
+        <div class="dx-pc-foot">
+          <span class="dx-pc-lvl" title="${esc(tr('How solid: {l} of 5 · stands on {s} heard + {e} read').replace('{l}',lv).replace('{s}',r.sig).replace('{e}',r.ev))}">${dxBars(lv,5)}${lv}/5</span>
+          <button type="button" class="dx-btn dx-btn-sm ${prim?'dx-btn-ember':'dx-btn-line'}" data-ask="${esc(e.id)}" title="${esc(tr('Copies the line that starts the conversation — paste it into {a}, opened in this project folder').replace('{a}', pjAgentLabel(pjAgent())))}">${TALK_ICO}${tr('Ask')}</button>
+        </div>
+      </article>`;
+  }).join('');
+  const personasSec = `<section class="dx-sec">
+      <div class="dx-h2row"><h2 class="dx-h2">${tr('Personas')}</h2><span class="dx-spacer"></span><button type="button" class="dx-btn dx-btn-line dx-btn-sm" id="dxAllPersonas">${tr('All personas')} →</button></div>
+      ${personas.length ? `<div class="dx-pgrid">${pcards}</div>` : `<div class="dx-card dx-empty">${tr('No personas yet — nothing to weigh.')} <span class="dash-wayout">${tr('Open the Personas tab and use “New persona”, or run /persona-workshop with your AI.')}</span></div>`}
+    </section>`;
+
+  /* research health: four readings, one grammar */
+  const span = 184, tick = 92;
+  const ageW = lastAgo===null ? 0 : Math.min(100, lastAgo/span*100);
+  const over = lastAgo!==null && lastAgo > tick;
+  const tile = (label, tipTitle, tipBody, big, unit, bar, status, cls, right)=> `<div class="dx-ht ${cls||''}">
+      <span class="dx-fl">${label}${dxTip(tipTitle, tipBody, right?'right':'')}</span>
+      <b class="dx-mid">${big}<small>${unit}</small></b>${bar}<span class="dx-hs">${status}</span></div>`;
+  const health = `<section class="dx-sec">
+      <div class="dx-h2row"><h2 class="dx-h2">${tr('Research health')}</h2>${dxTip(tr('Four readings'), esc(tr('None of them claims more precision than a handful of interviews can carry. Hover each ⓘ for what it means.')))}</div>
+      <div class="dx-card dx-health">
+        ${tile(tr('Firsthand'), tr('What the graph stands on'), esc(tr(mix.note)), sources ? mix.pct+'%' : '—', ' '+tr('of sources'),
+          `<span class="dx-split dx-split-sm"><i style="flex:${s.signals||0} 1 0"></i><i class="ev" style="flex:${s.evidence||0} 1 0"></i></span>`, esc(tr(mix.head)))}
+        ${tile(tr('Coverage'), tr('Have we heard enough people?'), cov.note, pg.length ? '~'+cov.pct+'%' : '—', ' '+tr('of patterns'),
+          `<span class="dx-track"><i style="width:${cov.pct}%"></i><b style="left:84%" title="${esc(tr('five people per segment ≈ 84%'))}"></b></span>`, esc(tr(cov.head)), cov.min < 3 ? 'warn' : '')}
+        ${tile(tr('Freshness'), tr('Freshness'), esc(s.transcripts ? tr('{a} of {b} transcripts are younger than 3 months. Older sessions are not wrong, they are just no longer evidence about today — flag them for a refresh before the next decision leans on them.').replace('{a}', s.fresh).replace('{b}', s.transcripts) : dashWayOut(s)),
+          s.transcripts ? `${s.fresh}/${s.transcripts}` : '—', ' '+tr('current'), `<span class="dx-track ok"><i style="width:${freshPct}%"></i></span>`,
+          s.transcripts ? tr(freshPct===100 ? 'All current' : freshPct===0 ? 'Everything is out of date' : freshPct < 50 ? 'More than half has aged out' : 'Mostly current') : esc(tr('No interviews on file')), freshPct===100 ? 'ok' : '')}
+        ${tile(tr('Last interview'), tr('Refresh cadence'), esc(tr('The tick is the 3-month line. Past it, findings get flagged for a refresh round.')),
+          lastAgo===null ? '—' : String(lastAgo), ' '+tr('days ago'), `<span class="dx-track ink"><i style="width:${ageW}%"></i><b style="left:50%"></b></span>`,
+          lastAgo===null ? esc(tr('No dated interviews yet')) : esc(over ? trn(lastAgo-tick,'Overdue by {n} day','Overdue by {n} days','Spóźnione o {n} dzień','Spóźnione o {n} dni','Spóźnione o {n} dni') : trn(tick-lastAgo,'Refresh in {n} day','Refresh in {n} days','Odświeżenie za {n} dzień','Odświeżenie za {n} dni','Odświeżenie za {n} dni')), over ? 'warn' : '', true)}
+      </div>
+    </section>`;
+
+  /* where the data disagrees + when you listened */
+  const pairs = graphPairs(wsEntities());
+  const whoHas = id => { const out = []; pairs.forEach(([a,b])=>{ const o = a===id ? b : b===id ? a : null; if(o && ENTITIES[o] && ENTITIES[o].type==='Persona') out.push(firstName(ENTITIES[o])); }); return out.join(', '); };
+  const sigLink = e => `<a href="#${esc(e.id)}">${esc(e.title)}</a>${whoHas(e.id) ? ` <span class="dx-who">${esc(whoHas(e.id))}</span>` : ''}`;
+  const sp = dashSplits();
+  const splits = sp.length ? `<div class="dx-col">
+      <div class="dx-h2row"><h2 class="dx-h2">${tr('Where data disagrees')}</h2>${dxTip(tr('Two sides, never an average'), esc(tr('On the same feature, some participants stand against it and some for it. A split is a finding, not noise — take it to the next round, or ask your AI assistant to run /contradictions on it.')))}</div>
+      <div class="dx-card"><table class="dx-table"><thead><tr><th>${tr('Feature')}</th><th><i class="dx-sw ember"></i>${tr('Against')}</th><th><i class="dx-sw"></i>${tr('For')}</th></tr></thead><tbody>
+        ${sp.map(([f,v])=>`<tr><td class="dx-feat">${esc(f.charAt(0).toUpperCase()+f.slice(1))}</td><td>${v.neg.map(sigLink).join('<br>')}</td><td>${v.pos.map(sigLink).join('<br>')}</td></tr>`).join('')}
+      </tbody></table></div>
+    </div>` : '';
+  const sessions = dxSessions();
+  const pair = splits || sessions ? `<section class="dx-sec dx-pair${splits && sessions ? '' : ' one'}">${splits}${sessions}</section>` : '';
+
+  /* open questions: the first three, the rest one click away */
+  const oq = open.length ? `<section class="dx-sec">
+      <div class="dx-h2row"><h2 class="dx-h2">${tr('Open questions')}</h2>${dxTip(tr('What no persona can answer yet'), esc(tr('Asked in conversations, answered with “I don’t know”. Each one waits for a real interview.')))}<span class="dx-spacer"></span><a class="dx-btn dx-btn-line dx-btn-sm" href="#backlog">${esc(tr('All {n}').replace('{n}', open.length))} →</a></div>
+      <div class="dx-card"><table class="dx-table dx-oq"><tbody>
+        ${open.slice(0,3).map(r=>`<tr><td>${esc(r.q)}</td><td class="dx-oq-who">${r.who && r.who!=='—' ? r.who.split(/\s*[,/]\s*/).map(w=>`<span class="dx-pill">${esc(w)}</span>`).join(' ') : `<span class="dx-pill">${tr('everyone')}</span>`}</td></tr>`).join('')}
+      </tbody></table></div>
+    </section>` : '';
+
+  /* the next round: the one dark band on the page */
   const zeroData = s.transcripts===0 && s.signals===0 && s.evidence===0;
-  const deskDrift = s.staleDesk + s.needsRes;
-  const aiCard = zeroData
-    ? `<div class="dash-cta"><div class="dash-cta-h"><span class="dash-cta-i">✦</span><div><h3>${tr('Startup with no research data yet?')}</h3><p>${tr('Run the founding-brief protocol: the AI interviews you about the product, value proposition and target group — recording your beliefs about users as testable assumptions, never as findings — and plans the first research round. Paste the command into your AI assistant as your first message.')}</p></div></div>
-       <div class="dash-cta-btns"><code class="dash-cmd">/cold-start</code><button class="btn btn-primary btn-sm" id="dashColdStart">${tr('⧉ Copy command')}</button></div></div>`
-    : `<div class="dash-cta${deskDrift?' warn':''}"><div class="dash-cta-h"><span class="dash-cta-i${deskDrift?'':' ok'}">${deskDrift?'◍':'◉'}</span><div><h3>${deskDrift
-        ? `${tr('Desk research is drifting:')} ${s.staleDesk?trn(s.staleDesk,'{n} entry verified over 3 months ago','{n} entries verified over 3 months ago','{n} wpis sprawdzony ponad 3 miesiące temu','{n} wpisy sprawdzone ponad 3 miesiące temu','{n} wpisów sprawdzonych ponad 3 miesiące temu'):''}${s.staleDesk&&s.needsRes?' · ':''}${s.needsRes?trn(s.needsRes,'{n} competitor never researched','{n} competitors never researched','{n} konkurent nigdy nie zbadany','{n} konkurentów nigdy nie zbadanych','{n} konkurentów nigdy nie zbadanych'):''}`
-        : tr('Enrich your data with the latest from the internet')}</h3><p>${tr('This prompt sends the AI on a desk-research refresh: re-verify stale Evidence at its sources, research flagged competitors, close Comparison gaps. Web finds land as cited Evidence — never as Signals — and nothing is written without your approval.')}</p></div></div>
-       <div class="dash-cta-btns"><button class="btn btn-primary btn-sm" id="dashEnrichCopy">${tr('⧉ Copy AI prompt')}</button><button class="btn btn-outline btn-sm" id="dashEnrichDl">${tr('↓ Prompt .md')}</button></div></div>`;
+  const head = zeroData ? tr('No research data yet — start with the founding brief.')
+    : s.transcripts===0 ? tr('No interviews in the system yet')
+    : s.fresh===0 ? tr('Every transcript is older than 3 months')
+    : pg.length && pg.every(r=> r.people===1) ? tr('Every persona stands on a single person.')
+    : tr(cov.head)+'.';
+  const band = `<section class="dx-band" id="dashCta">
+      <span class="dx-band-k">${tr('Next round')}</span>
+      <span class="dx-band-h">${esc(head)}</span>
+      <span class="dx-band-acts">
+        ${zeroData
+          ? `<code class="dx-cmd">/cold-start</code><button type="button" class="dx-btn dx-btn-ember" id="dashColdStart">${tr('⧉ Copy command')}</button>`
+          : `<button type="button" class="dx-btn dx-btn-ember" id="dashCopyPrompt">${tr('⧉ Copy AI prompt')}</button>
+             <div class="dx-menu-wrap"><button type="button" class="dx-btn dx-btn-inv" id="dxMore" aria-haspopup="menu" aria-expanded="false">${tr('More')}${DX_CARET}</button>
+               <div class="dx-menu dx-menu-up" id="dxMoreMenu" role="menu" hidden>
+                 <button type="button" role="menuitem" id="dashDlPrompt">${tr('↓ Prompt .md')}</button>
+                 <button type="button" role="menuitem" id="dashDlBrief">${tr('↓ Agency brief .md')}</button>
+                 <button type="button" role="menuitem" id="dashEnrichCopy">${tr('⧉ Desk-research refresh prompt')}</button>
+               </div></div>`}
+      </span>
+    </section>`;
 
-  grid.innerHTML = `${dashTipsHtml()}
-    <section class="dash-sec">
-      <div class="dash-sec-h"><h2>${tr("What's in your graph")}</h2><span class="dash-sec-note">${WS==='demo' ? tr('as of {d}').replace('{d}', DEMO_AS_OF.toLocaleDateString(LANG==='pl'?'pl-PL':'en-GB',{day:'numeric',month:'short',year:'numeric'})) : tr('right now')} · ${tr(WS==='demo'?'Demo workspace':'your project workspace')}</span></div>
-      <!-- One horizontal strip instead of a tall hero column: the greeting and
-           the two headline numbers are one line of reading, so making them a
-           400px-tall card only bought empty space for the cards beside it. -->
-      <section class="dash-card dash-strip">
-        <div class="dash-strip-top">
-          <div class="dash-hero-hi"><span class="dash-hero-ava">${who?esc(initialsFor(who)):'◐'}</span><div class="dash-hero-hey"><b>${who?(tr('Hey,')+' '+esc(who)):tr('Your research graph')}</b><span>${WS==='demo' ? tr('Example project · Spotify listeners') : esc(projectDisplayName())}</span></div></div>
-          <div class="dash-strip-btns">
-            <button class="btn btn-primary btn-sm" id="dashPlan">${tr('Plan next round')}</button>
-            <button class="btn btn-outline btn-sm" id="dashConnect">${tr('Connect folder')}</button>
-          </div>
-        </div>
-        <div class="dash-strip-bot">
-          <div class="dash-stat"><b>${totalEnt}</b><span>${tr('All entities · this workspace')}</span></div>
-          <div class="dash-stat"><b>${s.signals+s.evidence}</b><span>${tr('sources behind your personas')}</span></div>
-          <div class="dash-hero-legend">${legend}</div>
-        </div>
-      </section>
+  grid.innerHTML = hero + facts + personasSec + health + pair + oq + band;
 
-      <div class="dash-two dash-two-wide">
-        <div class="dash-card dash-ring-card">
-          <div class="dash-mini-h">${tr('Transcript freshness')}</div>
-          <div class="dash-ring-row">
-            <div class="dash-ring-wrap">${dashDonut(s.fresh, s.stale)}<div class="dash-ring-center">${s.transcripts
-              ? `<b>${s.fresh}/${s.transcripts}</b><span>${tr('fresh')}</span>`
-              : `<b>—</b><span>${s.excluded?tr('all switched off'):tr('none yet')}</span>`}</div></div>
-            ${s.transcripts
-              ? `<div class="dash-ring-foot"><span><span class="dash-dot ok"></span>${nFresh(s.fresh)}</span><span><span class="dash-dot bad"></span>${nStale(s.stale)}</span>${s.excluded?`<span class="dash-ring-excl" title="${esc(tr('Excluded transcripts stay on disk but count toward nothing until you turn them back on'))}">${trn(s.excluded,'+ {n} excluded from analysis','+ {n} excluded from analysis','+ {n} wyłączona z analizy','+ {n} wyłączone z analizy','+ {n} wyłączonych z analizy')}</span>`:''}</div>`
-              : `<p class="dash-ring-note">${dashWayOut(s)}</p>`}
-          </div>
-        </div>
-
-        ${dashPgHtml(pg)}
-      </div>
-    </section>
-
-    <!-- Everything that reads time down the left, the one long verdict down the
-         right: three short cards next to one tall one, instead of a tall card
-         next to 400px of nothing. -->
-    <div class="dash-two">
-      <div class="dash-col">
-        ${/* A trend needs at least two months to be one. Before that, two charts
-             would draw a single jump and a single bar — decoration pretending
-             to be data — so they wait, and one line says what there is. */ ''}
-        ${new Set(s.dates.map(d=>d.getFullYear()*12+d.getMonth())).size >= 2 ? `
-        <section class="dash-card dash-area-card">
-          <div class="dash-sec-h"><h2>${tr('Transcripts over time')}</h2><span class="dash-sec-note">${tr('cumulative, by month')}</span></div>
-          ${dashArea(s)}
-          ${span?`<div class="dash-axis"><span>${span}</span><span>${s.transcripts} ${tr('total')}</span></div>`:''}
-        </section>
-        <section class="dash-card">
-          <div class="dash-sec-h"><h2>${tr('Research cadence')}</h2><span class="dash-sec-note">${tr('interviews per month')}</span></div>
-          ${dashTimeline(s)}
-        </section>` : s.dates.length ? `
-        <section class="dash-card">
-          <div class="dash-sec-h"><h2>${tr('Research timeline')}</h2></div>
-          <p class="dash-note-line">${trn(s.dates.length,'{n} interview, all in {m}.','{n} interviews, all in {m}.','{n} wywiad, wszystkie w: {m}.','{n} wywiady, wszystkie w: {m}.','{n} wywiadów, wszystkie w: {m}.').replace('{m}', s.dates[0].toLocaleDateString(LANG==='pl'?'pl-PL':'en-GB',{month:'long',year:'numeric'}))} ${tr('Trend charts appear once your research spans two months.')}</p>
-        </section>` : ''}
-        <section class="dash-card dash-gauge-card">
-          <div class="dash-sec-h"><h2>${tr('Refresh cadence')}</h2><span class="dash-sec-note">${tr('vs the 3-month line')}</span></div>
-          ${dashGauge(lastAgo, s)}
-        </section>
-      </div>
-      <section class="dash-card">
-        <div class="dash-sec-h"><h2>${tr('Health check')}</h2></div>
-        <div class="dash-health">${health}</div>
-      </section>
-    </div>
-
-    ${dashSplitsHtml()}
-
-    <section class="dash-sec" id="dashCta"><div class="dash-cta-row">${refresh}${aiCard}</div></section>`;
-  const tipsOff = grid.querySelector('#dashTipsOff');
-  if(tipsOff) tipsOff.onclick = ()=>{ store.set('at-demo-tips','off'); grid.querySelector('.dash-tips').remove(); };
-  grid.querySelectorAll('.dash-splits a.xref[data-goto]').forEach(a=> a.onclick = ev=>{ ev.preventDefault(); location.hash = '#'+a.dataset.goto; });
-
-  const plan = grid.querySelector('#dashPlan'); if(plan) plan.onclick = ()=>{ const c=grid.querySelector('#dashCta'); if(c) c.scrollIntoView({behavior:'smooth', block:'center'}); };
-  const conn = grid.querySelector('#dashConnect'); if(conn) conn.onclick = ()=>{ const l=document.getElementById('loadBtn'); if(l) l.click(); };
-  const cp = grid.querySelector('#dashCopyPrompt'); if(cp) cp.onclick = ()=> dashCopy(dashPromptText(s), tr('Prompt copied — paste it into your AI assistant ✓'));
-  const dp = grid.querySelector('#dashDlPrompt'); if(dp) dp.onclick = ()=> dashDownload('research-plan-prompt.md', dashPromptText(s));
-  const db = grid.querySelector('#dashDlBrief'); if(db) db.onclick = ()=> dashDownload('research-brief.md', dashBriefText(s));
-  const cs = grid.querySelector('#dashColdStart'); if(cs) cs.onclick = ()=> dashCopy('/cold-start'+promptLang(), tr('Command copied — paste it as your first message ✓'), 'cold-start-command.md');
-  const ecp = grid.querySelector('#dashEnrichCopy'); if(ecp) ecp.onclick = ()=> dashCopy(dashEnrichText(s), tr('Prompt copied — paste it into your AI assistant ✓'), 'desk-research-refresh-prompt.md');
-  const edl = grid.querySelector('#dashEnrichDl'); if(edl) edl.onclick = ()=> dashDownload('desk-research-refresh-prompt.md', dashEnrichText(s));
+  /* wiring */
+  const $ = sel => grid.querySelector(sel);
+  const menu = (btnSel, menuSel)=>{
+    const b = $(btnSel), m = $(menuSel); if(!b || !m) return;
+    b.onclick = ev=>{ ev.stopPropagation(); m.hidden = !m.hidden; b.setAttribute('aria-expanded', String(!m.hidden)); };
+    document.addEventListener('click', function close(ev){
+      if(!grid.contains(b)){ document.removeEventListener('click', close); return; }   // the page re-rendered: drop this listener
+      if(!m.hidden && !m.contains(ev.target)){ m.hidden = true; b.setAttribute('aria-expanded','false'); }
+    });
+  };
+  menu('#dxAsk', '#dxAskMenu'); menu('#dxMore', '#dxMoreMenu');
+  const plan = $('#dashPlan'); if(plan) plan.onclick = ()=> $('#dashCta').scrollIntoView({behavior:'smooth', block:'center'});
+  const all = $('#dxAllPersonas'); if(all) all.onclick = ()=>{ activeType = 'Persona'; location.hash = ''; renderTabs(); updatePageHead(); };
+  grid.querySelectorAll('[data-ask]').forEach(b=> b.onclick = ()=>{
+    const e = ENTITIES[b.dataset.ask], agent = pjAgent(), txt = talkCommand(e, agent);
+    const done = ()=> toast(tr('Copied “{t}” — paste it into {a}, opened in this project folder').replace('{t}', trim(txt, 60)).replace('{a}', pjAgentLabel(agent)));
+    if(navigator.clipboard && navigator.clipboard.writeText) navigator.clipboard.writeText(txt).then(done, ()=> fallbackCopy(txt, done));
+    else fallbackCopy(txt, done);
+  });
+  const on = (id, fn)=>{ const el = grid.querySelector('#'+id); if(el) el.onclick = fn; };
+  on('dashCopyPrompt', ()=> dashCopy(dashPromptText(s), tr('Prompt copied — paste it into your AI assistant ✓')));
+  on('dashDlPrompt', ()=> dashDownload('research-plan-prompt.md', dashPromptText(s)));
+  on('dashDlBrief', ()=> dashDownload('research-brief.md', dashBriefText(s)));
+  on('dashEnrichCopy', ()=> dashCopy(dashEnrichText(s), tr('Prompt copied — paste it into your AI assistant ✓'), 'desk-research-refresh-prompt.md'));
+  on('dashColdStart', ()=> dashCopy('/cold-start'+promptLang(), tr('Command copied — paste it as your first message ✓'), 'cold-start-command.md'));
 }
 
 function dashboardEnter(){
@@ -14672,9 +14615,9 @@ function wcField(canvas){
     ctx.clearRect(0, 0, w, h);
     lines.forEach(l=>{
       const g = ctx.createLinearGradient(0, 0, w, 0);
-      g.addColorStop(0, 'rgba(255,255,255,0)');
-      g.addColorStop(0.5, 'rgba(255,255,255,' + l.a.toFixed(3) + ')');
-      g.addColorStop(1, 'rgba(255,255,255,0)');
+      g.addColorStop(0, 'rgba(10,10,10,0)');
+      g.addColorStop(0.5, 'rgba(10,10,10,' + l.a.toFixed(3) + ')');
+      g.addColorStop(1, 'rgba(10,10,10,0)');
       ctx.strokeStyle = g; ctx.lineWidth = 1;
       ctx.beginPath(); ctx.moveTo(0, l.y); ctx.lineTo(w, l.y); ctx.stroke();
     });
@@ -14687,12 +14630,12 @@ function wcField(canvas){
       const near = dist < WC_PULL_R ? 1 - dist / WC_PULL_R : 0;
       const a = Math.min(0.85, d.a * (0.7 + 0.3 * Math.sin(d.t)) + near * 0.42);
       if(near > 0.35){                                    // the thread back to the cursor
-        ctx.strokeStyle = 'rgba(255,255,255,' + ((near - 0.35) * 0.11).toFixed(3) + ')';
+        ctx.strokeStyle = 'rgba(10,10,10,' + ((near - 0.35) * 0.11).toFixed(3) + ')';
         ctx.lineWidth = 1;
         ctx.beginPath(); ctx.moveTo(ox, oy); ctx.lineTo(mx, my); ctx.stroke();
       }
       ctx.fillStyle = d.ember ? 'rgba(255,77,0,' + (a * 0.95).toFixed(3) + ')'
-                              : 'rgba(255,255,255,' + a.toFixed(3) + ')';
+                              : 'rgba(10,10,10,' + a.toFixed(3) + ')';
       ctx.beginPath(); ctx.arc(ox, oy, d.r + near * 0.7, 0, Math.PI * 2); ctx.fill();
     });
   }
@@ -15514,6 +15457,24 @@ filterInput.addEventListener('keydown', ev=>{
   if(ev.key==='Escape'){ ev.stopPropagation(); filterInput.value=''; searchInput.value=''; renderGrid(''); filterInput.blur(); }
 });
 document.getElementById('filterClear').onclick = ()=>{ filterInput.value=''; searchInput.value=''; renderGrid(''); filterInput.focus(); };
+/* the rail's search is a door into that same filter, not a second search:
+   from any page it opens All files with the query already in the filter bar.
+   ⌘K / Ctrl+K puts the cursor in it from anywhere. */
+const sideSearch = document.getElementById('sideSearch');
+sideSearch.addEventListener('input', ()=>{
+  const v = sideSearch.value;
+  searchInput.value = v;
+  if(location.hash){   // leave whatever page is open the way a nav tab does, then show All files filtered
+    helpExit(); settingsExit(); mindmapExit(); dashboardExit(); backlogExit(); projectsExit(); closeDetail();
+    activeType = 'All'; suppressRoute = true; location.hash = '';
+    renderTabs(); renderGrid(v); updatePageHead(); return;
+  }
+  clearTimeout(filterT); filterT = setTimeout(()=> renderGrid(v), 120);
+});
+sideSearch.addEventListener('keydown', ev=>{ if(ev.key==='Escape'){ sideSearch.value=''; searchInput.value=''; renderGrid(''); sideSearch.blur(); } });
+document.addEventListener('keydown', ev=>{
+  if((ev.metaKey || ev.ctrlKey) && !ev.altKey && ev.key.toLowerCase()==='k'){ ev.preventDefault(); sideSearch.focus(); sideSearch.select(); }
+});
 document.getElementById('viewCardsBtn').onclick = ()=> setView('cards');
 document.getElementById('viewListBtn').onclick = ()=> setView('list');
 document.getElementById('viewTableBtn').onclick = ()=> setView('table');

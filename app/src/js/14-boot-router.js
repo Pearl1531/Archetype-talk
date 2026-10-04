@@ -531,6 +531,24 @@ filterInput.addEventListener('keydown', ev=>{
   if(ev.key==='Escape'){ ev.stopPropagation(); filterInput.value=''; searchInput.value=''; renderGrid(''); filterInput.blur(); }
 });
 document.getElementById('filterClear').onclick = ()=>{ filterInput.value=''; searchInput.value=''; renderGrid(''); filterInput.focus(); };
+/* the rail's search is a door into that same filter, not a second search:
+   from any page it opens All files with the query already in the filter bar.
+   ⌘K / Ctrl+K puts the cursor in it from anywhere. */
+const sideSearch = document.getElementById('sideSearch');
+sideSearch.addEventListener('input', ()=>{
+  const v = sideSearch.value;
+  searchInput.value = v;
+  if(location.hash){   // leave whatever page is open the way a nav tab does, then show All files filtered
+    helpExit(); settingsExit(); mindmapExit(); dashboardExit(); backlogExit(); projectsExit(); closeDetail();
+    activeType = 'All'; suppressRoute = true; location.hash = '';
+    renderTabs(); renderGrid(v); updatePageHead(); return;
+  }
+  clearTimeout(filterT); filterT = setTimeout(()=> renderGrid(v), 120);
+});
+sideSearch.addEventListener('keydown', ev=>{ if(ev.key==='Escape'){ sideSearch.value=''; searchInput.value=''; renderGrid(''); sideSearch.blur(); } });
+document.addEventListener('keydown', ev=>{
+  if((ev.metaKey || ev.ctrlKey) && !ev.altKey && ev.key.toLowerCase()==='k'){ ev.preventDefault(); sideSearch.focus(); sideSearch.select(); }
+});
 document.getElementById('viewCardsBtn').onclick = ()=> setView('cards');
 document.getElementById('viewListBtn').onclick = ()=> setView('list');
 document.getElementById('viewTableBtn').onclick = ()=> setView('table');

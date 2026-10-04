@@ -14,13 +14,13 @@
     --text-heading: 30px;    --leading-heading: 1.2;     --tracking-heading: -0.75px;
 
     /* Shadows */
-    --shadow-subtle: 0 0 0 1px rgba(255,255,255,0.03);
+    --shadow-subtle: 0 1px 2px rgba(10,10,10,0.06);
 
     /* Layout widths — three tiers, no per-page values:
        grid pages fill .content (--width-content); single-column lists fill it too (--width-column),
        so a list and a grid end at the same right edge;
        doc/reading pages share --width-reading */
-    --sidebar-w: 240px;   /* the left rail; the top bar starts where it ends */
+    --sidebar-w: 264px;   /* the left rail; the top bar starts where it ends */
     --width-content: 1280px;
     --width-column: 100%;
     --width-reading: 800px;
@@ -47,35 +47,36 @@
      spacing — is named once, right here. */
   :root {
     /* Surfaces — canvas, then two steps up */
-    --bg: #090909;
-    --bg-elev: #141414;
-    --bg-elev-2: #1c1c1c;
-    --line: #262626;
-    --line-soft: #1a1a1a;
-    --edge: #3a3a3a;
-    --hover-bg: #1c1c1c;
-    --hover-border: #3a3a3a;
+    --bg: #EFEDE7;        /* paper */
+    --bg-elev: #FFFFFF;   /* a sheet on the paper */
+    --bg-elev-2: #F4F2EC; /* a field inside a sheet */
+    --bg-rail: #E8E5DD;   /* the left rail, one step darker than the page */
+    --line: #DDD9D0;
+    --line-soft: #E8E5DD;
+    --edge: #C9C4B8;
+    --hover-bg: #F4F2EC;
+    --hover-border: #C9C4B8;
 
     /* Ink — four steps; --text-mute is the darkest that still clears 4.5:1 on --bg */
-    --text: #ffffff;
-    --text-soft: #d6d6d6;
-    --text-dim: #999999;
-    --text-mute: #8a8a8a;
+    --text: #0A0A0A;
+    --text-soft: #2E2C28;
+    --text-dim: #6B675F;
+    --text-mute: #6B675F;
 
     /* Accent-derived (--accent itself lives in 08-shared-skin.css) */
     --accent-soft: color-mix(in srgb, var(--accent, #ff4d00) 15%, transparent);
-    --accent-text: color-mix(in srgb, var(--accent, #ff4d00) 65%, #ffffff);
+    --accent-text: #C23A00;   /* ember dark enough for text on paper (4.9:1) */
 
     /* Status */
     --warn: #f59e0b;
-    --warn-text: #fbbf24; --danger-text: #f87171;
+    --warn-text: #8A5A00; --danger-text: #B42318;
 
     /* Primary action is an inverted surface, not a brand colour */
-    --primary-bg: #ffffff;
-    --primary-fg: #000000;
+    --primary-bg: #0A0A0A;
+    --primary-fg: #FFFFFF;
 
     /* Depth */
-    --shadow: 0 10px 30px rgba(0, 0, 0, 0.55);
+    --shadow: 0 16px 36px -14px rgba(10, 10, 10, 0.28);
 
     /* Radii — utility → pill; text buttons are always pills */
     --r-xs: 4px; --r-sm: 6px; --r-md: 10px; --r-lg: 15px; --r-xl: 20px; --r-pill: 100px;

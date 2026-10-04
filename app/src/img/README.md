@@ -15,8 +15,9 @@ its screenshot is still being made.
 | file | used by |
 |---|---|
 | `wizard-graph.jpg` | welcome step 2, "What this repository is" — the mind map |
+| `spotify-app-icon.webp` | the project card in the rail, Demo workspace — Spotify's app icon (128 px lossy WebP, ICC chunk stripped: 1.8 KB). The demo studies Spotify listeners, so it wears their mark to say what it is about; it is not affiliated with Spotify |
 
-Both are shown in a band of ~512×132 CSS px (the card's full width; it never
+The welcome picture is shown in a band of ~512×132 CSS px (the card’s full width; it never
 grows for a picture), so they are stored **already cut to that proportion**,
 ≈3.9:1. Cropping in the file rather than hiding most of a whole screenshot
 behind `object-fit` is what keeps them small — and an inlined image is base64,

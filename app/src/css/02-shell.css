@@ -34,7 +34,7 @@
   .nav-item svg { flex: none; color: currentColor; opacity: .75; }
   .nav-item .n {
     margin-left: auto; font-size: var(--text-caption); font-weight: 500;
-    color: var(--text-dim); background: rgba(255,255,255,0.08);
+    color: var(--text-dim); background: rgba(10,10,10,0.06);
     padding: 1px 7px; border-radius: var(--r-pill); min-width: 22px; text-align: center;
   }
   .nav-item.active .n { background: var(--bg); }

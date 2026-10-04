@@ -14,7 +14,7 @@
   .section-head svg { color: var(--text-dim); }
   .section-head:hover { color: var(--text); }
   .section-head:hover svg { color: var(--text); }
-  .section-head .n { font-size: var(--text-caption); background: rgba(255,255,255,0.08); color: var(--text-dim);
+  .section-head .n { font-size: var(--text-caption); background: rgba(10,10,10,0.06); color: var(--text-dim);
     padding: 1px 7px; border-radius: var(--r-pill); }
   /* competitor map */
   .map-card { background: var(--bg-elev); border: 1px solid var(--line);
@@ -142,7 +142,7 @@
   .aff-name-in { flex: 1; min-width: 0; font: 600 var(--text-body)/1.2 var(--font-geist); color: var(--text);
     background: var(--bg-elev); border: 1px solid var(--line); border-radius: var(--r-sm); padding: 4px 8px; outline: none; }
   .aff-name-in:focus { border-color: var(--text-dim); }
-  .aff-count { font-size: var(--text-caption); color: var(--text-dim); background: rgba(255,255,255,0.08); border-radius: var(--r-pill); padding: 1px 7px; }
+  .aff-count { font-size: var(--text-caption); color: var(--text-dim); background: rgba(10,10,10,0.06); border-radius: var(--r-pill); padding: 1px 7px; }
   .aff-badge { margin-left: auto; font-size: 14px; font-weight: 600; letter-spacing: 0.4px; text-transform: uppercase;
     color: var(--text); border: 1px solid var(--line); border-radius: var(--r-pill); padding: 1px 7px; }
   .aff-body { display: flex; flex-direction: column; gap: 8px; }

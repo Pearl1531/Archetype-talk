@@ -117,7 +117,7 @@
   body.lin-all .set-input { color: var(--text); }
   body.lin-all .set-input:focus { background: var(--bg-elev); border-color: var(--accent); box-shadow: 0 0 0 3px rgba(0,113,227,.15); }
   body.lin-all .set-note, body.lin-all .set-row .desc { color: var(--text-dim); }
-  body.lin-all .set-banner { background: #2a2108; border: none; color: #e8b93c; border-radius: var(--r-lg); }
+  body.lin-all .set-banner { background: #FFF4D6; border: none; color: #8A5A00; border-radius: var(--r-lg); }
   body.lin-all .switch input:checked + i { background: var(--accent); }
   body.lin-all .seg { background: var(--bg-elev-2); }
   body.lin-all .seg button { color: var(--text-soft); }
@@ -155,7 +155,7 @@
   body.lin-all .idea-field input, body.lin-all .idea-field textarea, body.lin-all .idea-pick, body.lin-all .idea-pick-search { color: var(--text); }
   body.lin-all .idea-field input:focus, body.lin-all .idea-field textarea:focus { background: var(--bg-elev); border-color: var(--accent); }
   body.lin-all .idea-pick-row:hover { background: var(--bg-elev-2); }
-  body.lin-all .idea-draft-note { background: #241307; border: none; color: #cc3e00; border-radius: var(--r-lg); }
+  body.lin-all .idea-draft-note { background: #FFF1E8; border: none; color: #C23A00; border-radius: var(--r-lg); }
   body.lin-all .toast { background: var(--text); color: var(--bg-elev); border-radius: var(--r-lg); box-shadow: 0 8px 30px rgba(0,0,0,.28); }
   body.lin-all .toast button { color: #ff8a50; }
   body.lin-all .didyouknow { background: var(--bg-elev); border-radius: var(--r-lg); }
@@ -164,7 +164,7 @@
   body.lin-all .didyouknow .kicker { color: var(--accent-text); }
   body.lin-all .card.slot { background: var(--bg-elev); border-radius: var(--r-lg); color: var(--text-dim); }
   body.lin-all .card.slot .glyph { color: var(--text-mute); }
-  body.lin-all .ro-banner { background: #2a2108; border: none; color: #e8b93c; border-radius: var(--r-lg); }
+  body.lin-all .ro-banner { background: #FFF4D6; border: none; color: #8A5A00; border-radius: var(--r-lg); }
   body.lin-all .stale-note.hard { color: var(--accent-text); }
   /* Competitors G2-style list under the Apple skin */
   body.lin-all .cg-name { color: var(--text); }
@@ -249,7 +249,7 @@
   .p-toc { grid-column: span 3; position: sticky; top: 76px; display: flex; flex-direction: column; gap: 1px; }
   .p-toc a { padding: 7px 12px; border-radius: var(--r-md); font-size: 14px; color: var(--text-dim); text-decoration: none; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; transition: background .12s, color .12s; }
   .p-toc a:hover { background: var(--bg-elev-2); color: var(--text); }
-  .p-toc a.active { background: #241307; color: var(--accent-text); font-weight: 500; }
+  .p-toc a.active { background: #FFF1E8; color: var(--accent-text); font-weight: 500; }
   /* content takes 8 cols, the 12th stays empty — air on the right, not full-bleed text */
   .persona-detail .doc { grid-column: 4 / span 8; margin-top: 0; max-width: none; }
   .persona-detail .doc p, .persona-detail .doc li { max-width: 70ch; }
@@ -329,7 +329,7 @@
   .mm-node.mm-nb .mm-chipbg { fill: var(--bg-elev); stroke: var(--accent); stroke-width: 1.5; }
   .mm-node.mm-sel .mm-chipbg { fill: var(--accent); }
   .mm-node.mm-sel text, .mm-node.mm-nb text { fill: var(--text); font-weight: 700; }
-  .mm-node.mm-sel .mm-rowlbl { stroke: none; fill: var(--primary-fg, #000); }
+  .mm-node.mm-sel .mm-rowlbl { stroke: none; fill: #0A0A0A; }   /* ink on the ember chip */
   .mm-node.mm-sel .mm-s, .mm-node.mm-focus .mm-s { stroke: var(--accent); stroke-width: 3; }
   .mm-node.mm-nb.t-Persona .mm-ava { stroke: var(--accent); stroke-width: 3; }
   #mmSvg.mm-free .mm-node.mm-sel .mm-s { fill: var(--accent); }
@@ -421,7 +421,7 @@
     width: 100%; height: 100%; max-width: none; max-height: none;
     border: 0; background: transparent; color: inherit; overflow: hidden; }
   .modal[open] { display: grid; place-items: center; }
-  .modal::backdrop { background: color-mix(in srgb, #ffffff 32%, transparent); }
+  .modal::backdrop { background: rgba(10,10,10,0.32); }
   .modal-card { background: var(--bg-elev); border: 1px solid var(--line); border-radius: var(--r-lg);
     box-shadow: 0 8px 40px rgba(0,0,0,0.18); width: 640px; max-width: 100%; max-height: 90vh; display: flex; flex-direction: column; }
   .modal-head { display: flex; align-items: center; justify-content: space-between; padding: var(--s-5) var(--s-6) var(--s-3); }
