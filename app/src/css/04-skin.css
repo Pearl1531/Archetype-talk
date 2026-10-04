@@ -217,67 +217,100 @@
   body.lin-mm .mm-fnode text { fill: var(--text-soft); stroke: var(--bg-elev); }
   body.lin-mm .mm-fnode .mm-fcount { fill: var(--text-mute); }
 
-  /* ---------- Persona detail: magazine layout (avatar + quote hero, section rail) ---------- */
+  /* ---------- Persona detail, Editorial: the top lives in 09c-persona-editorial.js
+     (name, facts, the frustration / behavior / idea tables); below it the rest of
+     the file with a sticky section rail. Paper page, white sheets, ink and ember. ---------- */
   .p-body { display: block; }
-  .detail-card.persona-detail { background: var(--bg-elev); border: none; box-shadow: 0 0 0 1px rgba(0,0,0,.04); border-radius: var(--r-lg); padding: 48px 56px; }
+  body.lin-all .detail-card.persona-detail, .detail-card.persona-detail { background: none; border: none; box-shadow: none; padding: 8px 0 0; }
   .detail-card.persona-detail .detail-head { display: none; }
   .detail-card.persona-detail .doc-tools { display: none; }
-  /* hero and body share the global 12-col grid: fig/TOC rail = 3 cols, main = the rest */
-  .p-hero { display: grid; grid-template-columns: repeat(var(--grid-cols), 1fr); column-gap: var(--grid-gutter); align-items: start; padding-bottom: 40px; margin-bottom: 36px; border-bottom: 1px solid var(--bg-elev-2); }
-  .p-hero-fig { margin: 0; grid-column: span 3; }
-  .p-hero-main { grid-column: 4 / span 8; }
-  .p-hero-avatar .avatar { width: 100%; height: auto; aspect-ratio: 1; border-radius: var(--r-md); background: var(--bg-elev-2); overflow: hidden; }
-  .p-hero-avatar .avatar span { font-size: 54px; font-weight: 600; color: var(--text-mute); }
-  .p-hero-avatar .avatar img { border-radius: var(--r-md); object-fit: cover; }
-  .p-hero-name { margin-top: 18px; font-size: 22px; font-weight: 600; letter-spacing: -0.3px; color: var(--text); }
-  .p-hero-role { margin-top: 3px; font-size: 15px; color: var(--text-dim); }
-  .p-hero-chips { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 14px; }
-  /* Primary way into the poster: full width of the avatar column, directly under
-     the name and its tags — the one action this page is really for. */
-  .p-hero-cta { width: 100%; margin-top: 8px; }
-  /* the talk button is the persona's main action: full width, first */
-  .p-talk { display: flex; width: 100%; margin: 18px 0 0; }
-  .p-talk > .pj-btn:first-child { flex: 1; justify-content: center; }
-  .p-talk .pj-menu { left: 0; right: auto; top: calc(100% + 6px); bottom: auto; }
-  .p-hero-main { padding-top: 4px; }
-  .p-hero-main .kicker { display: inline-flex; align-items: center; gap: 7px; font-size: 14px; font-weight: 600; letter-spacing: .8px; text-transform: uppercase; color: var(--text-dim); }
-  .p-hero-main .kicker svg { width: 14px; height: 14px; color: var(--text-mute); }
-  .p-hero-main .kicker .demo-badge { margin-left: 4px; }
-  .p-hero-quote { border: none; margin: 16px 0 0; padding: 0; font-size: 38px; line-height: 1.18; font-weight: 600; letter-spacing: -0.8px; color: var(--text); font-style: normal; max-width: 24ch; }
-  .p-hero-who { margin-top: 20px; font-size: 17px; line-height: 1.55; color: var(--text-soft); max-width: 64ch; }
-  .persona-detail .p-body { display: grid; grid-template-columns: repeat(var(--grid-cols), 1fr); column-gap: var(--grid-gutter); align-items: start; }
-  .p-toc { grid-column: span 3; position: sticky; top: 76px; display: flex; flex-direction: column; gap: 1px; }
-  .p-toc a { padding: 7px 12px; border-radius: var(--r-md); font-size: 14px; color: var(--text-dim); text-decoration: none; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; transition: background .12s, color .12s; }
-  .p-toc a:hover { background: var(--bg-elev-2); color: var(--text); }
-  .p-toc a.active { background: #FFF1E8; color: var(--accent-text); font-weight: 500; }
-  /* content takes 8 cols, the 12th stays empty — air on the right, not full-bleed text */
-  .persona-detail .doc { grid-column: 4 / span 8; margin-top: 0; max-width: none; }
-  .persona-detail .doc p, .persona-detail .doc li { max-width: 70ch; }
-  .persona-detail .doc h2 { font-size: 21px; font-weight: 600; letter-spacing: -0.3px; color: var(--text); margin: 38px 0 12px; scroll-margin-top: 80px; }
+  .p-hero { display: flex; flex-direction: column; gap: 56px; margin-bottom: 56px; }
+  .pe-hero { display: grid; grid-template-columns: minmax(0, 1fr) 240px; gap: 40px; align-items: end; }
+  .pe-kicker { display: flex; align-items: center; gap: 10px; flex-wrap: wrap; margin-bottom: 14px; font-size: var(--fs-md); color: var(--text-dim); }
+  .pe-kicker b { color: var(--text); font-weight: 600; }
+  .pe-name { font-size: clamp(72px, 9vw, 150px); font-weight: 800; line-height: .84; letter-spacing: -0.065em; color: var(--text); }
+  .pe-role { margin-top: 18px; font-size: 21px; font-weight: 500; color: var(--text-soft); }
+  .pe-arch { margin-top: 14px; display: flex; align-items: center; gap: 8px; flex-wrap: wrap; }
+  .pe-arch-l { font-size: var(--text-body); color: var(--text-dim); margin-right: 4px; }
+  .pe-pill { height: 36px; padding: 0 14px 0 10px; border-radius: var(--r-pill); background: #E4DED2; color: var(--text); text-decoration: none;
+    display: inline-flex; align-items: center; gap: 8px; font-size: var(--text-body); font-weight: 600; cursor: pointer; }
+  .pe-pill:hover { background: #D9D2C3; }
+  .pe-actions { margin-top: 24px; display: flex; align-items: center; gap: 10px; flex-wrap: wrap; }
+  .pe-actions .p-talk { width: auto; margin: 0; display: inline-flex; }
+  .pe-actions .p-talk .pj-btn { height: 52px; padding: 0 22px; font-size: var(--fs-lg); font-weight: 700; background: var(--accent); color: #0A0A0A; border-color: var(--accent); }
+  .pe-actions .p-talk .pj-split-more { padding: 0 14px; border-left: 1px solid rgba(10,10,10,.2); }
+  .pe-cmd { display: inline-flex; align-items: center; height: 52px; padding: 0 16px; border: 1.5px solid var(--text); border-radius: 14px; background: var(--bg-elev-2); max-width: 100%; }
+  .pe-cmd code { font-family: var(--font-mono); font-size: var(--text-body); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .pe-portrait { width: 240px; height: 240px; border-radius: 50%; overflow: hidden; background: #E4DED2; display: flex; align-items: flex-end; justify-content: center; }
+  .pe-portrait.prim { background: var(--accent); }
+  .pe-portrait img { width: 93%; height: 93%; object-fit: cover; object-position: bottom; }
+  .pe-portrait span { align-self: center; font-size: 96px; font-weight: 800; color: var(--text); }
+  .pe-facts { margin-top: -24px; grid-template-columns: minmax(0, 2fr) repeat(3, minmax(0, 1fr)); }
+  .pe-oneline { font-size: 18px; font-weight: 600; line-height: 1.35; color: var(--text); }
+  .pe-fact { font-size: 19px; font-weight: 700; color: var(--text); }
+  .pe-lvl { display: flex; } .pe-lvl .dx-lvl i { width: 22px; height: 8px; }
+  .pe-lvl-t { font-weight: 600; font-size: var(--fs-md); color: var(--text); }
+  .pe-ladder { display: flex; flex-direction: column; }
+  .pe-ladder > span { padding: 6px 0; border-top: 1px solid rgba(255,255,255,.14); }
+  .pe-ladder > span.on b { color: var(--accent); }
+  .pe-h2row { display: flex; align-items: flex-end; justify-content: space-between; gap: 16px; }
+  .pe-h2sub { margin-top: 6px; color: var(--text-dim); }
+  .pe-th { display: inline-flex; align-items: center; gap: 4px; }
+  .pe-table td { line-height: 1.55; }
+  .pe-t { font-weight: 700; color: var(--text); }
+  a.pe-t { text-decoration: none; }
+  .pe-q { margin-top: 4px; color: var(--text-soft); }
+  .pe-para { font-style: italic; }
+  .pe-tags { margin-top: 10px; display: flex; flex-wrap: wrap; gap: 6px; }
+  .pe-src { font-size: var(--text-body); line-height: 1.75 !important; }
+  .pe-h, .pe-r { display: inline-block; width: 14px; color: var(--text); }
+  .pe-none { color: var(--text-dim); }
+  .pe-warn { color: var(--accent-text); }
+  .pe-dim td { color: var(--text-dim); }
+  .pe-sub { margin-top: 2px; color: var(--text-dim); font-size: var(--text-body); }
+  .pe-conf { display: inline-flex; align-items: center; gap: 8px; }
+  .pe-a { cursor: pointer; }
+  .pe-foot { margin-top: 64px; padding: 36px 40px 40px; border-radius: 20px; background: #0A0A0A; color: #FFFFFF;
+    display: grid; grid-template-columns: 260px repeat(4, minmax(0, 1fr)); gap: 28px; }
+  .pe-foot-h { display: flex; flex-direction: column; gap: 8px; }
+  .pe-foot-h span { font-size: 26px; font-weight: 800; line-height: 1.1; letter-spacing: -0.02em; }
+  .pe-foot-h small { color: #C9C5BC; font-size: var(--text-body); }
+  .pe-fcol { display: flex; flex-direction: column; gap: 8px; font-size: var(--text-body); }
+  .pe-fcol b span { font-weight: 400; color: #9C978E; }
+  .pe-fcol a { color: #C9C5BC; background: none; border: 0; padding: 0; text-decoration: none; text-transform: none; letter-spacing: 0; font-size: var(--text-body); }
+  .pe-fcol a:hover { color: #FFFFFF; }
+  .persona-detail .p-body { display: grid; grid-template-columns: 220px minmax(0, 1fr); column-gap: 48px; align-items: start; }
+  .p-toc { position: sticky; top: 76px; display: flex; flex-direction: column; gap: 1px; }
+  .p-toc a { padding: 7px 12px; border-radius: var(--r-md); font-size: var(--text-body); color: var(--text-dim); text-decoration: none; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; transition: background .12s, color .12s; }
+  .p-toc a:hover { background: var(--bg-elev); color: var(--text); }
+  .p-toc a.active { background: var(--text); color: var(--bg-elev); font-weight: 600; }
+  .persona-detail .doc { margin-top: 0; max-width: none; background: var(--bg-elev); border-radius: 16px; padding: 36px 40px; }
+  .persona-detail .doc p, .persona-detail .doc li { max-width: 72ch; }
+  body.lin-all .persona-detail .doc h2, .persona-detail .doc h2 { font-size: 26px; font-weight: 800; letter-spacing: -0.02em; text-transform: none; color: var(--text); margin: 40px 0 12px; scroll-margin-top: 80px; }
   .persona-detail .doc h2:first-child { margin-top: 0; }
-  .persona-detail .doc h3 { font-size: 16px; font-weight: 600; color: var(--text); margin: 22px 0 8px; }
+  .persona-detail .doc h3 { font-size: 17px; font-weight: 700; color: var(--text); margin: 22px 0 8px; }
   .persona-detail .doc p, .persona-detail .doc li { font-size: 16px; line-height: 1.62; color: var(--text-soft); }
-  .persona-detail .doc blockquote { border-left: 3px solid var(--line); color: var(--text); }
+  .persona-detail .doc blockquote { border-left: 3px solid var(--accent); color: var(--text); }
   @media (max-width: 1100px){
-    /* not enough room for 12 cols — fall back to fixed rails */
-    .detail-card.persona-detail { padding: 40px 44px; }
-    .p-hero { grid-template-columns: 220px 1fr; gap: 36px; }
-    .p-hero-fig, .p-hero-main, .p-toc, .persona-detail .doc { grid-column: auto; }
-    .persona-detail .p-body { grid-template-columns: 190px 1fr; gap: 40px; }
-    .p-hero-quote { font-size: 33px; letter-spacing: -0.6px; }
+    .pe-hero { grid-template-columns: minmax(0, 1fr) 160px; }
+    .pe-portrait { width: 160px; height: 160px; }
+    .pe-facts { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+    .pe-foot { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+    .pe-foot-h { grid-column: 1 / -1; }
+    .persona-detail .p-body { grid-template-columns: 180px minmax(0, 1fr); column-gap: 32px; }
   }
   @media (max-width: 720px){
-    .detail-card.persona-detail { padding: 24px; }
-    .p-hero { grid-template-columns: 1fr; gap: 22px; }
-    .p-hero-avatar .avatar { max-width: 190px; }
+    .pe-hero { grid-template-columns: 1fr; }
+    .pe-portrait { order: -1; width: 120px; height: 120px; }
+    .pe-cmd { display: none; }
     .persona-detail .p-body { grid-template-columns: 1fr; }
     .p-toc { position: static; flex-direction: row; flex-wrap: wrap; gap: 6px; margin-bottom: 20px; }
-    .p-toc a { background: var(--bg-elev-2); }
-    .p-hero-quote { font-size: 27px; }
-    /* on a phone the persona's own words come first — the face and the
-       buttons follow, instead of pushing the quote below the fold */
-    .p-hero-main { order: -1; }
-    .p-hero-avatar .avatar { max-width: 120px; }
+    .p-toc a { background: var(--bg-elev); }
+    .persona-detail .doc { padding: 24px; }
+    .pe-table thead { display: none; }
+    .pe-table tr, .pe-table td { display: block; }
+    .pe-table td { border-top: 0; padding-top: 6px; }
+    .pe-table tr { border-top: 1px solid var(--line-soft); padding: 8px 0; }
   }
 
   /* ---------- Mind Map ---------- */

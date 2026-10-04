@@ -44,6 +44,7 @@ what 16px should become.
 | 07-compare-votes.js | competitor compare view, markdown table cells, idea voting, YAML vote block |
 | 08-highlights-hypotheses.js | transcript highlights + tag rename, hypotheses + promote flow, new competitor/hypothesis forms, email masking |
 | 09-detail-edit.js | markdown detail + xref nav, in-place editing (File System Access), competitor icon manager |
+| 09c-persona-editorial.js | the persona page top, Editorial: name, facts, and the three working tables built from `## Pains`, `## Jobs to be Done` and `## Ideas for this persona` (those sections leave the markdown below), plus the source index under the page |
 | 09b-new-entity.js | manual creation for Signal / Evidence / Persona / Archetype / Transcript (`NEW_SPEC` field sets + markdown builders, one shared modal), the `＋ New …` bar, per-type empty states, and the copy-to-clipboard AI prompts (`NEW_PROMPT`). Ideas / Hypotheses / Competitors keep their own richer forms in 05 and 08 |
 | 10-help.js | Help & guide page — `HELP` (English) and `HELP_PL` side by side, picked by `helpData()` |
 | 11-mindmap.js | Research map: Columns / Free / Flow views (layouts, links on demand, drawer, detail pane) |

@@ -26,6 +26,17 @@ should mark a release that happened, not manufacture one after the fact.
   when you listened, the open questions, and one dark band for the next round.
   Every explanation sits behind an ⓘ instead of on the page; the demo's
   "three things to try" card is gone until a proper onboarding replaces it.
+- **The persona page, Editorial.** The persona's name is the headline, with
+  the archetypes it fits, the line that starts a conversation and four facts (in one
+  line, built from, sources, how solid). Three working tables are built from
+  the file itself:
+  - *frustrations*: each pain's verbatim quote taken from its signal, plus
+    tags, the interview and evidence behind it, and the idea that answers it;
+  - *typical behavior*, from the jobs to be done;
+  - *product ideas*, with votes and grounding.
+
+  Every other section of the file follows as before, with a source index under
+  the page.
 
 A UX pass over the browser app, from a product-design audit of the first ten
 minutes a new visitor spends in it.

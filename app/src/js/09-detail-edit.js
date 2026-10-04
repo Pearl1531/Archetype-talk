@@ -212,44 +212,18 @@ function openDetail(id){
   };
   document.getElementById('dName').textContent = e.title;
   document.getElementById('dSub').textContent = e.fm.description || e.fm.participant || e.fm.category || '';
-  /* Persona detail = a magazine layout (avatar + role on the left, the persona's
-     own words big on the right), then a sticky section menu beside the content. */
+  /* Persona detail = the Editorial top (09c-persona-editorial.js: name, facts,
+     the three working tables), then the rest of the file with a sticky section menu. */
   const dcard = document.querySelector('.detail-card');
   dcard.classList.toggle('persona-detail', e.type==='Persona');
   document.querySelector('.detail-wrap').classList.toggle('detail-wide', e.type==='Persona');
   const pHero = document.getElementById('pHero');
+  let peFooter = '';
   if(e.type==='Persona'){
-    const h1 = (e.body.match(/^#\s+(.+—.+)$/m)||[])[1] || e.title;
-    const [nm, role] = h1.includes('—') ? h1.split('—').map(s=>s.trim()) : [e.title, ''];
-    const qFull = (firstQuote(e.body)||'').replace(/^["“']|["”']$/g,'');
-    let q=''; for(const s of qFull.split(/(?<=[.!?])\s+/)){ if(!q) q=s; else if((q+' '+s).length<=160) q+=' '+s; else break; }
-    if(q.length>190) q=trim(q,180);
-    const bioSec = section(e.body,'Who they are');
-    const whoBullet = (bioSec.match(/\*\*Who:\*\*\s*([^\n(]+)/)||[])[1] || '';   // the human one-liner, not the template blockquote
-    const who = trim(stripLinks((e.fm.description || whoBullet).replace(/\*\[colour\]\*/g,'')), 200);
-    pHero.innerHTML = `
-      <figure class="p-hero-fig">
-        <div class="p-hero-avatar">${avatarHtml(e, nm)}</div>
-        <figcaption>
-          <div class="p-hero-name">${esc(nm)}</div>
-          <div class="p-hero-role">${esc(role || e.fm.description || '')}</div>
-          <div class="p-hero-chips">
-            ${e.fm.category?`<span class="tag">${esc(tr(e.fm.category))}</span>`:''}
-            ${participantsChip(e)}
-            ${levelChip(personaLevel(e), true)}
-          </div>
-          ${talkButtonHtml(e, nm.split(/\s+/)[0])}
-          <button type="button" class="btn btn-outline p-hero-cta" id="pPosterBtn" title="${esc(tr('Full-bleed visual one-pager of this persona'))}">⧉ ${tr('Poster view')}</button>
-        </figcaption>
-      </figure>
-      <div class="p-hero-main">
-        <div class="kicker">${ICONS.Persona}Persona${e.fm.demo?'<span class="demo-badge">Demo</span>':''}</div>
-        ${q?`<blockquote class="p-hero-quote">${esc(q)}</blockquote>`:`<h1 class="p-hero-quote">${esc(nm)}</h1>`}
-        ${who?`<p class="p-hero-who">${esc(who)}</p>`:''}
-      </div>`;
+    const pe = personaEditorialHtml(e);
+    pHero.innerHTML = pe.top; peFooter = pe.footer;
     pHero.style.display='';
-    document.getElementById('pPosterBtn').onclick = ()=> posterOpen(e.id);
-    wireTalkButton(pHero, e, nm.split(/\s+/)[0]);
+    personaEditorialWire(pHero, e);
   } else { pHero.style.display='none'; }
   const ctl = document.getElementById('dIconCtl');
   if(e.type==='Competitor'){
@@ -320,8 +294,13 @@ function openDetail(id){
   const doc = document.getElementById('doc');
   // a persona's opening quote already stands in the hero above — don't print it twice
   doc.innerHTML = mdToHtml(e.type==='Persona'
-    ? e.body.replace(/^#\s+.*\n/,'').replace(/^\s*>\s?"[^\n]*\n(\s*---\s*\n)?/,'')
+    ? peStripTabled(e.body.replace(/^#\s+.*\n/,'').replace(/^\s*>\s?"[^\n]*\n(\s*---\s*\n)?/,''))
     : e.body.replace(/^#\s+.*\n/,''));
+  // the source index sits under the whole page, outside the file's own sheet
+  let peFoot = document.getElementById('peFoot');
+  if(!peFoot){ peFoot = document.createElement('div'); peFoot.id = 'peFoot'; document.getElementById('pBody').after(peFoot); }
+  peFoot.innerHTML = peFooter;
+  peFoot.querySelectorAll('a.xref[data-goto]').forEach(a=> a.onclick = ev=>{ ev.preventDefault(); location.hash = '#'+a.dataset.goto; });
   doc.querySelectorAll('a.xref[data-goto]').forEach(a=>{
     const gid = a.getAttribute('data-goto');
     if(gid) a.onclick = (ev)=>{ ev.preventDefault(); location.hash = '#'+gid; };
@@ -407,28 +386,35 @@ function openDetail(id){
     btn.className = 'sec-edit'; btn.textContent = tr('edit');
     btn.title = 'Edit this section in place';
     btn.setAttribute('aria-label', 'Edit section: ' + h.textContent.trim());
-    btn.onclick = (ev)=>{
-      ev.stopPropagation();
-      const heading = h.childNodes[0] ? h.childNodes[0].textContent.trim() : h.textContent.trim();
-      enterEdit();
-      const md = e.md;
-      const re = new RegExp('^##\\s*' + heading.replace(/[.*+?^${}()|[\]\\]/g,'\\$&') + '\\s*$', 'im');
-      const m = md.match(re);
-      if(m){
-        const start = m.index;
-        const rest = md.slice(start + m[0].length);
-        const nm = rest.search(/^#{1,2}\s/m);
-        const end = nm === -1 ? md.length : start + m[0].length + nm;
-        editorEl.focus();
-        editorEl.setSelectionRange(start, end);
-        // scroll the selection roughly into view (line height ≈ 20.8px at 13px/1.6)
-        const line = md.slice(0, start).split('\n').length;
-        editorEl.scrollTop = Math.max(0, (line - 3) * 20.8);
-      }
-    };
+    btn.onclick = (ev)=>{ ev.stopPropagation(); editSection(e, h.childNodes[0] ? h.childNodes[0].textContent.trim() : h.textContent.trim()); };
     h.appendChild(btn);
   });
   window.scrollTo(0,0);
+}
+/* open the editor with exactly one ## section selected — the pencil on every
+   heading and the Edit button on the persona tables both land here */
+function editSection(e, heading){
+  enterEdit();
+  const md = e.md;
+  const re = new RegExp('^##\\s*' + heading.replace(/[.*+?^${}()|[\]\\]/g,'\\$&') + '\\s*$', 'im');
+  const m = md.match(re);
+  if(!m) return;
+  const start = m.index;
+  const rest = md.slice(start + m[0].length);
+  const nm = rest.search(/^#{1,2}\s/m);
+  const end = nm === -1 ? md.length : start + m[0].length + nm;
+  editorEl.focus();
+  editorEl.setSelectionRange(start, end);
+  // scroll the selection roughly into view (line height ≈ 20.8px at 13px/1.6)
+  editorEl.scrollTop = Math.max(0, (md.slice(0, start).split('\n').length - 3) * 20.8);
+}
+/* the sections the persona tables already show, out of the markdown below them */
+function peStripTabled(md){
+  PE_TABLED.forEach(h=>{
+    const re = new RegExp('(^|\\n)##\\s*' + h.replace(/[.*+?^${}()|[\]\\]/g,'\\$&') + '\\s*\\n[\\s\\S]*?(?=\\n##\\s|\\n#\\s|$)', 'i');
+    md = md.replace(re, '$1');
+  });
+  return md.replace(/(\n---\s*){2,}/g, '\n---\n');
 }
 function closeDetail(){ detailView.classList.remove('active'); galleryView.style.display=""; window.scrollTo(0,0); }
 document.getElementById('backBtn').onclick=()=>{ location.hash=''; };
