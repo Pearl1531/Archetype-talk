@@ -74,7 +74,10 @@ minutes a new visitor spends in it.
   Every line can be removed, including the implicit ones. Removing a quote's
   same-signal link writes an explicit token, `(→ none)` when nothing is left,
   because a token is always the complete list. Hovering a card lights its
-  whole stream (upstream and downstream) and dims everything else.
+  whole stream (upstream and downstream) and dims everything else. The card
+  also rises toward you and leans after the cursor, its stream lifts one beat
+  per link behind it, and the wires bend along. With reduced motion the cards
+  stay flat.
 - **Three views of the research map** — *Columns* (one column per type with
   its count on top), *Free* (an Obsidian-style layout where files settle by
   how they link, dot size by link count) and *Flow* (the Sankey, band

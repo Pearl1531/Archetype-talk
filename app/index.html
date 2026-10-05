@@ -2015,9 +2015,36 @@
   .pp-improve b[data-goto] { cursor: pointer; }
 
   /* hover a card: its stream stays, everything else steps back */
-  .pp-extra .pp-card, .pp-improve .pp-card, .pp-wire { transition: opacity .15s, stroke-width .15s; }
+  .pp-wire { transition: opacity .2s, stroke-width .2s; }
   .pp-focus .pp-wire:not(.hot):not(.drag) { opacity: .12; }
-  .pp-focus [data-pp-node]:not(.pp-hot) { opacity: .45; }
+
+  /* …and moves in depth: the hovered card rises toward the reader and leans
+     after the cursor (--rx/--ry from JS), its stream lifts a step behind it,
+     one beat per link away (--d), the rest sinks back. Wires follow in JS. */
+  .pp-extra [data-pp-node], .pp-improve [data-pp-node] {
+    --lift: 0px; --sc: 1; --shadow: 0 0 0 transparent;
+    box-shadow: var(--shadow);
+    transition: transform .55s cubic-bezier(.16,1,.3,1), box-shadow .55s cubic-bezier(.16,1,.3,1), opacity .25s, border-color .25s;
+    transition-delay: calc(var(--d, 0) * 55ms); }
+  .pp-focus [data-pp-node], .pp-lift {   /* at rest a card stays flat 2D, so its text stays crisp */
+    transform: perspective(900px) rotateX(var(--rx, 0deg)) rotateY(var(--ry, 0deg)) translateY(var(--lift)) scale(var(--sc)); }
+  .pp-focus [data-pp-node]:not(.pp-hot) { opacity: .45; --sc: .985; transition-delay: 0s; }
+  .pp-focus .pp-hot { --lift: -3px;
+    --shadow: 0 1px 2px rgba(10,10,10,.05), 0 10px 20px -12px rgba(10,10,10,.22); }
+  .pp-extra .pp-lift, .pp-improve .pp-lift { --lift: -8px; --sc: 1.02; z-index: 3; transition-delay: 0s;
+    transition-duration: .3s, .55s, .25s, .25s;   /* the lean tracks the cursor tighter than the rise */
+    border-color: color-mix(in srgb, var(--text) 24%, var(--line));
+    --shadow: 0 1px 2px rgba(10,10,10,.06), 0 14px 28px -10px rgba(10,10,10,.22), 0 34px 60px -24px rgba(10,10,10,.28); }
+  /* a warm light pooled under the cursor */
+  .pp-extra [data-pp-node]::after, .pp-improve [data-pp-node]::after { content: ""; position: absolute; inset: 0;
+    border-radius: inherit; pointer-events: none; opacity: 0; transition: opacity .4s;
+    background: radial-gradient(240px circle at var(--mx, 50%) var(--my, 0%), color-mix(in srgb, var(--accent) 9%, transparent), transparent 70%); }
+  .pp-lift::after { opacity: 1 !important; }
+  .pp-linking [data-pp-node], [data-pp-node]:has(.pp-pick) { --rx: 0deg !important; --ry: 0deg !important; }
+  [data-pp-node]:has(.pp-pick) { z-index: 5; }
+  @media (prefers-reduced-motion: reduce) {
+    .pp-extra [data-pp-node], .pp-improve [data-pp-node], .pp-focus [data-pp-node], .pp-lift { transform: none; transition: opacity .15s; }
+  }
   .pp-wire.hot { stroke-width: 2.8; opacity: 1; }
   .pp-wire.auto.hot { stroke-opacity: .85; }
   .pp-focus .pp-wire-hit:not(.hot) { pointer-events: none; }
@@ -14272,17 +14299,22 @@ function ppWires(box, edges, onRemove, onConnect){
   svg.setAttribute('class','pp-wires'); svg.setAttribute('aria-hidden','true');
   box.prepend(svg);
   const node = id => box.querySelector(`[data-pp-node="${id}"]`);
+  const pathD = (B, ed)=>{
+    const A = node(ed.a), Z = node(ed.b); if(!A || !Z) return '';
+    const a = A.getBoundingClientRect(), z = Z.getBoundingClientRect();
+    const x1 = a.right - B.left, y1 = a.top + a.height/2 - B.top, x2 = z.left - B.left, y2 = z.top + z.height/2 - B.top;
+    const c = Math.max(30, (x2-x1)/2);
+    return `M${x1} ${y1} C${x1+c} ${y1} ${x2-c} ${y2} ${x2} ${y2}`;
+  };
+  let paths = [];
   const draw = ()=>{
     const B = box.getBoundingClientRect();
     svg.setAttribute('width', B.width); svg.setAttribute('height', B.height);
     svg.innerHTML = edges.map((ed,k)=>{
-      const A = node(ed.a), Z = node(ed.b); if(!A || !Z) return '';
-      const a = A.getBoundingClientRect(), z = Z.getBoundingClientRect();
-      const x1 = a.right - B.left, y1 = a.top + a.height/2 - B.top, x2 = z.left - B.left, y2 = z.top + z.height/2 - B.top;
-      const c = Math.max(30, (x2-x1)/2);
-      const d = `M${x1} ${y1} C${x1+c} ${y1} ${x2-c} ${y2} ${x2} ${y2}`;
+      const d = pathD(B, ed); if(!d) return '';
       return `<path class="pp-wire ${ed.kind}${ed.long?' long':''}" data-wire="${k}" d="${d}"/><path class="pp-wire-hit" data-edge="${k}" d="${d}"><title>${esc(tr('Click to remove this connection'))}</title></path>`;
     }).join('') + '<path class="pp-wire drag" d=""/>';
+    paths = edges.map((_,k)=> svg.querySelectorAll(`[data-wire="${k}"],[data-edge="${k}"]`));
     svg.querySelectorAll('[data-edge]').forEach(h=>{
       h.onclick = ()=> onRemove(edges[+h.dataset.edge]);
       h.onmouseenter = ()=> clearTimeout(unhot);   // moving from a card onto its wire keeps the stream lit
@@ -14295,22 +14327,43 @@ function ppWires(box, edges, onRemove, onConnect){
   let hot = null, unhot = 0;
   const light = id=>{
     hot = id;
-    const nodes = new Set([id]), lit = new Set();
+    const nodes = new Map([[id, 0]]), lit = new Set();   // node → steps from the hovered card
     const walk = (start, fwd)=>{
       const q = [start];
       while(q.length){ const n = q.shift(); edges.forEach((ed,k)=>{ const [x, y] = fwd ? [ed.a, ed.b] : [ed.b, ed.a];
-        if(x===n){ lit.add(k); if(!nodes.has(y)){ nodes.add(y); q.push(y); } } }); }
+        if(x===n){ lit.add(k); if(!nodes.has(y)){ nodes.set(y, nodes.get(n) + 1); q.push(y); } } }); }
     };
     walk(id, true); walk(id, false);
     box.classList.toggle('pp-focus', !!id);
-    box.querySelectorAll('[data-pp-node]').forEach(c=> c.classList.toggle('pp-hot', nodes.has(c.dataset.ppNode)));
+    box.querySelectorAll('[data-pp-node]').forEach(c=>{ const on = nodes.has(c.dataset.ppNode);
+      c.classList.toggle('pp-hot', on); c.style.setProperty('--d', on ? nodes.get(c.dataset.ppNode) : 0); });
+    track(700);
     svg.querySelectorAll('[data-wire],[data-edge]').forEach(p=> p.classList.toggle('hot', lit.has(+(p.dataset.wire ?? p.dataset.edge))));
   };
   const leave = ()=>{ clearTimeout(unhot); unhot = setTimeout(()=>{ hot = null; box.classList.remove('pp-focus');
-    box.querySelectorAll('.pp-hot').forEach(c=> c.classList.remove('pp-hot')); svg.querySelectorAll('.hot').forEach(p=> p.classList.remove('hot')); }, 160); };
+    box.querySelectorAll('.pp-hot').forEach(c=> c.classList.remove('pp-hot')); svg.querySelectorAll('.hot').forEach(p=> p.classList.remove('hot')); track(700); }, 160); };
+  /* a lifted card drags its wire ends along: re-aim the existing paths every
+     frame while anything is still moving (rebuilding them would drop hover) */
+  let until = 0, raf = 0;
+  const step = ()=>{ const B = box.getBoundingClientRect();
+    edges.forEach((ed,k)=>{ const d = pathD(B, ed); paths[k] && paths[k].forEach(p=> p.setAttribute('d', d)); });
+    raf = performance.now() < until ? requestAnimationFrame(step) : 0; };
+  const track = ms=>{ until = Math.max(until, performance.now() + ms); if(!raf) raf = requestAnimationFrame(step); };
+  /* the hovered card rises toward the reader and leans after the cursor */
+  const calm = matchMedia('(prefers-reduced-motion: reduce)');
   box.querySelectorAll('[data-pp-node]').forEach(c=>{
-    c.addEventListener('mouseenter', ()=>{ clearTimeout(unhot); if(!box.classList.contains('pp-linking')) light(c.dataset.ppNode); });
-    c.addEventListener('mouseleave', leave);
+    let r = null;
+    c.addEventListener('mouseenter', ()=>{ clearTimeout(unhot); if(box.classList.contains('pp-linking')) return;
+      light(c.dataset.ppNode); r = c.getBoundingClientRect(); c.classList.add('pp-lift'); });
+    c.addEventListener('pointermove', ev=>{
+      if(!r || calm.matches || ev.pointerType !== 'mouse' || box.classList.contains('pp-linking') || c.querySelector('.pp-pick')) return;
+      const x = Math.min(1, Math.max(0, (ev.clientX - r.left) / r.width)), y = Math.min(1, Math.max(0, (ev.clientY - r.top) / r.height));
+      c.style.setProperty('--rx', ((.5 - y) * 7).toFixed(2) + 'deg'); c.style.setProperty('--ry', ((x - .5) * 9).toFixed(2) + 'deg');
+      c.style.setProperty('--mx', (x * 100).toFixed(1) + '%'); c.style.setProperty('--my', (y * 100).toFixed(1) + '%');
+      track(500);
+    });
+    c.addEventListener('mouseleave', ()=>{ r = null; c.classList.remove('pp-lift');
+      ['--rx','--ry','--mx','--my'].forEach(v=> c.style.removeProperty(v)); track(700); leave(); });
   });
   draw();
   const ro = new ResizeObserver(draw); ro.observe(box); PP_ROS.push(ro);

@@ -116,17 +116,22 @@ function ppWires(box, edges, onRemove, onConnect){
   svg.setAttribute('class','pp-wires'); svg.setAttribute('aria-hidden','true');
   box.prepend(svg);
   const node = id => box.querySelector(`[data-pp-node="${id}"]`);
+  const pathD = (B, ed)=>{
+    const A = node(ed.a), Z = node(ed.b); if(!A || !Z) return '';
+    const a = A.getBoundingClientRect(), z = Z.getBoundingClientRect();
+    const x1 = a.right - B.left, y1 = a.top + a.height/2 - B.top, x2 = z.left - B.left, y2 = z.top + z.height/2 - B.top;
+    const c = Math.max(30, (x2-x1)/2);
+    return `M${x1} ${y1} C${x1+c} ${y1} ${x2-c} ${y2} ${x2} ${y2}`;
+  };
+  let paths = [];
   const draw = ()=>{
     const B = box.getBoundingClientRect();
     svg.setAttribute('width', B.width); svg.setAttribute('height', B.height);
     svg.innerHTML = edges.map((ed,k)=>{
-      const A = node(ed.a), Z = node(ed.b); if(!A || !Z) return '';
-      const a = A.getBoundingClientRect(), z = Z.getBoundingClientRect();
-      const x1 = a.right - B.left, y1 = a.top + a.height/2 - B.top, x2 = z.left - B.left, y2 = z.top + z.height/2 - B.top;
-      const c = Math.max(30, (x2-x1)/2);
-      const d = `M${x1} ${y1} C${x1+c} ${y1} ${x2-c} ${y2} ${x2} ${y2}`;
+      const d = pathD(B, ed); if(!d) return '';
       return `<path class="pp-wire ${ed.kind}${ed.long?' long':''}" data-wire="${k}" d="${d}"/><path class="pp-wire-hit" data-edge="${k}" d="${d}"><title>${esc(tr('Click to remove this connection'))}</title></path>`;
     }).join('') + '<path class="pp-wire drag" d=""/>';
+    paths = edges.map((_,k)=> svg.querySelectorAll(`[data-wire="${k}"],[data-edge="${k}"]`));
     svg.querySelectorAll('[data-edge]').forEach(h=>{
       h.onclick = ()=> onRemove(edges[+h.dataset.edge]);
       h.onmouseenter = ()=> clearTimeout(unhot);   // moving from a card onto its wire keeps the stream lit
@@ -139,22 +144,43 @@ function ppWires(box, edges, onRemove, onConnect){
   let hot = null, unhot = 0;
   const light = id=>{
     hot = id;
-    const nodes = new Set([id]), lit = new Set();
+    const nodes = new Map([[id, 0]]), lit = new Set();   // node → steps from the hovered card
     const walk = (start, fwd)=>{
       const q = [start];
       while(q.length){ const n = q.shift(); edges.forEach((ed,k)=>{ const [x, y] = fwd ? [ed.a, ed.b] : [ed.b, ed.a];
-        if(x===n){ lit.add(k); if(!nodes.has(y)){ nodes.add(y); q.push(y); } } }); }
+        if(x===n){ lit.add(k); if(!nodes.has(y)){ nodes.set(y, nodes.get(n) + 1); q.push(y); } } }); }
     };
     walk(id, true); walk(id, false);
     box.classList.toggle('pp-focus', !!id);
-    box.querySelectorAll('[data-pp-node]').forEach(c=> c.classList.toggle('pp-hot', nodes.has(c.dataset.ppNode)));
+    box.querySelectorAll('[data-pp-node]').forEach(c=>{ const on = nodes.has(c.dataset.ppNode);
+      c.classList.toggle('pp-hot', on); c.style.setProperty('--d', on ? nodes.get(c.dataset.ppNode) : 0); });
+    track(700);
     svg.querySelectorAll('[data-wire],[data-edge]').forEach(p=> p.classList.toggle('hot', lit.has(+(p.dataset.wire ?? p.dataset.edge))));
   };
   const leave = ()=>{ clearTimeout(unhot); unhot = setTimeout(()=>{ hot = null; box.classList.remove('pp-focus');
-    box.querySelectorAll('.pp-hot').forEach(c=> c.classList.remove('pp-hot')); svg.querySelectorAll('.hot').forEach(p=> p.classList.remove('hot')); }, 160); };
+    box.querySelectorAll('.pp-hot').forEach(c=> c.classList.remove('pp-hot')); svg.querySelectorAll('.hot').forEach(p=> p.classList.remove('hot')); track(700); }, 160); };
+  /* a lifted card drags its wire ends along: re-aim the existing paths every
+     frame while anything is still moving (rebuilding them would drop hover) */
+  let until = 0, raf = 0;
+  const step = ()=>{ const B = box.getBoundingClientRect();
+    edges.forEach((ed,k)=>{ const d = pathD(B, ed); paths[k] && paths[k].forEach(p=> p.setAttribute('d', d)); });
+    raf = performance.now() < until ? requestAnimationFrame(step) : 0; };
+  const track = ms=>{ until = Math.max(until, performance.now() + ms); if(!raf) raf = requestAnimationFrame(step); };
+  /* the hovered card rises toward the reader and leans after the cursor */
+  const calm = matchMedia('(prefers-reduced-motion: reduce)');
   box.querySelectorAll('[data-pp-node]').forEach(c=>{
-    c.addEventListener('mouseenter', ()=>{ clearTimeout(unhot); if(!box.classList.contains('pp-linking')) light(c.dataset.ppNode); });
-    c.addEventListener('mouseleave', leave);
+    let r = null;
+    c.addEventListener('mouseenter', ()=>{ clearTimeout(unhot); if(box.classList.contains('pp-linking')) return;
+      light(c.dataset.ppNode); r = c.getBoundingClientRect(); c.classList.add('pp-lift'); });
+    c.addEventListener('pointermove', ev=>{
+      if(!r || calm.matches || ev.pointerType !== 'mouse' || box.classList.contains('pp-linking') || c.querySelector('.pp-pick')) return;
+      const x = Math.min(1, Math.max(0, (ev.clientX - r.left) / r.width)), y = Math.min(1, Math.max(0, (ev.clientY - r.top) / r.height));
+      c.style.setProperty('--rx', ((.5 - y) * 7).toFixed(2) + 'deg'); c.style.setProperty('--ry', ((x - .5) * 9).toFixed(2) + 'deg');
+      c.style.setProperty('--mx', (x * 100).toFixed(1) + '%'); c.style.setProperty('--my', (y * 100).toFixed(1) + '%');
+      track(500);
+    });
+    c.addEventListener('mouseleave', ()=>{ r = null; c.classList.remove('pp-lift');
+      ['--rx','--ry','--mx','--my'].forEach(v=> c.style.removeProperty(v)); track(700); leave(); });
   });
   draw();
   const ro = new ResizeObserver(draw); ro.observe(box); PP_ROS.push(ro);
