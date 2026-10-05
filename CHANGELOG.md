@@ -91,6 +91,67 @@ minutes a new visitor spends in it.
   section and opens the next card right away, and Esc backs out. A quote
   typed without quote marks is wrapped in them, and a trailing ` — source`
   stays outside.
+- **A transcript is a working surface (inspired by Condens).** On the left
+  the interview reads turn by turn:
+  - who spoke (the moderator dimmed);
+  - the sections the file bookmarks with `<!-- anchor: … -->`;
+  - the team's highlights in their tag colours, with a tag filter;
+  - under each passage, the Signals extracted from it.
+
+  The pane on the right has three tabs:
+  - *Signals* — every finding that cites this session, in conversation order.
+    Hovering lights its passage, and the other way round.
+  - *Highlights*.
+  - *Summary* — the abstract, the topics, the sections no Signal cites yet,
+    the observer notes and the competitors mentioned.
+
+  *Extract findings* copies an `/extract-findings <file>` prompt for your
+  agent. A Signal whose link points at an anchor the file does not have is
+  still placed, by the opening words of its quote. The page only reads:
+  highlights are still made by selecting text, and AI never adds one.
+- **Transcripts that are not a plain interview read whole.** Public-source
+  files (podcast excerpts with metadata, translations and narration) no longer
+  fall apart:
+  - A label counts as a speaker only when it speaks more than once, or is the
+    moderator or "Name (P)", so "**Program:** …" stays metadata.
+  - A translation or a line of narration stays with the turn above it.
+  - A multi-line `>` quote (a callout with its own heading) renders as one
+    block everywhere, not one box per line.
+  - Excluded sessions don't offer *Extract findings*.
+- **The transcript page now matches its design.**
+  - The header sits on the page background, and the transcript is its own
+    white sheet, with find and tags as a toolbar on top.
+  - Selecting text opens a toolbar: *Highlight* (saves at once, tags can come
+    later), *Tag…*, and *Copy quote* (the words plus the session they came
+    from).
+  - Signal cards show the participant's words instead of the file's warning
+    box, link to the signal with ↗, and mark a public statement as a
+    *Secondary source*.
+  - Because the quote is now the right one, cards from public-source files
+    also find their passage.
+- **Transcripts without speaker labels get speakers too.** The file's own
+  `##` section titles become bookmarks, with their timestamp. In a monologue
+  or a compilation of quotes, each quote is a turn by the person in
+  `participant:`, and the compiler's narration is marked *Context*. The first
+  finding opens lit (passage tinted, card outlined), as in the design.
+- **Highlighting keeps your place.** Adding, retagging or removing a
+  highlight, and the Undo after it, no longer jumps the page to the top.
+  Re-rendering the page you are on keeps the scroll position, the pane's tab,
+  filter and scroll. Every card in the Highlights list has its own remove (×),
+  one click with Undo in the toast.
+- **Undo after a highlight change is dependable.**
+  - The toast stays for 8 seconds, and hovering it holds it.
+  - Undo writes back exactly the file version from before that change, not
+    whatever was saved last.
+  - The toast reads "Undone ✓".
+- **Toasts sit at the top right.** One that offers an action (Undo) shows how
+  long it stays on offer: a bar drains from right to left. Hovering the toast
+  holds the bar, and leaving lets it run on. On a phone the toast spans the top
+  of the screen.
+
+  Every toast reads in three parts: an icon (✓ for done), what happened, and
+  at most one quiet line of detail. For a highlight that line is the words and
+  the session. Any action on offer comes next, and every toast has a close ×.
 - **Research backlog, Dovetail-style.** The page has two views behind a
   Table / Board switch:
   - *Table* groups the questions by priority (or by status or persona), each

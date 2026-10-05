@@ -162,13 +162,15 @@
     vertical-align: middle; user-select: none;
   }
   .hl-count { background: #FFF4D6; border-color: #f59e0b55; }
+  /* the selection toolbar: highlight · tag… · copy quote */
   .hl-float {
-    position: absolute; z-index: 620; padding: 6px 12px; border-radius: var(--r-pill);
-    background: var(--text); color: var(--bg-elev); border: none;
-    font-size: var(--text-caption); font-weight: 600; cursor: pointer;
-    box-shadow: 0 4px 14px rgba(0,0,0,.22);
+    position: absolute; z-index: 620; display: none; align-items: center; gap: 2px; padding: 4px; border-radius: 12px;
+    background: #141413; box-shadow: 0 10px 24px rgba(10,10,10,.25); white-space: nowrap;
   }
-  .hl-float:hover { transform: translateY(-1px); }
+  .hl-float button { height: 34px; padding: 0 11px; border: 0; border-radius: 8px; background: none; color: #D9D5CC;
+    display: inline-flex; align-items: center; gap: 6px; font: inherit; font-size: 14px; font-weight: 500; cursor: pointer; }
+  .hl-float button:first-child { background: #2A2926; color: #FAF9F5; }
+  .hl-float button:hover { background: #3A3935; color: #FAF9F5; }
   .hl-pop {
     position: absolute; z-index: 630; width: 320px; padding: var(--s-3);
     background: var(--bg-elev); border: 1px solid var(--line);

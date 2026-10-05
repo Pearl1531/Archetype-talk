@@ -60,11 +60,24 @@ function vizBlock(type, body){
 function mdToHtml(md){
   HL_N = 0;
   const lines = md.split('\n'); let html=''; let inList=false; let para=[];
-  let fenceType=null, fenceBuf=null;
+  let fenceType=null, fenceBuf=null, quote=null;
   const flushP=()=>{ if(para.length){ html+='<p>'+inline(para.join(' '))+'</p>'; para=[]; } };
+  /* consecutive "> " lines are one quote: a blank "> " starts a new paragraph,
+     "> ## Title" is its heading. A one-line quote stays plain, as it always was. */
+  const flushQ=()=>{
+    if(!quote) return;
+    const paras = [[]]; quote.forEach(l=>{ if(!l.trim()) paras.push([]); else paras[paras.length-1].push(l); });
+    const ps = paras.filter(p=> p.length);
+    const one = l => { const h = l.match(/^#{1,6}\s+(.*)/); return h ? `<strong class="bq-h">${inline(h[1])}</strong>` : inline(l); };
+    html += ps.length===1 && ps[0].length===1 && !/^#/.test(ps[0][0])
+      ? '<blockquote>'+inline(ps[0][0])+'</blockquote>'
+      : '<blockquote class="bq-block">'+ps.map(p=> '<p>'+p.map(one).join(' ')+'</p>').join('')+'</blockquote>';
+    quote = null;
+  };
   const closeList=()=>{ if(inList){ html+='</ul>'; inList=false; } };
   for(let raw of lines){
     const line = raw.replace(/\s+$/,''); let m;
+    if(quote && fenceType===null && !/^>/.test(line) && !/^>\s?\*\*([^*]+)\*\*/.test(line)) flushQ();
     if(fenceType!==null){ // inside a fenced block — collect until the closing fence
       if(/^```+\s*$/.test(line.trim())){ html+=vizBlock(fenceType, fenceBuf.join('\n')); fenceType=null; fenceBuf=null; }
       else fenceBuf.push(raw);
@@ -72,6 +85,9 @@ function mdToHtml(md){
     }
     if(m=line.trim().match(/^```+\s*([A-Za-z]+)?\s*$/)){ flushP(); closeList(); fenceType=m[1]||''; fenceBuf=[]; continue; }
     if(!line.trim()){ flushP(); closeList(); continue; }
+    /* <!-- anchor: x --> is a place a Signal can point at (Transcripts/…#x):
+       kept as an empty marker with that id; the transcript view draws it */
+    if(m=line.trim().match(/^<!--\s*anchor:\s*([\w-]+)\s*-->$/)){ flushP(); closeList(); html+=`<div class="md-anchor" id="anchor-${esc(m[1])}" data-anchor="${esc(m[1])}"></div>`; continue; }
     if(/^<!--.*-->\s*$/.test(line.trim())) continue;
     if(line.trim()==='---'){ flushP(); closeList(); html+='<hr>'; continue; }
     if(m=line.match(/^#\s+(.*)/)){ flushP(); closeList(); html+='<h1>'+inline(m[1])+'</h1>'; continue; }
@@ -80,14 +96,14 @@ function mdToHtml(md){
     /* A template's note to the writer ("Biographical sketch — character colour,
        not research findings. … Do not cite …") is for whoever edits the file;
        the reader gets its bold lead as a quiet caption, not a pull quote. */
-    if(m=line.match(/^>\s?\*\*([^*]+)\*\*/)) if(/not research findings/i.test(m[1])){ flushP(); closeList(); html+='<p class="md-note">'+inline(m[1].trim())+'</p>'; continue; }
-    if(m=line.match(/^>\s?(.*)/)){ flushP(); closeList(); html+='<blockquote>'+inline(m[1])+'</blockquote>'; continue; }
+    if(m=line.match(/^>\s?\*\*([^*]+)\*\*/)) if(/not research findings/i.test(m[1])){ flushP(); closeList(); flushQ(); html+='<p class="md-note">'+inline(m[1].trim())+'</p>'; continue; }
+    if(m=line.match(/^>\s?(.*)/)){ flushP(); closeList(); (quote = quote || []).push(m[1]); continue; }
     // "  - …" under a bullet is its continuation — rendered as a sub-item, not as literal "- " in a paragraph
     if(m=line.match(/^(\s*)[-*]\s+(.*)/)){ flushP(); if(!inList){ html+='<ul>'; inList=true; } html+=(m[1].length>=2?'<li class="li-sub">':'<li>')+inline(m[2])+'</li>'; continue; }
     closeList(); para.push(line.trim());
   }
   if(fenceType!==null) html+=vizBlock(fenceType, fenceBuf.join('\n')); // unclosed fence
-  flushP(); closeList();
+  flushP(); closeList(); flushQ();
   // *[colour]* marks invented-for-flavour detail: say so in words, not in brackets
   return html.replace(/<em>\[colour\]<\/em>/g, `<span class="colour-chip" title="${esc(tr('Character colour for warm-up questions — not a research finding'))}">${tr('not researched')}</span>`);
 }
@@ -192,6 +208,8 @@ let CURRENT = null;
 let PTOC_SPY = null;   // persona TOC scroll-spy observer
 function openDetail(id){
   const e = ENTITIES[id]; if(!e) return;
+  // re-rendering the page you are on (a save, an undo, a new highlight) keeps your place in it
+  const same = CURRENT === id && detailView.classList.contains('active');
   CURRENT = id;
   exitEdit();
   document.getElementById('editBtn').style.display = '';
@@ -216,7 +234,8 @@ function openDetail(id){
      the three working tables), then the rest of the file with a sticky section menu. */
   const dcard = document.querySelector('.detail-card');
   dcard.classList.toggle('persona-detail', e.type==='Persona');
-  document.querySelector('.detail-wrap').classList.toggle('detail-wide', e.type==='Persona');
+  document.querySelector('.detail-wrap').classList.toggle('detail-wide', e.type==='Persona' || e.type==='Transcript');
+  dcard.classList.toggle('tr-detail', e.type==='Transcript');
   const pHero = document.getElementById('pHero');
   let peFooter = '';
   if(e.type==='Persona'){
@@ -262,9 +281,11 @@ function openDetail(id){
     const g = ideaGrounding(e);
     dg.innerHTML = `${barsHtml(g)}${esc(g.word)}${g.detail?` · ${esc(g.detail)}`:''} <span style="text-transform:none;font-weight:400">(${esc(g.why)})</span>`;
     dg.classList.add('on');
-  } else if(e.type==='Transcript' && staleNoteHtml(e)){
-    dg.innerHTML = `<span style="text-transform:none;letter-spacing:0;font-weight:400">${staleNoteHtml(e)}</span>`;
+  } else if(e.type==='Transcript'){
+    dg.innerHTML = trMetaHtml(e) + (staleNoteHtml(e) ? `<span class="tr-stale">${staleNoteHtml(e)}</span>` : '');
     dg.classList.add('on');
+    dg.querySelectorAll('a.xref[data-goto]').forEach(a=> a.onclick = ev=>{ ev.preventDefault(); location.hash = '#'+a.dataset.goto; });
+    const xb = dg.querySelector('[data-tract="extract"]'); if(xb) xb.onclick = ()=> trCopyExtract(e);
   } else { dg.innerHTML=''; dg.classList.remove('on'); }
   const dv = document.getElementById('dVote');
   if(e.type==='IdeaForImprovement'){
@@ -362,6 +383,8 @@ function openDetail(id){
       ? 'Excluded — not counted in sample stats or heard-from, skipped by AI analyses. Flip to re-include.'
       : 'In use — counted everywhere. Flip to retire this session from analyses (saved into the file as excluded: true).';
   }
+  if(e.type==='Transcript'){ document.getElementById('pBody').classList.add('tr-split'); transcriptWorkspace(e); }
+  else transcriptWorkspaceOff();
   const fi = document.getElementById('findInput');
   if(fi.value){ fi.value=''; }
   FIND_HITS=[]; FIND_CUR=-1; updateFindCount();
@@ -389,7 +412,7 @@ function openDetail(id){
     btn.onclick = (ev)=>{ ev.stopPropagation(); editSection(e, h.childNodes[0] ? h.childNodes[0].textContent.trim() : h.textContent.trim()); };
     h.appendChild(btn);
   });
-  window.scrollTo(0,0);
+  if(!same) window.scrollTo(0,0);
 }
 /* open the editor with exactly one ## section selected — the pencil on every
    heading and the Edit button on the persona tables both land here */

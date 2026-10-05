@@ -23,18 +23,59 @@ window.addEventListener('hashchange', route);
 
 /* ---------- toast ---------- */
 let toastT;
-function toast(msg, action){ // action: {label, fn} — e.g. an Undo
+/* toasts sit top right, under the header, and say three things at most:
+   what happened (a ✓ at the end of the message becomes the icon), one line
+   of detail when there is one (the fragment, the file), and the action on
+   offer. Every toast can be closed. One that offers an action (Undo) carries
+   a bar that drains right to left for as long as the action stays on offer —
+   hovering holds it, leaving lets it run on. */
+let TOAST_ANIM = null;
+const TOAST_ICO = {
+  ok: '<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="9"/><path d="m8.5 12.5 2.5 2.5 4.5-5"/></svg>',
+  info: '<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="9"/><path d="M12 8h.01M11 12h1v4h1"/></svg>',
+  x: '<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M18 6 6 18M6 6l12 12"/></svg>',
+};
+function toastClose(){
   const t = document.getElementById('toast');
-  t.innerHTML = ''; t.appendChild(document.createTextNode(msg));
+  clearTimeout(toastT);
+  if(TOAST_ANIM){ TOAST_ANIM.onfinish = null; TOAST_ANIM.cancel(); TOAST_ANIM = null; }
+  t.classList.remove('show');
+}
+function toast(msg, action, ms, detail){ // action: {label, fn} — e.g. an Undo; ms: how long it stays; detail: one quiet line under the message
+  const t = document.getElementById('toast');
+  toastClose();
+  const ok = /\s*✓\s*$/.test(msg) || /✓/.test(msg);
+  const title = String(msg).replace(/\s*✓\s*/,' ').replace(/\s+—\s*$/,'').trim();
+  t.innerHTML = `<span class="toast-ico ${ok ? 'ok' : 'info'}">${TOAST_ICO[ok ? 'ok' : 'info']}</span>
+    <span class="toast-txt"><b></b>${detail ? '<small></small>' : ''}</span>`;
+  t.querySelector('b').textContent = title;
+  if(detail) t.querySelector('small').textContent = detail;
+  const d = ms || (action ? 6500 : 3600);
   if(action){
     const b = document.createElement('button');
-    b.className = 'toast-act'; b.textContent = action.label;
-    b.onclick = ()=>{ t.classList.remove('show'); action.fn(); };
+    b.type = 'button'; b.className = 'toast-act'; b.textContent = action.label;
+    b.onclick = ()=>{ toastClose(); action.fn(); };
     t.appendChild(b);
   }
-  t.style.pointerEvents = action ? 'auto' : 'none';
-  t.classList.add('show'); clearTimeout(toastT);
-  toastT = setTimeout(()=> t.classList.remove('show'), action ? 6500 : 3200);
+  const x = document.createElement('button');
+  x.type = 'button'; x.className = 'toast-x'; x.innerHTML = TOAST_ICO.x;
+  x.setAttribute('aria-label', tr('Close')); x.title = tr('Close');
+  x.onclick = toastClose;
+  t.appendChild(x);
+  if(action){
+    const bar = document.createElement('i'); bar.className = 'toast-bar'; bar.setAttribute('aria-hidden','true');
+    t.appendChild(bar);
+    TOAST_ANIM = bar.animate([{ transform:'scaleX(1)' }, { transform:'scaleX(0)' }], { duration: d, easing: 'linear', fill: 'forwards' });
+    TOAST_ANIM.onfinish = ()=>{ t.classList.remove('show'); TOAST_ANIM = null; };
+    t.onmouseenter = ()=>{ if(TOAST_ANIM) TOAST_ANIM.pause(); };
+    t.onmouseleave = ()=>{ if(TOAST_ANIM) TOAST_ANIM.play(); };
+  } else {
+    t.onmouseenter = ()=> clearTimeout(toastT);
+    t.onmouseleave = ()=>{ clearTimeout(toastT); toastT = setTimeout(()=> t.classList.remove('show'), 1500); };
+    toastT = setTimeout(()=> t.classList.remove('show'), d);
+  }
+  t.style.pointerEvents = 'auto';
+  t.classList.add('show');
 }
 
 /* ---------- load from disk ---------- */
@@ -335,8 +376,14 @@ let hlBtnEl=null, hlPopEl=null;
 function hideHlUi(){ if(hlBtnEl) hlBtnEl.style.display='none'; if(hlPopEl) hlPopEl.style.display='none'; }
 function ensureHlEls(){
   if(hlBtnEl) return;
-  hlBtnEl=document.createElement('button');
-  hlBtnEl.id='hlBtn'; hlBtnEl.className='hl-float'; hlBtnEl.type='button'; hlBtnEl.textContent='🖍 '+tr('Highlight');
+  /* a selection gets a small toolbar: highlight it now, highlight with tags,
+     or copy it as a citable quote */
+  const ic = d => `<svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">${d}</svg>`;
+  hlBtnEl=document.createElement('div');
+  hlBtnEl.id='hlBtn'; hlBtnEl.className='hl-float'; hlBtnEl.setAttribute('role','toolbar'); hlBtnEl.setAttribute('aria-label', tr('Selection'));
+  hlBtnEl.innerHTML = `<button type="button" data-hlact="mark">${ic('<path d="m9 11-6 6v3h9l3-3"/><path d="m22 12-4.6 4.6a2 2 0 0 1-2.8 0l-5.2-5.2a2 2 0 0 1 0-2.8L14 4"/>')}${tr('Highlight')}</button>`
+    + `<button type="button" data-hlact="tag">${ic('<path d="M5 9h14M5 15h14M11 4 7 20M17 4l-4 16"/>')}${tr('Tag…')}</button>`
+    + `<button type="button" data-hlact="copy">${ic('<rect x="8" y="8" width="12" height="12" rx="2"/><path d="M16 8V6a2 2 0 0 0-2-2H6a2 2 0 0 0-2 2v8a2 2 0 0 0 2 2h2"/>')}${tr('Copy quote')}</button>`;
   hlBtnEl.style.display='none';
   hlBtnEl.addEventListener('mousedown', ev=>{ ev.preventDefault(); ev.stopPropagation(); });
   document.body.appendChild(hlBtnEl);
@@ -402,15 +449,24 @@ document.getElementById('doc').addEventListener('mouseup', ()=>{
     const occ = (pre.toString().match(pat)||[]).length;
     ensureHlEls();
     const r = range.getBoundingClientRect();
-    hlBtnEl.style.display='block';
-    hlBtnEl.style.left = Math.max(8, Math.min(r.left + r.width/2 - 50 + window.scrollX, window.innerWidth-130))+'px';
-    hlBtnEl.style.top  = (r.bottom + window.scrollY + 6)+'px';
-    hlBtnEl.onclick = async ()=>{
+    hlBtnEl.style.display='flex';
+    const bw = hlBtnEl.offsetWidth || 300;
+    hlBtnEl.style.left = Math.max(8, Math.min(r.left + r.width/2 - bw/2 + window.scrollX, window.innerWidth - bw - 8))+'px';
+    hlBtnEl.style.top  = (r.bottom + window.scrollY + 8)+'px';
+    hlBtnEl.onclick = async ev=>{
+      const act = (ev.target.closest('[data-hlact]')||{}).dataset?.hlact; if(!act) return;
       hlBtnEl.style.display='none';
+      if(act==='copy'){   // the words as said, and where they were said — ready to paste into a finding
+        const q = `"${norm}" — ${e.title}`;
+        const done = ()=> toast(tr('Quote copied ✓'));
+        if(navigator.clipboard && navigator.clipboard.writeText) navigator.clipboard.writeText(q).then(done, ()=> fallbackCopy(q, done)); else fallbackCopy(q, done);
+        return;
+      }
       const w = await ensureWritable(e);
       if(!w) return;
       if(w!==e){ openDetail(w.id); toast(tr('Folder connected ✓ — select the fragment again to highlight it')); return; }
-      openHlPop(r.left + window.scrollX, r.bottom + window.scrollY, { mode:'new', e, selText:text, occ });
+      if(act==='mark') await addHighlight(e, text, occ, []);   // tags can come later: click the highlight
+      else openHlPop(r.left + window.scrollX, r.bottom + window.scrollY, { mode:'new', e, selText:text, occ });
     };
   }, 0);
 });

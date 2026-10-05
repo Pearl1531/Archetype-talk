@@ -50,11 +50,22 @@ function findHlSpanInBody(body, selText, occurrence){
   if(!cands.length) return { err:'not-found' };
   return { span: cands[Math.min(occurrence||0, cands.length-1)] };
 }
-async function saveHighlightChange(e, newBody, msg){
+async function saveHighlightChange(e, newBody, msg, what){
   const md = withNewBody(e, newBody);
   if(md===null){ toast(tr('Could not splice the transcript body — reload the folder')); return false; }
+  const prev = e.md;   // Undo puts back exactly this version — not "whatever was saved last"
+  const detail = [what ? '“'+trim(what, 56)+'”' : '', e.title].filter(Boolean).join(' · ');   // which words, in which session
   const ok = await saveEntityText(e, md);
-  if(ok){ if(CURRENT===e.id) openDetail(e.id); toast(msg, {label:'Undo', fn: undoLastSave}); }
+  if(ok){
+    if(CURRENT===e.id) openDetail(e.id);
+    toast(tr(msg), { label: tr('Undo'), fn: async ()=>{
+      const cur = ENTITIES[e.id]; if(!cur) return;
+      if(await saveEntityText(cur, prev, { skipDriftCheck:true, noUndo:true })){
+        if(CURRENT===e.id) openDetail(e.id);
+        toast(tr('Undone ✓'), null, 0, detail);
+      }
+    }}, 8000, detail);
+  }
   return ok;
 }
 async function addHighlight(e, selText, occurrence, tags){
@@ -62,13 +73,13 @@ async function addHighlight(e, selText, occurrence, tags){
   if(r.err){ toast(r.err==='too-short' ? 'Select a bit more text (3+ characters)' : 'Couldn’t match that selection in the source — select within one paragraph, outside existing highlights'); return; }
   const frag = e.body.slice(r.span.start, r.span.end);
   const nb = e.body.slice(0, r.span.start) + '==' + frag + '==' + (tags.length ? '{'+tags.join(', ')+'}' : '') + e.body.slice(r.span.end);
-  await saveHighlightChange(e, nb, 'Highlighted ✓ — saved into '+e.file);
+  await saveHighlightChange(e, nb, 'Highlighted ✓', frag);
 }
 async function editHighlight(e, hln, tags){
-  await saveHighlightChange(e, replaceNthHl(e.body, hln, txt=>'=='+txt+'=='+(tags.length?'{'+tags.join(', ')+'}':'')), 'Tags updated ✓');
+  await saveHighlightChange(e, replaceNthHl(e.body, hln, txt=>'=='+txt+'=='+(tags.length?'{'+tags.join(', ')+'}':'')), 'Tags updated ✓', (entityHighlights(e)[hln]||{}).text);
 }
 async function removeHighlight(e, hln){
-  await saveHighlightChange(e, replaceNthHl(e.body, hln, txt=>txt), 'Highlight removed ✓');
+  await saveHighlightChange(e, replaceNthHl(e.body, hln, txt=>txt), 'Highlight removed ✓', (entityHighlights(e)[hln]||{}).text);
 }
 function hlAllTagNames(){
   const s=new Set();

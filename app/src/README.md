@@ -26,6 +26,7 @@ what 16px should become.
 | 08-shared-skin.css | the shared skin: page heads, pill controls, sidebar, card surfaces, chips, inputs, tables — written on top of 04 with the same `body.lin-*` prefixes, and it **wins**: where both name a selector, 08 is the live value and editing 04 does nothing. Also defines `--accent`, `--font-serif`, `--font-mono` |
 | 09-persona-poster.css | persona poster overlay (`.pp-*`): hero grid, gains/pains cards, L2→L4 flow, dividers |
 | 10-backlog.css | Research backlog page (`.bl-*`): toolbar, grouped table, board columns, side panel with property pickers, method sheet, edit form; phone: cards + swipeable board + full-screen panel |
+| 10b-transcript.css | transcript workspace (`.tr-*`): split layout, turns, bookmarks, tag-coloured highlights, Signal chips, the tabbed pane; stacks on phones |
 | 11-projects.css | Projects screen (`.pj-*`): rail, CTA cards, project cards + thumbnails — written straight on the shared tokens (`--bg*`, `--r-*`, `--s-*`, `--font-ui`) from 01 |
 | 12-project-home.css | Project home / Overview (`.dash-*`, data-viz primitives, CTA cards) |
 | 13-welcome.css | First-run welcome (`.wc-*`): the card, its icon tile, and the full-bleed particle canvas behind it |
@@ -45,6 +46,7 @@ what 16px should become.
 | 08-highlights-hypotheses.js | transcript highlights + tag rename, hypotheses + promote flow, new competitor/hypothesis forms, email masking |
 | 09-detail-edit.js | markdown detail + xref nav, in-place editing (File System Access), competitor icon manager |
 | 09c-persona-editorial.js | the persona page top, Editorial: name, facts, and the three working tables built from `## Pains`, `## Jobs to be Done` and `## Ideas for this persona` (those sections leave the markdown below), plus the source index under the page |
+| 09d-transcript-workspace.js | a transcript as a working surface (`transcriptWorkspace`, called from `openDetail`): turns (speaker column, moderator dimmed), `<!-- anchor: x -->` bookmarks (`mdToHtml` keeps them as `.md-anchor`), highlights coloured by tag (`TR_TAG_COLORS`, filter row `#trTagBar`), the Signals that cite the file placed under their passage (by anchor, else by the quote's opening words), and the right pane `#trPane` — Signals · Highlights · Summary (abstract, topics, sections no Signal cites yet, observer notes, mentions). Hover links a Signal and its passage; "Extract findings" copies an agent-aware `/extract-findings <file>` prompt (`trCopyExtract`). Reads only — highlights are still made by selecting text |
 | 09b-new-entity.js | manual creation for Signal / Evidence / Persona / Archetype / Transcript (`NEW_SPEC` field sets + markdown builders, one shared modal), the `＋ New …` bar, per-type empty states, and the copy-to-clipboard AI prompts (`NEW_PROMPT`). Ideas / Hypotheses / Competitors keep their own richer forms in 05 and 08 |
 | 10-help.js | Help & guide page — `HELP` (English) and `HELP_PL` side by side, picked by `helpData()` |
 | 11-mindmap.js | Research map: Columns / Free / Flow views (layouts, links on demand, drawer, detail pane) |

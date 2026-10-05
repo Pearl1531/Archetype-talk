@@ -395,13 +395,15 @@
     vertical-align: middle; user-select: none;
   }
   .hl-count { background: #FFF4D6; border-color: #f59e0b55; }
+  /* the selection toolbar: highlight · tag… · copy quote */
   .hl-float {
-    position: absolute; z-index: 620; padding: 6px 12px; border-radius: var(--r-pill);
-    background: var(--text); color: var(--bg-elev); border: none;
-    font-size: var(--text-caption); font-weight: 600; cursor: pointer;
-    box-shadow: 0 4px 14px rgba(0,0,0,.22);
+    position: absolute; z-index: 620; display: none; align-items: center; gap: 2px; padding: 4px; border-radius: 12px;
+    background: #141413; box-shadow: 0 10px 24px rgba(10,10,10,.25); white-space: nowrap;
   }
-  .hl-float:hover { transform: translateY(-1px); }
+  .hl-float button { height: 34px; padding: 0 11px; border: 0; border-radius: 8px; background: none; color: #D9D5CC;
+    display: inline-flex; align-items: center; gap: 6px; font: inherit; font-size: 14px; font-weight: 500; cursor: pointer; }
+  .hl-float button:first-child { background: #2A2926; color: #FAF9F5; }
+  .hl-float button:hover { background: #3A3935; color: #FAF9F5; }
   .hl-pop {
     position: absolute; z-index: 630; width: 320px; padding: var(--s-3);
     background: var(--bg-elev); border: 1px solid var(--line);
@@ -2345,6 +2347,187 @@
     .bl-hide-sm { display: none; }
     .bl-p-top { padding: 0 6px 0 8px; gap: 2px; }
   }
+  /* ============ Transcript as a working surface (.tr-*) ============
+     09d-transcript-workspace.js. The interview turn by turn on the left, a
+     pane with what came out of it on the right. Highlights take their tag's
+     colour (--hl-bg, set per mark); a lit Signal tints its passage. */
+  .md-anchor { display: none; }   /* bookmarks only show inside a transcript */
+
+  .detail-card.tr-detail { padding-bottom: var(--s-5); }
+  .tr-detail .ground-row.on { display: flex; align-items: center; gap: 12px; flex-wrap: wrap; text-transform: none; letter-spacing: 0; }
+  .tr-meta { display: inline-flex; align-items: center; gap: 10px; flex-wrap: wrap; font-size: 14px; font-weight: 400; color: var(--text-soft); }
+  .tr-meta i { font-style: normal; color: var(--text-mute, var(--text-dim)); }
+  a.tr-who { display: inline-flex; align-items: center; gap: 8px; font-weight: 600; color: var(--text); text-decoration: none; }
+  a.tr-who:hover { color: var(--accent-text); }
+  .tr-face { width: 26px; height: 26px; flex: none; border-radius: 50%; overflow: hidden; display: inline-flex; justify-content: center; font-size: 14px; }
+  .tr-face img { width: 100%; height: 100%; object-fit: cover; }
+  .tr-face.dx-noimg { border-width: 1px; }
+  .tr-extract { margin-left: auto; display: inline-flex; align-items: center; gap: 7px; }
+  .tr-extract svg, .tr-more svg { width: 16px; height: 16px; }
+  .tr-stale { flex-basis: 100%; font-size: 14px; color: var(--text-dim); }
+
+  /* the tag row under the find bar */
+  .tr-tagbar { display: flex; align-items: center; gap: 6px; flex-wrap: wrap; margin: 4px 0 var(--s-3); }
+  .tr-tagbtn { height: 30px; padding: 0 11px; border-radius: 999px; border: 1px solid var(--line); background: var(--bg-elev);
+    display: inline-flex; align-items: center; gap: 7px; font: inherit; font-size: 14px; color: var(--text); cursor: pointer; }
+  .tr-tagbtn i { width: 10px; height: 10px; border-radius: 3px; box-shadow: inset 0 0 0 1px rgba(10,10,10,.15); }
+  .tr-tagbtn.on { border-color: var(--text); background: var(--bg-elev-2); font-weight: 600; }
+  .tr-tagbtn.off { opacity: .55; }
+  .tr-hint { margin-left: auto; display: inline-flex; align-items: center; gap: 4px; font-size: 14px; color: var(--text-dim); }
+
+  /* split: transcript | pane */
+  .tr-detail .p-body.tr-split { display: grid; grid-template-columns: minmax(0, 1fr) 380px; column-gap: 32px; align-items: start; }
+
+  /* turns */
+  .tr-detail .doc .tr-turn { display: grid; grid-template-columns: 104px minmax(0, 1fr); column-gap: 16px; padding: 10px 12px; margin: 0 -12px;
+    border-radius: 10px; transition: background .15s; }
+  .tr-detail .doc .tr-turn.lit { background: color-mix(in srgb, var(--accent) 8%, var(--bg-elev)); }
+  .tr-spk { padding-top: 3px; font-size: 14px; font-weight: 700; color: var(--text); overflow: hidden; text-overflow: ellipsis; }
+  .tr-mod .tr-spk { font-weight: 600; color: var(--text-dim); }
+  .tr-txt { display: flex; flex-direction: column; gap: 8px; min-width: 0; }
+  .tr-detail .doc .tr-txt p { margin: 0; font-size: 16px; line-height: 1.7; }
+  .tr-mod .tr-txt p { color: var(--text-soft); }
+  .tr-detail .doc .tr-anchor { display: flex; align-items: center; gap: 10px; margin: 18px 0 4px; }
+  .tr-anchor::after { content: ""; flex: 1; height: 1px; background: var(--line); }
+  .tr-anchor span { display: inline-flex; align-items: center; gap: 5px; font-family: var(--font-mono); font-size: 14px; letter-spacing: .03em; color: var(--text-dim); }
+
+  /* highlights in their tag colour; filtered-out ones step back */
+  .tr-detail mark.hl { background: var(--hl-bg, #FFF4D6); box-shadow: none; padding: 2px 3px; border-radius: 4px;
+    -webkit-box-decoration-break: clone; box-decoration-break: clone; transition: opacity .15s, box-shadow .15s; }
+  .tr-detail mark.hl:hover { background: var(--hl-bg, #FFF4D6); box-shadow: 0 0 0 1.5px rgba(10,10,10,.45); }
+  .tr-detail mark.hl.dim { opacity: .3; }
+  .tr-detail mark.hl.flash { animation: trFlash 1.2s ease-out; }
+  @keyframes trFlash { 0%, 40% { box-shadow: 0 0 0 3px var(--accent); } 100% { box-shadow: none; } }
+  .tr-detail .hl-t, .tr-tag { display: inline-flex; align-items: center; height: 22px; margin-left: 5px; padding: 0 8px; border-radius: 6px;
+    background: var(--t-bg, var(--bg-elev-2)); color: var(--t-fg, var(--text)); font-size: 14px; font-weight: 600; letter-spacing: 0; text-transform: none; vertical-align: 1px; }
+  .tr-tag { margin-left: 0; }
+
+  /* the Signal chips under a passage */
+  .tr-sigs { display: flex; gap: 6px; flex-wrap: wrap; }
+  .tr-sig { height: 30px; padding: 0 11px 0 9px; border-radius: 999px; border: 1px solid var(--line); background: var(--bg);
+    display: inline-flex; align-items: center; gap: 6px; font: inherit; font-size: 14px; font-weight: 500; color: var(--text); cursor: pointer; }
+  .tr-sig svg { width: 14px; height: 14px; }
+  .tr-sig:hover, .tr-sig.lit { border-color: var(--accent); background: var(--bg-elev); }
+
+  /* the pane */
+  .tr-pane { position: sticky; top: 16px; max-height: calc(100vh - 32px); display: flex; flex-direction: column; overflow: hidden;
+    border-radius: 16px; border: 1px solid var(--line); background: var(--bg-elev); }
+  .tr-tabs { flex-shrink: 0; display: flex; gap: 18px; padding: 0 18px; border-bottom: 1px solid var(--line); }
+  .tr-tabs button { height: 46px; padding: 0 2px; border: 0; border-bottom: 2px solid transparent; background: none; display: inline-flex; align-items: center; gap: 7px;
+    font: inherit; font-size: 14px; font-weight: 600; color: var(--text-dim); cursor: pointer; }
+  .tr-tabs button[aria-selected=true] { color: var(--text); border-bottom-color: var(--text); }
+  .tr-tabs .n { font-family: var(--font-mono); font-weight: 500; color: var(--text-dim); }
+  .tr-pane-body { flex: 1; min-height: 0; overflow: auto; padding: 18px; display: flex; flex-direction: column; gap: 12px; background: var(--bg); }
+  .tr-lead { display: flex; align-items: center; gap: 4px; font-size: 14px; color: var(--text-soft); }
+  .tr-card { padding: 14px 16px; border-radius: 12px; border: 1px solid var(--line); background: var(--bg-elev); display: flex; flex-direction: column; gap: 8px;
+    transition: border-color .15s, box-shadow .15s; }
+  .tr-card.lit { border-color: var(--accent); box-shadow: 0 0 0 1px var(--accent); }
+  .tr-card-h { display: flex; align-items: center; gap: 8px; }
+  .tr-card-h svg { width: 15px; height: 15px; flex: none; }
+  .tr-card-h a.xref { font-size: 15px; font-weight: 600; color: var(--text); text-transform: none; letter-spacing: 0; }
+  .tr-card-h a.xref svg { display: none; }
+  .tr-stance { height: 22px; padding: 0 8px; border-radius: 6px; background: var(--bg-elev-2); border: 1px solid var(--line); font-size: 14px; color: var(--text-soft);
+    display: inline-flex; align-items: center; margin-left: auto; }
+  .tr-card p { margin: 0; font-size: 14px; line-height: 1.55; color: var(--text-soft); }
+  .tr-card-m { display: flex; }
+  .tr-jump, .tr-gap { border: 0; background: none; padding: 0; display: inline-flex; align-items: center; gap: 5px; font-family: var(--font-mono); font-size: 14px;
+    color: var(--text-dim); cursor: pointer; }
+  .tr-jump:hover, .tr-gap:hover { color: var(--text); }
+  .tr-miss { font-size: 14px; color: var(--warn-text); }
+  .tr-more { height: 44px; border-radius: 10px; border: 1px dashed var(--edge, var(--line)); background: none; display: flex; align-items: center; justify-content: center; gap: 8px;
+    font: inherit; font-size: 14px; color: var(--text-soft); cursor: pointer; }
+  .tr-more:hover { color: var(--text); border-color: var(--text); }
+  .tr-hl { position: relative; border-radius: 12px; border: 1px solid var(--line); background: var(--bg-elev); box-shadow: inset 4px 0 0 var(--t-bg); }
+  .tr-hl-go { width: 100%; padding: 12px 40px 12px 16px; border: 0; background: none; display: flex; flex-direction: column; gap: 8px; text-align: left;
+    font: inherit; font-size: 14px; line-height: 1.55; color: var(--text); cursor: pointer; border-radius: 12px; }
+  .tr-hl-x { position: absolute; top: 8px; right: 8px; width: 28px; height: 28px; border: 0; border-radius: 8px; background: none; color: var(--text-dim);
+    display: inline-flex; align-items: center; justify-content: center; cursor: pointer; opacity: .55; transition: opacity .12s, background .12s, color .12s; }
+  .tr-hl:hover .tr-hl-x, .tr-hl-x:focus-visible { opacity: 1; }
+  .tr-hl-x:hover { background: color-mix(in srgb, var(--danger-text) 10%, transparent); color: var(--danger-text); }
+  .tr-hl.dim { opacity: .4; }
+  .tr-hl-tags { display: flex; gap: 6px; flex-wrap: wrap; }
+  .tr-empty { font-size: 14px; color: var(--text-dim); padding: 6px 0; }
+  .tr-pane section { display: flex; flex-direction: column; gap: 8px; }
+  .tr-pane h4 { margin: 0; display: flex; align-items: center; gap: 4px; font-size: 15px; font-weight: 700; color: var(--text); }
+  .tr-pane section > p, .tr-notes { font-size: 14px; line-height: 1.6; color: var(--text-soft); }
+  .tr-notes ul { margin: 0; padding-left: 18px; display: flex; flex-direction: column; gap: 4px; }
+  .tr-chips { display: flex; gap: 6px; flex-wrap: wrap; }
+  .tr-chip { height: 28px; padding: 0 10px; border-radius: 999px; background: var(--bg-elev); border: 1px solid var(--line); font-size: 14px; color: var(--text-soft);
+    display: inline-flex; align-items: center; text-decoration: none; text-transform: none; letter-spacing: 0; }
+  a.tr-chip svg { display: none; }
+
+  @media (max-width: 1100px) {
+    .tr-detail .p-body.tr-split { grid-template-columns: minmax(0, 1fr) 320px; column-gap: 24px; }
+  }
+  @media (max-width: 860px) {
+    .tr-detail .p-body.tr-split { grid-template-columns: 1fr; row-gap: 24px; }
+    .tr-pane { position: static; max-height: none; }
+    .tr-detail .doc .tr-turn { grid-template-columns: 1fr; row-gap: 4px; }
+    .tr-hint { margin-left: 0; flex-basis: 100%; }
+    .tr-extract { margin-left: 0; }
+  }
+  @media print { .tr-pane, .tr-tagbar, .tr-sigs { display: none !important; } .tr-detail .p-body.tr-split { display: block; } }
+
+  /* a multi-line quote is one block (mdToHtml): paragraphs inside, an optional heading */
+  .doc blockquote.bq-block { display: flex; flex-direction: column; gap: 8px; }
+  .doc blockquote.bq-block p { margin: 0; }
+  .doc blockquote .bq-h { display: block; font-size: 16px; font-weight: 700; color: var(--text); }
+  /* inside a turn, the translation / narration under the quote */
+  .tr-txt > blockquote { margin: 0; padding: 2px 0 2px 12px; border-left: 2px solid var(--line); font-size: 15px; color: var(--text-soft); font-style: normal; }
+  .tr-txt > blockquote em { font-style: normal; }
+  .tr-txt > ul { margin: 0; padding-left: 18px; }
+
+  /* the page ground shows: the header sits on it, the transcript is its own
+     white sheet (find + tags as a sticky toolbar on top), the pane beside it */
+  body.lin-all .detail-card.tr-detail, .detail-card.tr-detail { background: none; border: none; box-shadow: none; padding: 8px 0 0; }
+  .tr-detail .detail-head { padding: 0 4px; }
+  .tr-main { min-width: 0; border-radius: 16px; background: var(--bg-elev); border: 1px solid var(--line); }
+  .tr-main > .doc-tools { position: sticky; top: 0; z-index: 4; margin: 0; padding: 14px 24px 8px; border-radius: 16px 16px 0 0;
+    background: color-mix(in srgb, var(--bg-elev) 96%, transparent); border-bottom: 0; }
+  .tr-main > .tr-tagbar { margin: 0; padding: 0 24px 14px; border-bottom: 1px solid var(--line); }
+  .tr-main > .doc { padding: 16px 36px 32px; }
+  .tr-open { margin-left: auto; display: inline-flex; color: var(--text-dim); cursor: pointer; }
+  .tr-stance + .tr-open { margin-left: 0; }
+  .tr-open:hover { color: var(--text); }
+  .tr-second { align-self: flex-start; height: 22px; padding: 0 8px; border-radius: 6px; border: 1px dashed var(--line); font-size: 14px; color: var(--text-dim);
+    display: inline-flex; align-items: center; }
+  @media (max-width: 860px) {
+    .tr-main > .doc { padding: 12px 16px 24px; }
+    .tr-main > .doc-tools, .tr-main > .tr-tagbar { padding-left: 16px; padding-right: 16px; }
+  }
+  /* a section title from the file, as a bookmark: title, then its time range */
+  .tr-anchor.tr-sec span { gap: 8px; font-family: inherit; letter-spacing: 0; }
+  .tr-anchor.tr-sec b { font-size: 14px; font-weight: 700; color: var(--text); text-transform: none; }
+  .tr-anchor.tr-sec i { font-style: normal; font-family: var(--font-mono); font-size: 14px; color: var(--text-dim); }
+  .tr-anchor.tr-sec svg { color: var(--text-dim); }
+  /* a line of context (the compiler's narration, not anyone's words) */
+  .tr-note .tr-spk { font-weight: 500; font-style: normal; }
+  .tr-detail .doc .tr-note .tr-txt p, .tr-note .tr-txt { font-size: 15px; color: var(--text-dim); }
+  /* a quote that is a turn of its own reads as speech, not as a pull quote */
+  .tr-detail .doc .tr-turn:not(.tr-mod) > .tr-txt > blockquote:first-child { padding: 0; border: 0; font-size: 16px; line-height: 1.7; color: var(--text); }
+
+  /* ---- toasts: top right, under the header ----
+     icon · what happened (+ one quiet line) · the action · close. An offered
+     action drains a bar right → left while it is on offer. */
+  .toast, body.lin-all .toast { top: 72px; right: var(--s-5); bottom: auto; left: auto; transform: translateY(-8px);
+    display: flex; align-items: center; gap: 12px; width: 380px; max-width: calc(100vw - 32px); box-sizing: border-box;
+    padding: 12px 8px 14px 14px; border-radius: 14px; overflow: hidden; z-index: 650;
+    background: #141413; color: #FAF9F5; box-shadow: 0 16px 40px -12px rgba(10,10,10,.45), 0 2px 6px rgba(10,10,10,.18); }
+  .toast.show, body.lin-all .toast.show { transform: translateY(0); }
+  .toast-ico { flex: none; display: inline-flex; align-self: flex-start; margin-top: 1px; }
+  .toast-ico.ok { color: #7FD39B; }
+  .toast-ico.info { color: #C9C5BC; }
+  .toast-txt { flex: 1; min-width: 0; display: flex; flex-direction: column; gap: 2px; }
+  .toast-txt b { font-size: 15px; font-weight: 600; line-height: 1.35; }
+  .toast-txt small { font-size: 14px; line-height: 1.35; color: rgba(250,249,245,.62); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .toast .toast-act, body.lin-all .toast .toast-act { flex: none; margin: 0; height: 32px; padding: 0 12px; border: 0; border-radius: 8px;
+    background: #FAF9F5; color: #141413; font: inherit; font-size: 14px; font-weight: 600; cursor: pointer; }
+  .toast .toast-act:hover { background: #FFFFFF; }
+  .toast-x { flex: none; width: 32px; height: 32px; border: 0; border-radius: 8px; background: none; color: rgba(250,249,245,.6);
+    display: inline-flex; align-items: center; justify-content: center; cursor: pointer; }
+  .toast-x:hover { background: rgba(250,249,245,.1); color: #FAF9F5; }
+  .toast-bar { position: absolute; left: 0; right: 0; bottom: 0; height: 3px; background: var(--accent); transform-origin: left center; }
+  @media (max-width: 600px) { .toast, body.lin-all .toast { left: 16px; right: 16px; top: 12px; width: auto; max-width: none; } }
   /* ── Projects — the screen you land on ───────────────────────────────────
      Not a view inside a project: a separate screen that owns the window, the
      way IA Builder's dashboard does. Built entirely on the shared tokens from
@@ -7416,6 +7599,47 @@ const PL = {
   'Connected ✓ — written into the file': 'Połączone ✓ — zapisane w pliku',
   'Connection removed': 'Połączenie usunięte',
   'Correlation name': 'Nazwa korelacji',
+  // Transcript workspace (2026-10)
+  'Highlighted ✓': 'Zakreślone ✓',
+  'Highlight removed ✓': 'Zakreślenie usunięte ✓',
+  'Tags updated ✓': 'Tagi zaktualizowane ✓',
+  'Undone ✓': 'Cofnięte ✓',
+  'Show it in the transcript': 'Pokaż w transkrypcji',
+  'Context': 'Kontekst',
+  'Guest': 'Gość',
+  'Selection': 'Zaznaczenie',
+  'Tag…': 'Tag…',
+  'Copy quote': 'Kopiuj cytat',
+  'Quote copied ✓': 'Cytat skopiowany ✓',
+  'Open the signal': 'Otwórz sygnał',
+  'Secondary source': 'Źródło wtórne',
+  'A public statement collected as a secondary source — not an observation from an interview we ran': 'Publiczna wypowiedź zebrana jako źródło wtórne — nie obserwacja z wywiadu, który przeprowadziliśmy',
+  'Go to passage': 'Przejdź do fragmentu',
+  'A Signal is one observation from a real interview, filed by /extract-findings. Each one cites the passage it came from — hover a card to see it in the transcript.': 'Sygnał to jedna obserwacja z prawdziwego wywiadu, zapisana przez /extract-findings. Każdy cytuje fragment, z którego pochodzi — najedź na kartę, żeby zobaczyć go w transkrypcji.',
+  'Abstract': 'Streszczenie',
+  'All highlights': 'Wszystkie zakreślenia',
+  'Copies a prompt that has your AI assistant extract findings from this transcript': 'Kopiuje prompt, który każe twojemu asystentowi AI wyciągnąć ustalenia z tej transkrypcji',
+  'Extract findings': 'Wyciągnij ustalenia',
+  'Extract more findings': 'Wyciągnij więcej ustaleń',
+  'Findings extracted from this session': 'Ustalenia wyciągnięte z tej sesji',
+  'Follow .claude/skills/extract-findings/SKILL.md.': 'Postępuj według .claude/skills/extract-findings/SKILL.md.',
+  'Highlights are curated by people. AI reads them first when it extracts, but never adds, removes or retags one — select text in the transcript to make your own.': 'Zakreślenia robią ludzie. AI czyta je jako pierwsze przy wyciąganiu ustaleń, ale nigdy ich nie dodaje, nie usuwa ani nie zmienia tagów — zaznacz tekst w transkrypcji, żeby dodać własne.',
+  'Mentions': 'Wzmianki',
+  'Moderator': 'Moderator',
+  'No highlights yet — select a passage in the transcript to make the first one.': 'Brak zakreśleń — zaznacz fragment transkrypcji, żeby dodać pierwsze.',
+  'Not yet a finding': 'Jeszcze bez ustalenia',
+  'Nothing extracted from this session yet.': 'Z tej sesji nic jeszcze nie wyciągnięto.',
+  'Observer notes': 'Notatki obserwatora',
+  'Passage': 'Fragment',
+  'Sections of this session no Signal cites yet. Not a verdict that they are empty — a pointer for the next /extract-findings pass.': 'Części sesji, których nie cytuje jeszcze żaden sygnał. To nie werdykt, że są puste — wskazówka na następne /extract-findings.',
+  'Select any passage and pick a tag. It is written into the file as ==text=={tag} — plain Markdown any AI agent reads.': 'Zaznacz fragment i wybierz tag. Zapisuje się w pliku jako ==tekst=={tag} — zwykły Markdown, który odczyta każdy agent AI.',
+  'Select text to highlight': 'Zaznacz tekst, żeby go zakreślić',
+  'The link points to an anchor this file does not have, and the quote was not found word for word': 'Link wskazuje kotwicę, której ten plik nie ma, a cytatu nie znaleziono słowo w słowo',
+  'The scan header from the file’s frontmatter — written at extraction so you can triage a session without opening it. A summary, never a source: cite the passage, not this line.': 'Nagłówek z frontmattera pliku — pisany przy wyciąganiu, żeby ocenić sesję bez otwierania jej. To streszczenie, nie źródło: cytuj fragment, nie tę linię.',
+  'The team’s emphasis in this session': 'Co zespół podkreślił w tej sesji',
+  'Topics': 'Tematy',
+  'passage not found': 'nie znaleziono fragmentu',
+  'Summary': 'Podsumowanie',
   // Research backlog, Dovetail-style views (2026-10)
   'A suggestion, not a verdict': 'Sugestia, nie werdykt',
   'Add a question to this column': 'Dodaj pytanie do tej kolumny',
@@ -10151,11 +10375,22 @@ function findHlSpanInBody(body, selText, occurrence){
   if(!cands.length) return { err:'not-found' };
   return { span: cands[Math.min(occurrence||0, cands.length-1)] };
 }
-async function saveHighlightChange(e, newBody, msg){
+async function saveHighlightChange(e, newBody, msg, what){
   const md = withNewBody(e, newBody);
   if(md===null){ toast(tr('Could not splice the transcript body — reload the folder')); return false; }
+  const prev = e.md;   // Undo puts back exactly this version — not "whatever was saved last"
+  const detail = [what ? '“'+trim(what, 56)+'”' : '', e.title].filter(Boolean).join(' · ');   // which words, in which session
   const ok = await saveEntityText(e, md);
-  if(ok){ if(CURRENT===e.id) openDetail(e.id); toast(msg, {label:'Undo', fn: undoLastSave}); }
+  if(ok){
+    if(CURRENT===e.id) openDetail(e.id);
+    toast(tr(msg), { label: tr('Undo'), fn: async ()=>{
+      const cur = ENTITIES[e.id]; if(!cur) return;
+      if(await saveEntityText(cur, prev, { skipDriftCheck:true, noUndo:true })){
+        if(CURRENT===e.id) openDetail(e.id);
+        toast(tr('Undone ✓'), null, 0, detail);
+      }
+    }}, 8000, detail);
+  }
   return ok;
 }
 async function addHighlight(e, selText, occurrence, tags){
@@ -10163,13 +10398,13 @@ async function addHighlight(e, selText, occurrence, tags){
   if(r.err){ toast(r.err==='too-short' ? 'Select a bit more text (3+ characters)' : 'Couldn’t match that selection in the source — select within one paragraph, outside existing highlights'); return; }
   const frag = e.body.slice(r.span.start, r.span.end);
   const nb = e.body.slice(0, r.span.start) + '==' + frag + '==' + (tags.length ? '{'+tags.join(', ')+'}' : '') + e.body.slice(r.span.end);
-  await saveHighlightChange(e, nb, 'Highlighted ✓ — saved into '+e.file);
+  await saveHighlightChange(e, nb, 'Highlighted ✓', frag);
 }
 async function editHighlight(e, hln, tags){
-  await saveHighlightChange(e, replaceNthHl(e.body, hln, txt=>'=='+txt+'=='+(tags.length?'{'+tags.join(', ')+'}':'')), 'Tags updated ✓');
+  await saveHighlightChange(e, replaceNthHl(e.body, hln, txt=>'=='+txt+'=='+(tags.length?'{'+tags.join(', ')+'}':'')), 'Tags updated ✓', (entityHighlights(e)[hln]||{}).text);
 }
 async function removeHighlight(e, hln){
-  await saveHighlightChange(e, replaceNthHl(e.body, hln, txt=>txt), 'Highlight removed ✓');
+  await saveHighlightChange(e, replaceNthHl(e.body, hln, txt=>txt), 'Highlight removed ✓', (entityHighlights(e)[hln]||{}).text);
 }
 function hlAllTagNames(){
   const s=new Set();
@@ -10607,11 +10842,24 @@ function vizBlock(type, body){
 function mdToHtml(md){
   HL_N = 0;
   const lines = md.split('\n'); let html=''; let inList=false; let para=[];
-  let fenceType=null, fenceBuf=null;
+  let fenceType=null, fenceBuf=null, quote=null;
   const flushP=()=>{ if(para.length){ html+='<p>'+inline(para.join(' '))+'</p>'; para=[]; } };
+  /* consecutive "> " lines are one quote: a blank "> " starts a new paragraph,
+     "> ## Title" is its heading. A one-line quote stays plain, as it always was. */
+  const flushQ=()=>{
+    if(!quote) return;
+    const paras = [[]]; quote.forEach(l=>{ if(!l.trim()) paras.push([]); else paras[paras.length-1].push(l); });
+    const ps = paras.filter(p=> p.length);
+    const one = l => { const h = l.match(/^#{1,6}\s+(.*)/); return h ? `<strong class="bq-h">${inline(h[1])}</strong>` : inline(l); };
+    html += ps.length===1 && ps[0].length===1 && !/^#/.test(ps[0][0])
+      ? '<blockquote>'+inline(ps[0][0])+'</blockquote>'
+      : '<blockquote class="bq-block">'+ps.map(p=> '<p>'+p.map(one).join(' ')+'</p>').join('')+'</blockquote>';
+    quote = null;
+  };
   const closeList=()=>{ if(inList){ html+='</ul>'; inList=false; } };
   for(let raw of lines){
     const line = raw.replace(/\s+$/,''); let m;
+    if(quote && fenceType===null && !/^>/.test(line) && !/^>\s?\*\*([^*]+)\*\*/.test(line)) flushQ();
     if(fenceType!==null){ // inside a fenced block — collect until the closing fence
       if(/^```+\s*$/.test(line.trim())){ html+=vizBlock(fenceType, fenceBuf.join('\n')); fenceType=null; fenceBuf=null; }
       else fenceBuf.push(raw);
@@ -10619,6 +10867,9 @@ function mdToHtml(md){
     }
     if(m=line.trim().match(/^```+\s*([A-Za-z]+)?\s*$/)){ flushP(); closeList(); fenceType=m[1]||''; fenceBuf=[]; continue; }
     if(!line.trim()){ flushP(); closeList(); continue; }
+    /* <!-- anchor: x --> is a place a Signal can point at (Transcripts/…#x):
+       kept as an empty marker with that id; the transcript view draws it */
+    if(m=line.trim().match(/^<!--\s*anchor:\s*([\w-]+)\s*-->$/)){ flushP(); closeList(); html+=`<div class="md-anchor" id="anchor-${esc(m[1])}" data-anchor="${esc(m[1])}"></div>`; continue; }
     if(/^<!--.*-->\s*$/.test(line.trim())) continue;
     if(line.trim()==='---'){ flushP(); closeList(); html+='<hr>'; continue; }
     if(m=line.match(/^#\s+(.*)/)){ flushP(); closeList(); html+='<h1>'+inline(m[1])+'</h1>'; continue; }
@@ -10627,14 +10878,14 @@ function mdToHtml(md){
     /* A template's note to the writer ("Biographical sketch — character colour,
        not research findings. … Do not cite …") is for whoever edits the file;
        the reader gets its bold lead as a quiet caption, not a pull quote. */
-    if(m=line.match(/^>\s?\*\*([^*]+)\*\*/)) if(/not research findings/i.test(m[1])){ flushP(); closeList(); html+='<p class="md-note">'+inline(m[1].trim())+'</p>'; continue; }
-    if(m=line.match(/^>\s?(.*)/)){ flushP(); closeList(); html+='<blockquote>'+inline(m[1])+'</blockquote>'; continue; }
+    if(m=line.match(/^>\s?\*\*([^*]+)\*\*/)) if(/not research findings/i.test(m[1])){ flushP(); closeList(); flushQ(); html+='<p class="md-note">'+inline(m[1].trim())+'</p>'; continue; }
+    if(m=line.match(/^>\s?(.*)/)){ flushP(); closeList(); (quote = quote || []).push(m[1]); continue; }
     // "  - …" under a bullet is its continuation — rendered as a sub-item, not as literal "- " in a paragraph
     if(m=line.match(/^(\s*)[-*]\s+(.*)/)){ flushP(); if(!inList){ html+='<ul>'; inList=true; } html+=(m[1].length>=2?'<li class="li-sub">':'<li>')+inline(m[2])+'</li>'; continue; }
     closeList(); para.push(line.trim());
   }
   if(fenceType!==null) html+=vizBlock(fenceType, fenceBuf.join('\n')); // unclosed fence
-  flushP(); closeList();
+  flushP(); closeList(); flushQ();
   // *[colour]* marks invented-for-flavour detail: say so in words, not in brackets
   return html.replace(/<em>\[colour\]<\/em>/g, `<span class="colour-chip" title="${esc(tr('Character colour for warm-up questions — not a research finding'))}">${tr('not researched')}</span>`);
 }
@@ -10739,6 +10990,8 @@ let CURRENT = null;
 let PTOC_SPY = null;   // persona TOC scroll-spy observer
 function openDetail(id){
   const e = ENTITIES[id]; if(!e) return;
+  // re-rendering the page you are on (a save, an undo, a new highlight) keeps your place in it
+  const same = CURRENT === id && detailView.classList.contains('active');
   CURRENT = id;
   exitEdit();
   document.getElementById('editBtn').style.display = '';
@@ -10763,7 +11016,8 @@ function openDetail(id){
      the three working tables), then the rest of the file with a sticky section menu. */
   const dcard = document.querySelector('.detail-card');
   dcard.classList.toggle('persona-detail', e.type==='Persona');
-  document.querySelector('.detail-wrap').classList.toggle('detail-wide', e.type==='Persona');
+  document.querySelector('.detail-wrap').classList.toggle('detail-wide', e.type==='Persona' || e.type==='Transcript');
+  dcard.classList.toggle('tr-detail', e.type==='Transcript');
   const pHero = document.getElementById('pHero');
   let peFooter = '';
   if(e.type==='Persona'){
@@ -10809,9 +11063,11 @@ function openDetail(id){
     const g = ideaGrounding(e);
     dg.innerHTML = `${barsHtml(g)}${esc(g.word)}${g.detail?` · ${esc(g.detail)}`:''} <span style="text-transform:none;font-weight:400">(${esc(g.why)})</span>`;
     dg.classList.add('on');
-  } else if(e.type==='Transcript' && staleNoteHtml(e)){
-    dg.innerHTML = `<span style="text-transform:none;letter-spacing:0;font-weight:400">${staleNoteHtml(e)}</span>`;
+  } else if(e.type==='Transcript'){
+    dg.innerHTML = trMetaHtml(e) + (staleNoteHtml(e) ? `<span class="tr-stale">${staleNoteHtml(e)}</span>` : '');
     dg.classList.add('on');
+    dg.querySelectorAll('a.xref[data-goto]').forEach(a=> a.onclick = ev=>{ ev.preventDefault(); location.hash = '#'+a.dataset.goto; });
+    const xb = dg.querySelector('[data-tract="extract"]'); if(xb) xb.onclick = ()=> trCopyExtract(e);
   } else { dg.innerHTML=''; dg.classList.remove('on'); }
   const dv = document.getElementById('dVote');
   if(e.type==='IdeaForImprovement'){
@@ -10909,6 +11165,8 @@ function openDetail(id){
       ? 'Excluded — not counted in sample stats or heard-from, skipped by AI analyses. Flip to re-include.'
       : 'In use — counted everywhere. Flip to retire this session from analyses (saved into the file as excluded: true).';
   }
+  if(e.type==='Transcript'){ document.getElementById('pBody').classList.add('tr-split'); transcriptWorkspace(e); }
+  else transcriptWorkspaceOff();
   const fi = document.getElementById('findInput');
   if(fi.value){ fi.value=''; }
   FIND_HITS=[]; FIND_CUR=-1; updateFindCount();
@@ -10936,7 +11194,7 @@ function openDetail(id){
     btn.onclick = (ev)=>{ ev.stopPropagation(); editSection(e, h.childNodes[0] ? h.childNodes[0].textContent.trim() : h.textContent.trim()); };
     h.appendChild(btn);
   });
-  window.scrollTo(0,0);
+  if(!same) window.scrollTo(0,0);
 }
 /* open the editor with exactly one ## section selected — the pencil on every
    heading and the Edit button on the persona tables both land here */
@@ -11713,6 +11971,306 @@ function personaEditorialWire(root, e){
   root.querySelectorAll('a.xref[data-goto]').forEach(a=> a.onclick = ev=>{ ev.preventDefault(); location.hash = '#'+a.dataset.goto; });
   root.querySelectorAll('[data-pe-edit]').forEach(b=> b.onclick = ()=> editSection(e, b.dataset.peEdit));
 }
+/* ---------- a transcript as a working surface (Condens-inspired, 2026-10) ----------
+   The interview on the left, read turn by turn: who spoke, the sections the
+   file bookmarks with <!-- anchor: … -->, the team's ==highlights== in their
+   tag colours, and under each passage the Signals extracted from it. A pane
+   on the right answers "what came out of this session": Signals ·
+   Highlights · Summary. Hovering a Signal lights its passage and the other
+   way round.
+
+   Nothing here writes: highlights are still made by selecting text (14-…),
+   and Signals still come from /extract-findings — this page only shows the
+   trail. AI never adds a highlight (CLAUDE.md: human-curated). */
+const TR_TAG_COLORS = [   // ground, ink — differ in lightness as well as hue
+  ['#FFD9C4', '#8A2E00'], ['#E4DCFF', '#3F2D8F'], ['#CDEFDB', '#1D5C38'], ['#D4E6FB', '#1E4F86'],
+  ['#F7E2B5', '#6E4A00'], ['#F6D5E8', '#7A1F55'], ['#DDE7C7', '#45561A'], ['#E3E1DC', '#3D3A34'],
+];
+let TR_TAB = 'signals', TR_TAG = null, TR_LAST = null;   // tab and tag filter last while you stay on one transcript
+/* the section a passage sits in — the nearest bookmark above it */
+function trSecOf(t){ let n = t && t.previousElementSibling; while(n && !n.classList.contains('md-anchor')) n = n.previousElementSibling; return n ? (n.querySelector('b') ? n.querySelector('b').textContent : trAnchorLabel(n.dataset.anchor)) : ''; }
+const trAnchorLabel = a => a.replace(/[-_]+/g, ' ').replace(/^./, c=> c.toUpperCase());
+const trNorm = s => String(s||'').toLowerCase().replace(/[“”"‘’'…().,!?:;—–-]/g, ' ').replace(/\s+/g, ' ').trim();
+
+/* the tags of this file, in the order the file declares them */
+function trTags(e){
+  const seen = [];
+  [].concat(e.fm.highlight_tags||[]).forEach(t=>{ t = String(t).trim(); if(t && !seen.includes(t)) seen.push(t); });
+  entityHighlights(e).forEach(h=> h.tags.forEach(t=>{ if(!seen.includes(t)) seen.push(t); }));
+  return seen;
+}
+/* the Signals that cite this session, with where they point */
+function trSignals(e){
+  return wsEntities().filter(x=> x.type==='Signal').map(x=>{
+    const l = peLinks(x.body).find(l=> l.e.id===e.id);
+    if(!l) return null;
+    const qs = [...x.body.matchAll(/^>\s?(.+)$/gm)].map(m=> stripLinks(m[1]).replace(/\*+/g,'').trim()).filter(Boolean);
+    const warn = qs.find(q=> /^⚠/.test(q));
+    const said = qs.find(q=> /^["“„«']/.test(q)) || qs.find(q=> !/^⚠/.test(q) && !/^\(/.test(q)) || '';
+    return { x, anchor: l.anchor, quote: said.replace(/^["“”„«']+|["“”«»']+$/g,''),
+      secondary: !!warn && /wtórn|secondary/i.test(warn),   // a public statement, not our interview — say so on the card
+      stance: x.fm.sentiment && x.fm.sentiment.stance };
+  }).filter(Boolean);
+}
+
+function transcriptWorkspace(e){
+  const samePage = TR_LAST === e.id;   // a re-render of the transcript you are on (a save, an undo) keeps tab, filter and pane scroll
+  if(!samePage){ TR_LAST = e.id; TR_TAB = 'signals'; TR_TAG = null; }
+  const doc = document.getElementById('doc'), body = document.getElementById('pBody');
+  const tags = trTags(e), color = t => TR_TAG_COLORS[Math.max(0, tags.indexOf(t)) % TR_TAG_COLORS.length];
+  /* the observer notes belong to the summary, not the dialogue */
+  let notes = '';
+  const oh = [...doc.querySelectorAll('h2')].find(h=> /^(observer notes|notatki obserwatora|uwagi obserwatora)/i.test(h.childNodes[0] ? h.childNodes[0].textContent.trim() : h.textContent.trim()));
+  if(oh){
+    let n = oh.nextElementSibling; const take = [];
+    while(n && n.tagName!=='H2'){ take.push(n); n = n.nextElementSibling; }
+    notes = take.map(x=> x.outerHTML).join('');
+    take.forEach(x=> x.remove()); oh.remove();
+  }
+  /* the file's own ## sections become bookmarks, like <!-- anchor --> ones:
+     a title (and its timestamp, when the heading carries one) on a hairline */
+  const slug = t => t.toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g,'').replace(/ł/g,'l').replace(/[^a-z0-9]+/g,'-').replace(/(^-|-$)/g,'');
+  doc.querySelectorAll(':scope > h2').forEach(h=>{
+    const txt = (h.childNodes[0] ? h.childNodes[0].textContent : h.textContent).trim();
+    const m = txt.match(/^(.*?)\s*\(([\d:–\-\s]+)\)\s*$/);
+    const b = document.createElement('div');
+    b.className = 'md-anchor tr-anchor tr-sec'; b.dataset.anchor = slug(txt);
+    b.innerHTML = `<span>${ICONS_TR.hash}<b>${esc(m ? m[1] : txt)}</b>${m ? `<i>${esc(m[2])}</i>` : ''}</span>`;
+    h.replaceWith(b);
+  });
+  /* who the participant is: the label of the first non-moderator turn ("Emma (P)") */
+  const isMod = s => /^(m|moderator|mod|interviewer|r|researcher)\b/i.test(s.trim());
+  let who = '';
+  const label = p => { const s = p.firstElementChild;
+    return s && s.tagName==='STRONG' && p.firstChild===s && /:\s*$/.test(s.textContent) && p.textContent.trim().length > s.textContent.trim().length
+      ? s.textContent.replace(/:\s*$/,'').trim() : ''; };
+  const said = {}; doc.querySelectorAll(':scope > p').forEach(p=>{ const l = label(p); if(l) said[l] = (said[l]||0) + 1; });
+  const speaker = l => l && l.length <= 40 && (said[l] > 1 || isMod(l) || /\((p|participant)\)$/i.test(l));
+  /* turns: "**Name:** text" → speaker column + text */
+  doc.querySelectorAll(':scope > p').forEach(p=>{
+    const s = p.firstElementChild;
+    if(!speaker(label(p))) return;
+    let name = label(p);
+    const mod = isMod(name);
+    if(!mod){ const m = name.match(/^(.+?)\s*\((p|participant)\)$/i); if(m) who = m[1]; if(/^p$|^participant$/i.test(name) && who) name = who; else if(m) name = m[1]; }
+    if(mod) name = tr('Moderator');
+    s.remove();
+    const turn = document.createElement('div');
+    turn.className = 'tr-turn' + (mod ? ' tr-mod' : '');
+    turn.innerHTML = `<div class="tr-spk">${esc(name)}</div><div class="tr-txt"></div>`;
+    p.replaceWith(turn); turn.querySelector('.tr-txt').appendChild(p);
+  });
+  if(!doc.querySelector('.tr-turn') && doc.querySelector('.md-anchor')){
+    const guest = String(e.fm.participant||'').split(/\s+[—–-]\s+|,/)[0].trim() || tr('Guest');
+    let started = false;
+    [...doc.children].forEach(n=>{
+      if(n.classList.contains('md-anchor')){ started = true; return; }
+      if(!started || !/^(BLOCKQUOTE|P|UL)$/.test(n.tagName)) return;
+      const q = n.tagName==='BLOCKQUOTE';
+      const turn = document.createElement('div');
+      turn.className = 'tr-turn' + (q ? '' : ' tr-mod tr-note');
+      turn.innerHTML = `<div class="tr-spk">${esc(q ? guest : tr('Context'))}</div><div class="tr-txt"></div>`;
+      n.replaceWith(turn); turn.querySelector('.tr-txt').appendChild(n);
+    });
+  }
+  /* what follows a turn — a translation in a quote, a line of narration, a
+     list — belongs to it, until the next turn, rule, heading or bookmark */
+  doc.querySelectorAll('.tr-turn').forEach(t=>{
+    let n = t.nextElementSibling;
+    while(n && !n.classList.contains('tr-turn') && !n.classList.contains('md-anchor') && !/^(HR|H1|H2|H3)$/.test(n.tagName)){
+      const nx = n.nextElementSibling; t.querySelector('.tr-txt').appendChild(n); n = nx;
+    }
+  });
+  /* section bookmarks */
+  doc.querySelectorAll('.md-anchor:not(.tr-sec)').forEach(a=>{
+    a.classList.add('tr-anchor');
+    a.innerHTML = `<span>${ICONS_TR.hash}${esc(trAnchorLabel(a.dataset.anchor))}</span>`;
+  });
+  doc.querySelectorAll(':scope > hr').forEach(h=>{ const n = h.nextElementSibling; if(!n || n.tagName==='H2' || n.classList.contains('md-anchor')) h.remove(); });
+  /* highlights in their tag colour */
+  doc.querySelectorAll('mark.hl').forEach(mk=>{
+    const ts = [...mk.querySelectorAll('.hl-t')].map(t=> t.textContent.trim());
+    const [bg, fg] = color(ts[0]);
+    mk.style.setProperty('--hl-bg', bg); mk.dataset.tags = ts.join(' ');
+    mk.querySelectorAll('.hl-t').forEach(t=>{ const [b2, f2] = color(t.textContent.trim()); t.style.setProperty('--t-bg', b2); t.style.setProperty('--t-fg', f2); });
+  });
+  /* Signals under the passage they came from: the turn right after their
+     anchor; when the anchor is not in the file, the turn that holds the
+     opening words of their quote. One that matches neither stays in the pane. */
+  const sigs = trSignals(e);
+  const turns = [...doc.querySelectorAll('.tr-turn')];
+  sigs.forEach((s,i)=>{
+    let t = null;
+    const a = s.anchor && doc.querySelector(`.md-anchor[data-anchor="${CSS.escape(s.anchor)}"]`);
+    if(a){ let n = a.nextElementSibling; while(n && !n.classList.contains('tr-turn')) n = n.nextElementSibling;
+      // the anchor sits before the moderator's question — the answer is the next participant turn
+      while(n && n.classList.contains('tr-mod')){ const nx = n.nextElementSibling; if(nx && nx.classList.contains('tr-turn')) n = nx; else break; }
+      t = n; }
+    if(!t && s.quote){ const head = trNorm(s.quote).split(' ').slice(0,6).join(' '); t = turns.find(x=> trNorm(x.textContent).includes(head)) || null; }
+    s.turn = t; s.i = i;
+    if(t){
+      t.dataset.sig = (t.dataset.sig ? t.dataset.sig+' ' : '') + i;
+      let row = t.querySelector('.tr-sigs'); if(!row){ row = document.createElement('div'); row.className = 'tr-sigs'; t.querySelector('.tr-txt').appendChild(row); }
+      row.insertAdjacentHTML('beforeend', `<button type="button" class="tr-sig" data-sig="${i}">${ICONS.Signal}<span>${tr('Signal')} · ${esc(s.x.title)}</span></button>`);
+    }
+  });
+  // the pane reads in the order of the conversation; one whose passage was not found goes last
+  const ordered = sigs.slice().sort((a,b)=> (a.turn ? turns.indexOf(a.turn) : 1e9) - (b.turn ? turns.indexOf(b.turn) : 1e9));
+  /* sections no Signal cites yet — a pointer for the next extraction pass */
+  const gaps = [...doc.querySelectorAll('.md-anchor')].filter(a=>{
+    let n = a.nextElementSibling;
+    while(n && !n.classList.contains('md-anchor')){ if(n.dataset && n.dataset.sig) return false; n = n.nextElementSibling; }
+    return true;
+  }).map(a=> a.dataset.anchor);
+
+  /* ---- the transcript's own sheet: find + tags on top, the dialogue under ---- */
+  let main = document.getElementById('trMain');
+  if(!main){ main = document.createElement('div'); main.id = 'trMain'; main.className = 'tr-main'; }
+  if(main.parentNode !== body) body.insertBefore(main, doc.parentNode === body ? doc : null);
+  main.append(document.getElementById('docTools'));
+  /* ---- the pane ---- */
+  const hls = entityHighlights(e);
+  let pane = document.getElementById('trPane');
+  if(!pane){ pane = document.createElement('aside'); pane.id = 'trPane'; pane.className = 'tr-pane'; body.appendChild(pane); }
+  pane.style.display = '';
+  const tabBtn = (k, label, n) => `<button type="button" role="tab" data-trtab="${k}" aria-selected="${TR_TAB===k}">${tr(label)}${n!=null?`<span class="n">${n}</span>`:''}</button>`;
+  const card = s => `<div class="tr-card" data-sig="${s.i}">
+      <div class="tr-card-h">${ICONS.Signal}<a class="xref" data-goto="${s.x.id}">${esc(s.x.title)}</a>${s.stance?`<span class="tr-stance">${esc(tr(s.stance))}</span>`:''}<a class="tr-open" data-goto="${s.x.id}" title="${esc(tr('Open the signal'))}" aria-label="${esc(tr('Open the signal'))}">${ICONS_TR.arrow}</a></div>
+      ${s.secondary ? `<span class="tr-second" title="${esc(tr('A public statement collected as a secondary source — not an observation from an interview we ran'))}">${tr('Secondary source')}</span>` : ''}
+      ${s.quote ? `<p>“${esc(s.quote)}”</p>` : ''}
+      <div class="tr-card-m">${s.turn ? `<button type="button" class="tr-jump" data-sig="${s.i}">${ICONS_TR.hash}${esc(s.anchor && doc.querySelector(`.md-anchor[data-anchor="${CSS.escape(s.anchor)}"]`) ? trAnchorLabel(s.anchor) : trSecOf(s.turn) || tr('Go to passage'))}</button>` : `<span class="tr-miss" title="${esc(tr('The link points to an anchor this file does not have, and the quote was not found word for word'))}">${tr('passage not found')}</span>`}</div>
+    </div>`;
+  const tagChip = t => { const [b,f] = color(t); return `<span class="tr-tag" style="--t-bg:${b};--t-fg:${f}">${esc(t)}</span>`; };
+  const extract = isExcluded(e) ? '' : `<button type="button" class="tr-more" data-tract="extract">${ICONS_TR.spark}${tr('Extract more findings')}</button>`;
+  const panes = {
+    signals: `<div class="tr-lead">${tr('Findings extracted from this session')}${dxTip(tr('Signals'), tr('A Signal is one observation from a real interview, filed by /extract-findings. Each one cites the passage it came from — hover a card to see it in the transcript.'), 'right')}</div>
+      ${sigs.length ? ordered.map(card).join('') : `<div class="tr-empty">${tr('Nothing extracted from this session yet.')}</div>`}${extract}`,
+    highlights: `<div class="tr-lead">${tr('The team’s emphasis in this session')}${dxTip(tr('Highlights'), tr('Highlights are curated by people. AI reads them first when it extracts, but never adds, removes or retags one — select text in the transcript to make your own.'), 'right')}</div>
+      ${hls.length ? hls.map((h,n)=> `<div class="tr-hl${TR_TAG && !h.tags.includes(TR_TAG) ? ' dim' : ''}" data-hln="${n}" style="--t-bg:${color(h.tags[0])[0]}">
+          <button type="button" class="tr-hl-go" data-hljump="${n}" title="${esc(tr('Show it in the transcript'))}"><span>“${esc(h.text)}”</span>${h.tags.length ? `<span class="tr-hl-tags">${h.tags.map(tagChip).join('')}</span>` : ''}</button>
+          <button type="button" class="tr-hl-x" data-hlrm="${n}" title="${esc(tr('Remove highlight'))}" aria-label="${esc(tr('Remove highlight'))}">${ICONS_TR.x}</button>
+        </div>`).join('')
+        : `<div class="tr-empty">${tr('No highlights yet — select a passage in the transcript to make the first one.')}</div>`}`,
+    summary: `${e.fm.abstract ? `<section><h4>${tr('Abstract')}${dxTip(tr('Abstract'), tr('The scan header from the file’s frontmatter — written at extraction so you can triage a session without opening it. A summary, never a source: cite the passage, not this line.'), 'right')}</h4><p>${esc(String(e.fm.abstract))}</p></section>` : ''}
+      ${[].concat(e.fm.topics||[]).length ? `<section><h4>${tr('Topics')}</h4><div class="tr-chips">${[].concat(e.fm.topics).map(t=> `<span class="tr-chip">${esc(t)}</span>`).join('')}</div></section>` : ''}
+      ${gaps.length ? `<section><h4>${tr('Not yet a finding')}${dxTip(tr('Not yet a finding'), tr('Sections of this session no Signal cites yet. Not a verdict that they are empty — a pointer for the next /extract-findings pass.'), 'right')}</h4>${gaps.map(g=>{ const a = doc.querySelector(`.md-anchor[data-anchor="${CSS.escape(g)}"]`); const l = a && a.querySelector('b') ? a.querySelector('b').textContent : trAnchorLabel(g);
+        return `<button type="button" class="tr-gap" data-anchor="${esc(g)}">${ICONS_TR.hash}${esc(l)}</button>`; }).join('')}</section>` : ''}
+      ${notes ? `<section><h4>${tr('Observer notes')}</h4><div class="tr-notes">${notes}</div></section>` : ''}
+      ${[].concat(e.fm.mentions_competitors||[]).length ? `<section><h4>${tr('Mentions')}</h4><div class="tr-chips">${[].concat(e.fm.mentions_competitors).map(c=>{ const id = byBasename[String(c).toLowerCase()]; return id ? `<a class="tr-chip xref" data-goto="${id}">${esc(c)} ↗</a>` : `<span class="tr-chip">${esc(c)}</span>`; }).join('')}</div></section>` : ''}`,
+  };
+  const keepPane = pane.querySelector('.tr-pane-body') && samePage ? pane.querySelector('.tr-pane-body').scrollTop : 0;
+  const draw = ()=>{
+    pane.innerHTML = `<div class="tr-tabs" role="tablist">${tabBtn('signals','Signals',sigs.length)}${tabBtn('highlights','Highlights',hls.length)}${tabBtn('summary','Summary')}</div>
+      <div class="tr-pane-body">${panes[TR_TAB]}</div>`;
+    pane.querySelectorAll('a[data-goto]').forEach(a=> a.onclick = ev=>{ ev.preventDefault(); location.hash = '#'+a.dataset.goto; });
+    wirePeek(pane);
+  };
+  // the highlights pane re-reads the filter, so it is rebuilt with it
+  const rebuildHl = ()=>{ panes.highlights = panes.highlights.replace(/class="tr-hl( dim)?" data-hln="(\d+)"/g, (m, d, n)=> `class="tr-hl${TR_TAG && !hls[+n].tags.includes(TR_TAG) ? ' dim' : ''}" data-hln="${n}"`); };
+  draw();
+  pane.querySelector('.tr-pane-body').scrollTop = keepPane;
+
+  /* ---- the toolbar row: tag filter + how to highlight ---- */
+  let bar = document.getElementById('trTagBar');
+  if(!bar){ bar = document.createElement('div'); bar.id = 'trTagBar'; bar.className = 'tr-tagbar'; }
+  document.getElementById('docTools').after(bar); main.append(doc);
+  bar.style.display = '';
+  const drawBar = ()=>{
+    bar.innerHTML = (tags.length ? `<button type="button" class="tr-tagbtn${TR_TAG?'':' on'}" data-trtag="">${tr('All highlights')}</button>`
+      + tags.map(t=>{ const [b] = color(t); return `<button type="button" class="tr-tagbtn${TR_TAG===t?' on':''}${TR_TAG&&TR_TAG!==t?' off':''}" data-trtag="${esc(t)}"><i style="background:${b}"></i>${esc(t)}</button>`; }).join('') : '')
+      + `<span class="tr-hint">${tr('Select text to highlight')}${dxTip(tr('Highlights'), tr('Select any passage and pick a tag. It is written into the file as ==text=={tag} — plain Markdown any AI agent reads.'), 'right')}</span>`;
+  };
+  drawBar();
+  const applyTag = ()=> doc.querySelectorAll('mark.hl').forEach(mk=> mk.classList.toggle('dim', !!TR_TAG && !mk.dataset.tags.split(' ').includes(TR_TAG)));
+  applyTag();
+
+  /* ---- light a Signal and its passage, from either side ---- */
+  const light = i=>{
+    doc.querySelectorAll('.tr-turn.lit').forEach(t=> t.classList.remove('lit'));
+    doc.querySelectorAll('.tr-sig.lit').forEach(t=> t.classList.remove('lit'));
+    pane.querySelectorAll('.tr-card.lit').forEach(t=> t.classList.remove('lit'));
+    if(i==null) return;
+    const s = sigs[i]; if(!s) return;
+    if(s.turn) s.turn.classList.add('lit');
+    doc.querySelectorAll(`.tr-sig[data-sig="${i}"]`).forEach(b=> b.classList.add('lit'));
+    pane.querySelectorAll(`.tr-card[data-sig="${i}"]`).forEach(c=> c.classList.add('lit'));
+  };
+  let kept = (ordered.find(s=> s.turn) || {}).i;
+  if(kept == null) kept = null;
+  const over = ev=>{ const el = ev.target.closest('[data-sig]'); if(el) light(+el.dataset.sig.split(' ')[0]); };
+  const out = ev=>{ if(ev.target.closest('[data-sig]') && !(ev.relatedTarget && ev.relatedTarget.closest && ev.relatedTarget.closest('[data-sig]'))) light(kept); };
+  doc.onmouseover = ev=>{ if(ev.target.closest('.tr-sig')) over(ev); };
+  doc.onmouseout = out;
+  pane.onmouseover = ev=>{ if(ev.target.closest('.tr-card')) over(ev); };
+  pane.onmouseout = out;
+  const goTurn = t=>{ if(t) t.scrollIntoView({ behavior:'smooth', block:'center' }); };
+  doc.onclick = ev=>{
+    const b = ev.target.closest('.tr-sig'); if(!b) return;
+    kept = +b.dataset.sig; TR_TAB = 'signals'; draw(); light(kept);
+    const c = pane.querySelector(`.tr-card[data-sig="${kept}"]`); if(c) c.scrollIntoView({ block:'nearest' });
+  };
+  pane.onclick = ev=>{
+    const tab = ev.target.closest('[data-trtab]');
+    if(tab){ TR_TAB = tab.dataset.trtab; draw(); light(kept); return; }
+    const j = ev.target.closest('.tr-jump');
+    if(j){ kept = +j.dataset.sig; light(kept); goTurn(sigs[kept].turn); return; }
+    const rm = ev.target.closest('[data-hlrm]');
+    if(rm){ (async ()=>{   // one click, Undo in the toast — the text stays, only the marking goes
+      const w = await ensureWritable(e); if(!w) return;
+      if(w!==e){ openDetail(w.id); return; }
+      await removeHighlight(e, +rm.dataset.hlrm);
+    })(); return; }
+    const h = ev.target.closest('[data-hljump]');
+    if(h){ const mk = doc.querySelector(`mark.hl[data-hln="${h.dataset.hljump}"]`); if(mk){ mk.scrollIntoView({ behavior:'smooth', block:'center' }); mk.classList.remove('flash'); void mk.offsetWidth; mk.classList.add('flash'); } return; }
+    const g = ev.target.closest('.tr-gap');
+    if(g){ goTurn(doc.querySelector(`.md-anchor[data-anchor="${CSS.escape(g.dataset.anchor)}"]`)); return; }
+    if(ev.target.closest('[data-tract="extract"]')) trCopyExtract(e);
+  };
+  light(kept);
+  bar.onclick = ev=>{
+    const b = ev.target.closest('[data-trtag]'); if(!b) return;
+    TR_TAG = b.dataset.trtag || null; if(TR_TAG) TR_TAB = 'highlights';
+    drawBar(); applyTag(); rebuildHl(); draw(); light(kept);
+  };
+}
+/* the line under the title: who (their persona, when the graph says so),
+   when, how — and the one action that turns this session into findings */
+function trMetaHtml(e){
+  const sigIds = new Set(trSignals(e).map(s=> s.x.id));
+  const score = p => peLinks(p.body).filter(l=> l.e.id===e.id || sigIds.has(l.e.id)).length;
+  const per = wsEntities().filter(p=> p.type==='Persona').map(p=> [p, score(p)]).filter(([,n])=> n).sort((a,b)=> b[1]-a[1])[0];
+  const bits = [];
+  if(per) bits.push(`<a class="xref tr-who" data-goto="${per[0].id}">${dxPortrait(per[0], 'tr-face')}${esc(peFirst(per[0]))}</a>`);
+  if(e.fm.date) bits.push(`<span>${esc(String(e.fm.date))}</span>`);
+  if(e.fm.method) bits.push(`<span>${esc(String(e.fm.method))}</span>`);
+  if(isExcluded(e)) return `<span class="tr-meta">${bits.join('<i aria-hidden="true">·</i>')}</span>`;   // out of AI analyses: nothing to extract
+  return `<span class="tr-meta">${bits.join('<i aria-hidden="true">·</i>')}</span>
+    <button type="button" class="btn btn-primary btn-sm tr-extract" data-tract="extract" title="${esc(tr('Copies a prompt that has your AI assistant extract findings from this transcript'))}">${ICONS_TR.spark}${tr('Extract findings')}</button>`;
+}
+/* the hand-off to the AI: extract findings from this file, in the dialect of
+   the agent the project uses */
+function trCopyExtract(e){
+  const agent = pjAgent();
+  const cmd = agent==='codex' ? '$extract-findings' : (agent==='gemini' || agent==='other') ? tr('Follow .claude/skills/extract-findings/SKILL.md.') : '/extract-findings';
+  const txt = `${cmd} ${e.file}` + promptLang();
+  const done = ()=> toast(tr('Prompt copied — paste it into your AI assistant ✓'));
+  if(navigator.clipboard && navigator.clipboard.writeText) navigator.clipboard.writeText(txt).then(done, ()=> fallbackCopy(txt, done)); else fallbackCopy(txt, done);
+}
+/* leaving a transcript: the pane and the tag row belong to it alone */
+function transcriptWorkspaceOff(){
+  const p = document.getElementById('trPane'); if(p) p.style.display = 'none';
+  const b = document.getElementById('trTagBar'); if(b) b.style.display = 'none';
+  const pb = document.getElementById('pBody'); if(pb) pb.classList.remove('tr-split');
+  // the find bar and the document go back where every other page expects them
+  const main = document.getElementById('trMain');
+  if(main && pb){ pb.before(document.getElementById('docTools')); pb.insertBefore(document.getElementById('doc'), main); main.remove(); }
+}
+const ICONS_TR = {
+  x: '<svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M18 6 6 18M6 6l12 12"/></svg>',
+  arrow: '<svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M7 17 17 7M8 7h9v9"/></svg>',
+  hash: '<svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 9h14M5 15h14M11 4 7 20M17 4l-4 16"/></svg>',
+  spark: '<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 3v4M12 17v4M3 12h4M17 12h4M6 6l2.5 2.5M15.5 15.5 18 18M6 18l2.5-2.5M15.5 8.5 18 6"/></svg>',
+};
 /* ---------- Help & guide ---------- */
 const HELP = [
  { id:"getting-started", label:"Getting started", items:[
@@ -15999,18 +16557,59 @@ window.addEventListener('hashchange', route);
 
 /* ---------- toast ---------- */
 let toastT;
-function toast(msg, action){ // action: {label, fn} — e.g. an Undo
+/* toasts sit top right, under the header, and say three things at most:
+   what happened (a ✓ at the end of the message becomes the icon), one line
+   of detail when there is one (the fragment, the file), and the action on
+   offer. Every toast can be closed. One that offers an action (Undo) carries
+   a bar that drains right to left for as long as the action stays on offer —
+   hovering holds it, leaving lets it run on. */
+let TOAST_ANIM = null;
+const TOAST_ICO = {
+  ok: '<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="9"/><path d="m8.5 12.5 2.5 2.5 4.5-5"/></svg>',
+  info: '<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="9"/><path d="M12 8h.01M11 12h1v4h1"/></svg>',
+  x: '<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M18 6 6 18M6 6l12 12"/></svg>',
+};
+function toastClose(){
   const t = document.getElementById('toast');
-  t.innerHTML = ''; t.appendChild(document.createTextNode(msg));
+  clearTimeout(toastT);
+  if(TOAST_ANIM){ TOAST_ANIM.onfinish = null; TOAST_ANIM.cancel(); TOAST_ANIM = null; }
+  t.classList.remove('show');
+}
+function toast(msg, action, ms, detail){ // action: {label, fn} — e.g. an Undo; ms: how long it stays; detail: one quiet line under the message
+  const t = document.getElementById('toast');
+  toastClose();
+  const ok = /\s*✓\s*$/.test(msg) || /✓/.test(msg);
+  const title = String(msg).replace(/\s*✓\s*/,' ').replace(/\s+—\s*$/,'').trim();
+  t.innerHTML = `<span class="toast-ico ${ok ? 'ok' : 'info'}">${TOAST_ICO[ok ? 'ok' : 'info']}</span>
+    <span class="toast-txt"><b></b>${detail ? '<small></small>' : ''}</span>`;
+  t.querySelector('b').textContent = title;
+  if(detail) t.querySelector('small').textContent = detail;
+  const d = ms || (action ? 6500 : 3600);
   if(action){
     const b = document.createElement('button');
-    b.className = 'toast-act'; b.textContent = action.label;
-    b.onclick = ()=>{ t.classList.remove('show'); action.fn(); };
+    b.type = 'button'; b.className = 'toast-act'; b.textContent = action.label;
+    b.onclick = ()=>{ toastClose(); action.fn(); };
     t.appendChild(b);
   }
-  t.style.pointerEvents = action ? 'auto' : 'none';
-  t.classList.add('show'); clearTimeout(toastT);
-  toastT = setTimeout(()=> t.classList.remove('show'), action ? 6500 : 3200);
+  const x = document.createElement('button');
+  x.type = 'button'; x.className = 'toast-x'; x.innerHTML = TOAST_ICO.x;
+  x.setAttribute('aria-label', tr('Close')); x.title = tr('Close');
+  x.onclick = toastClose;
+  t.appendChild(x);
+  if(action){
+    const bar = document.createElement('i'); bar.className = 'toast-bar'; bar.setAttribute('aria-hidden','true');
+    t.appendChild(bar);
+    TOAST_ANIM = bar.animate([{ transform:'scaleX(1)' }, { transform:'scaleX(0)' }], { duration: d, easing: 'linear', fill: 'forwards' });
+    TOAST_ANIM.onfinish = ()=>{ t.classList.remove('show'); TOAST_ANIM = null; };
+    t.onmouseenter = ()=>{ if(TOAST_ANIM) TOAST_ANIM.pause(); };
+    t.onmouseleave = ()=>{ if(TOAST_ANIM) TOAST_ANIM.play(); };
+  } else {
+    t.onmouseenter = ()=> clearTimeout(toastT);
+    t.onmouseleave = ()=>{ clearTimeout(toastT); toastT = setTimeout(()=> t.classList.remove('show'), 1500); };
+    toastT = setTimeout(()=> t.classList.remove('show'), d);
+  }
+  t.style.pointerEvents = 'auto';
+  t.classList.add('show');
 }
 
 /* ---------- load from disk ---------- */
@@ -16311,8 +16910,14 @@ let hlBtnEl=null, hlPopEl=null;
 function hideHlUi(){ if(hlBtnEl) hlBtnEl.style.display='none'; if(hlPopEl) hlPopEl.style.display='none'; }
 function ensureHlEls(){
   if(hlBtnEl) return;
-  hlBtnEl=document.createElement('button');
-  hlBtnEl.id='hlBtn'; hlBtnEl.className='hl-float'; hlBtnEl.type='button'; hlBtnEl.textContent='🖍 '+tr('Highlight');
+  /* a selection gets a small toolbar: highlight it now, highlight with tags,
+     or copy it as a citable quote */
+  const ic = d => `<svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">${d}</svg>`;
+  hlBtnEl=document.createElement('div');
+  hlBtnEl.id='hlBtn'; hlBtnEl.className='hl-float'; hlBtnEl.setAttribute('role','toolbar'); hlBtnEl.setAttribute('aria-label', tr('Selection'));
+  hlBtnEl.innerHTML = `<button type="button" data-hlact="mark">${ic('<path d="m9 11-6 6v3h9l3-3"/><path d="m22 12-4.6 4.6a2 2 0 0 1-2.8 0l-5.2-5.2a2 2 0 0 1 0-2.8L14 4"/>')}${tr('Highlight')}</button>`
+    + `<button type="button" data-hlact="tag">${ic('<path d="M5 9h14M5 15h14M11 4 7 20M17 4l-4 16"/>')}${tr('Tag…')}</button>`
+    + `<button type="button" data-hlact="copy">${ic('<rect x="8" y="8" width="12" height="12" rx="2"/><path d="M16 8V6a2 2 0 0 0-2-2H6a2 2 0 0 0-2 2v8a2 2 0 0 0 2 2h2"/>')}${tr('Copy quote')}</button>`;
   hlBtnEl.style.display='none';
   hlBtnEl.addEventListener('mousedown', ev=>{ ev.preventDefault(); ev.stopPropagation(); });
   document.body.appendChild(hlBtnEl);
@@ -16378,15 +16983,24 @@ document.getElementById('doc').addEventListener('mouseup', ()=>{
     const occ = (pre.toString().match(pat)||[]).length;
     ensureHlEls();
     const r = range.getBoundingClientRect();
-    hlBtnEl.style.display='block';
-    hlBtnEl.style.left = Math.max(8, Math.min(r.left + r.width/2 - 50 + window.scrollX, window.innerWidth-130))+'px';
-    hlBtnEl.style.top  = (r.bottom + window.scrollY + 6)+'px';
-    hlBtnEl.onclick = async ()=>{
+    hlBtnEl.style.display='flex';
+    const bw = hlBtnEl.offsetWidth || 300;
+    hlBtnEl.style.left = Math.max(8, Math.min(r.left + r.width/2 - bw/2 + window.scrollX, window.innerWidth - bw - 8))+'px';
+    hlBtnEl.style.top  = (r.bottom + window.scrollY + 8)+'px';
+    hlBtnEl.onclick = async ev=>{
+      const act = (ev.target.closest('[data-hlact]')||{}).dataset?.hlact; if(!act) return;
       hlBtnEl.style.display='none';
+      if(act==='copy'){   // the words as said, and where they were said — ready to paste into a finding
+        const q = `"${norm}" — ${e.title}`;
+        const done = ()=> toast(tr('Quote copied ✓'));
+        if(navigator.clipboard && navigator.clipboard.writeText) navigator.clipboard.writeText(q).then(done, ()=> fallbackCopy(q, done)); else fallbackCopy(q, done);
+        return;
+      }
       const w = await ensureWritable(e);
       if(!w) return;
       if(w!==e){ openDetail(w.id); toast(tr('Folder connected ✓ — select the fragment again to highlight it')); return; }
-      openHlPop(r.left + window.scrollX, r.bottom + window.scrollY, { mode:'new', e, selText:text, occ });
+      if(act==='mark') await addHighlight(e, text, occ, []);   // tags can come later: click the highlight
+      else openHlPop(r.left + window.scrollX, r.bottom + window.scrollY, { mode:'new', e, selText:text, occ });
     };
   }, 0);
 });

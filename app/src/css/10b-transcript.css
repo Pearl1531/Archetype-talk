@@ -1,0 +1,181 @@
+  /* ============ Transcript as a working surface (.tr-*) ============
+     09d-transcript-workspace.js. The interview turn by turn on the left, a
+     pane with what came out of it on the right. Highlights take their tag's
+     colour (--hl-bg, set per mark); a lit Signal tints its passage. */
+  .md-anchor { display: none; }   /* bookmarks only show inside a transcript */
+
+  .detail-card.tr-detail { padding-bottom: var(--s-5); }
+  .tr-detail .ground-row.on { display: flex; align-items: center; gap: 12px; flex-wrap: wrap; text-transform: none; letter-spacing: 0; }
+  .tr-meta { display: inline-flex; align-items: center; gap: 10px; flex-wrap: wrap; font-size: 14px; font-weight: 400; color: var(--text-soft); }
+  .tr-meta i { font-style: normal; color: var(--text-mute, var(--text-dim)); }
+  a.tr-who { display: inline-flex; align-items: center; gap: 8px; font-weight: 600; color: var(--text); text-decoration: none; }
+  a.tr-who:hover { color: var(--accent-text); }
+  .tr-face { width: 26px; height: 26px; flex: none; border-radius: 50%; overflow: hidden; display: inline-flex; justify-content: center; font-size: 14px; }
+  .tr-face img { width: 100%; height: 100%; object-fit: cover; }
+  .tr-face.dx-noimg { border-width: 1px; }
+  .tr-extract { margin-left: auto; display: inline-flex; align-items: center; gap: 7px; }
+  .tr-extract svg, .tr-more svg { width: 16px; height: 16px; }
+  .tr-stale { flex-basis: 100%; font-size: 14px; color: var(--text-dim); }
+
+  /* the tag row under the find bar */
+  .tr-tagbar { display: flex; align-items: center; gap: 6px; flex-wrap: wrap; margin: 4px 0 var(--s-3); }
+  .tr-tagbtn { height: 30px; padding: 0 11px; border-radius: 999px; border: 1px solid var(--line); background: var(--bg-elev);
+    display: inline-flex; align-items: center; gap: 7px; font: inherit; font-size: 14px; color: var(--text); cursor: pointer; }
+  .tr-tagbtn i { width: 10px; height: 10px; border-radius: 3px; box-shadow: inset 0 0 0 1px rgba(10,10,10,.15); }
+  .tr-tagbtn.on { border-color: var(--text); background: var(--bg-elev-2); font-weight: 600; }
+  .tr-tagbtn.off { opacity: .55; }
+  .tr-hint { margin-left: auto; display: inline-flex; align-items: center; gap: 4px; font-size: 14px; color: var(--text-dim); }
+
+  /* split: transcript | pane */
+  .tr-detail .p-body.tr-split { display: grid; grid-template-columns: minmax(0, 1fr) 380px; column-gap: 32px; align-items: start; }
+
+  /* turns */
+  .tr-detail .doc .tr-turn { display: grid; grid-template-columns: 104px minmax(0, 1fr); column-gap: 16px; padding: 10px 12px; margin: 0 -12px;
+    border-radius: 10px; transition: background .15s; }
+  .tr-detail .doc .tr-turn.lit { background: color-mix(in srgb, var(--accent) 8%, var(--bg-elev)); }
+  .tr-spk { padding-top: 3px; font-size: 14px; font-weight: 700; color: var(--text); overflow: hidden; text-overflow: ellipsis; }
+  .tr-mod .tr-spk { font-weight: 600; color: var(--text-dim); }
+  .tr-txt { display: flex; flex-direction: column; gap: 8px; min-width: 0; }
+  .tr-detail .doc .tr-txt p { margin: 0; font-size: 16px; line-height: 1.7; }
+  .tr-mod .tr-txt p { color: var(--text-soft); }
+  .tr-detail .doc .tr-anchor { display: flex; align-items: center; gap: 10px; margin: 18px 0 4px; }
+  .tr-anchor::after { content: ""; flex: 1; height: 1px; background: var(--line); }
+  .tr-anchor span { display: inline-flex; align-items: center; gap: 5px; font-family: var(--font-mono); font-size: 14px; letter-spacing: .03em; color: var(--text-dim); }
+
+  /* highlights in their tag colour; filtered-out ones step back */
+  .tr-detail mark.hl { background: var(--hl-bg, #FFF4D6); box-shadow: none; padding: 2px 3px; border-radius: 4px;
+    -webkit-box-decoration-break: clone; box-decoration-break: clone; transition: opacity .15s, box-shadow .15s; }
+  .tr-detail mark.hl:hover { background: var(--hl-bg, #FFF4D6); box-shadow: 0 0 0 1.5px rgba(10,10,10,.45); }
+  .tr-detail mark.hl.dim { opacity: .3; }
+  .tr-detail mark.hl.flash { animation: trFlash 1.2s ease-out; }
+  @keyframes trFlash { 0%, 40% { box-shadow: 0 0 0 3px var(--accent); } 100% { box-shadow: none; } }
+  .tr-detail .hl-t, .tr-tag { display: inline-flex; align-items: center; height: 22px; margin-left: 5px; padding: 0 8px; border-radius: 6px;
+    background: var(--t-bg, var(--bg-elev-2)); color: var(--t-fg, var(--text)); font-size: 14px; font-weight: 600; letter-spacing: 0; text-transform: none; vertical-align: 1px; }
+  .tr-tag { margin-left: 0; }
+
+  /* the Signal chips under a passage */
+  .tr-sigs { display: flex; gap: 6px; flex-wrap: wrap; }
+  .tr-sig { height: 30px; padding: 0 11px 0 9px; border-radius: 999px; border: 1px solid var(--line); background: var(--bg);
+    display: inline-flex; align-items: center; gap: 6px; font: inherit; font-size: 14px; font-weight: 500; color: var(--text); cursor: pointer; }
+  .tr-sig svg { width: 14px; height: 14px; }
+  .tr-sig:hover, .tr-sig.lit { border-color: var(--accent); background: var(--bg-elev); }
+
+  /* the pane */
+  .tr-pane { position: sticky; top: 16px; max-height: calc(100vh - 32px); display: flex; flex-direction: column; overflow: hidden;
+    border-radius: 16px; border: 1px solid var(--line); background: var(--bg-elev); }
+  .tr-tabs { flex-shrink: 0; display: flex; gap: 18px; padding: 0 18px; border-bottom: 1px solid var(--line); }
+  .tr-tabs button { height: 46px; padding: 0 2px; border: 0; border-bottom: 2px solid transparent; background: none; display: inline-flex; align-items: center; gap: 7px;
+    font: inherit; font-size: 14px; font-weight: 600; color: var(--text-dim); cursor: pointer; }
+  .tr-tabs button[aria-selected=true] { color: var(--text); border-bottom-color: var(--text); }
+  .tr-tabs .n { font-family: var(--font-mono); font-weight: 500; color: var(--text-dim); }
+  .tr-pane-body { flex: 1; min-height: 0; overflow: auto; padding: 18px; display: flex; flex-direction: column; gap: 12px; background: var(--bg); }
+  .tr-lead { display: flex; align-items: center; gap: 4px; font-size: 14px; color: var(--text-soft); }
+  .tr-card { padding: 14px 16px; border-radius: 12px; border: 1px solid var(--line); background: var(--bg-elev); display: flex; flex-direction: column; gap: 8px;
+    transition: border-color .15s, box-shadow .15s; }
+  .tr-card.lit { border-color: var(--accent); box-shadow: 0 0 0 1px var(--accent); }
+  .tr-card-h { display: flex; align-items: center; gap: 8px; }
+  .tr-card-h svg { width: 15px; height: 15px; flex: none; }
+  .tr-card-h a.xref { font-size: 15px; font-weight: 600; color: var(--text); text-transform: none; letter-spacing: 0; }
+  .tr-card-h a.xref svg { display: none; }
+  .tr-stance { height: 22px; padding: 0 8px; border-radius: 6px; background: var(--bg-elev-2); border: 1px solid var(--line); font-size: 14px; color: var(--text-soft);
+    display: inline-flex; align-items: center; margin-left: auto; }
+  .tr-card p { margin: 0; font-size: 14px; line-height: 1.55; color: var(--text-soft); }
+  .tr-card-m { display: flex; }
+  .tr-jump, .tr-gap { border: 0; background: none; padding: 0; display: inline-flex; align-items: center; gap: 5px; font-family: var(--font-mono); font-size: 14px;
+    color: var(--text-dim); cursor: pointer; }
+  .tr-jump:hover, .tr-gap:hover { color: var(--text); }
+  .tr-miss { font-size: 14px; color: var(--warn-text); }
+  .tr-more { height: 44px; border-radius: 10px; border: 1px dashed var(--edge, var(--line)); background: none; display: flex; align-items: center; justify-content: center; gap: 8px;
+    font: inherit; font-size: 14px; color: var(--text-soft); cursor: pointer; }
+  .tr-more:hover { color: var(--text); border-color: var(--text); }
+  .tr-hl { position: relative; border-radius: 12px; border: 1px solid var(--line); background: var(--bg-elev); box-shadow: inset 4px 0 0 var(--t-bg); }
+  .tr-hl-go { width: 100%; padding: 12px 40px 12px 16px; border: 0; background: none; display: flex; flex-direction: column; gap: 8px; text-align: left;
+    font: inherit; font-size: 14px; line-height: 1.55; color: var(--text); cursor: pointer; border-radius: 12px; }
+  .tr-hl-x { position: absolute; top: 8px; right: 8px; width: 28px; height: 28px; border: 0; border-radius: 8px; background: none; color: var(--text-dim);
+    display: inline-flex; align-items: center; justify-content: center; cursor: pointer; opacity: .55; transition: opacity .12s, background .12s, color .12s; }
+  .tr-hl:hover .tr-hl-x, .tr-hl-x:focus-visible { opacity: 1; }
+  .tr-hl-x:hover { background: color-mix(in srgb, var(--danger-text) 10%, transparent); color: var(--danger-text); }
+  .tr-hl.dim { opacity: .4; }
+  .tr-hl-tags { display: flex; gap: 6px; flex-wrap: wrap; }
+  .tr-empty { font-size: 14px; color: var(--text-dim); padding: 6px 0; }
+  .tr-pane section { display: flex; flex-direction: column; gap: 8px; }
+  .tr-pane h4 { margin: 0; display: flex; align-items: center; gap: 4px; font-size: 15px; font-weight: 700; color: var(--text); }
+  .tr-pane section > p, .tr-notes { font-size: 14px; line-height: 1.6; color: var(--text-soft); }
+  .tr-notes ul { margin: 0; padding-left: 18px; display: flex; flex-direction: column; gap: 4px; }
+  .tr-chips { display: flex; gap: 6px; flex-wrap: wrap; }
+  .tr-chip { height: 28px; padding: 0 10px; border-radius: 999px; background: var(--bg-elev); border: 1px solid var(--line); font-size: 14px; color: var(--text-soft);
+    display: inline-flex; align-items: center; text-decoration: none; text-transform: none; letter-spacing: 0; }
+  a.tr-chip svg { display: none; }
+
+  @media (max-width: 1100px) {
+    .tr-detail .p-body.tr-split { grid-template-columns: minmax(0, 1fr) 320px; column-gap: 24px; }
+  }
+  @media (max-width: 860px) {
+    .tr-detail .p-body.tr-split { grid-template-columns: 1fr; row-gap: 24px; }
+    .tr-pane { position: static; max-height: none; }
+    .tr-detail .doc .tr-turn { grid-template-columns: 1fr; row-gap: 4px; }
+    .tr-hint { margin-left: 0; flex-basis: 100%; }
+    .tr-extract { margin-left: 0; }
+  }
+  @media print { .tr-pane, .tr-tagbar, .tr-sigs { display: none !important; } .tr-detail .p-body.tr-split { display: block; } }
+
+  /* a multi-line quote is one block (mdToHtml): paragraphs inside, an optional heading */
+  .doc blockquote.bq-block { display: flex; flex-direction: column; gap: 8px; }
+  .doc blockquote.bq-block p { margin: 0; }
+  .doc blockquote .bq-h { display: block; font-size: 16px; font-weight: 700; color: var(--text); }
+  /* inside a turn, the translation / narration under the quote */
+  .tr-txt > blockquote { margin: 0; padding: 2px 0 2px 12px; border-left: 2px solid var(--line); font-size: 15px; color: var(--text-soft); font-style: normal; }
+  .tr-txt > blockquote em { font-style: normal; }
+  .tr-txt > ul { margin: 0; padding-left: 18px; }
+
+  /* the page ground shows: the header sits on it, the transcript is its own
+     white sheet (find + tags as a sticky toolbar on top), the pane beside it */
+  body.lin-all .detail-card.tr-detail, .detail-card.tr-detail { background: none; border: none; box-shadow: none; padding: 8px 0 0; }
+  .tr-detail .detail-head { padding: 0 4px; }
+  .tr-main { min-width: 0; border-radius: 16px; background: var(--bg-elev); border: 1px solid var(--line); }
+  .tr-main > .doc-tools { position: sticky; top: 0; z-index: 4; margin: 0; padding: 14px 24px 8px; border-radius: 16px 16px 0 0;
+    background: color-mix(in srgb, var(--bg-elev) 96%, transparent); border-bottom: 0; }
+  .tr-main > .tr-tagbar { margin: 0; padding: 0 24px 14px; border-bottom: 1px solid var(--line); }
+  .tr-main > .doc { padding: 16px 36px 32px; }
+  .tr-open { margin-left: auto; display: inline-flex; color: var(--text-dim); cursor: pointer; }
+  .tr-stance + .tr-open { margin-left: 0; }
+  .tr-open:hover { color: var(--text); }
+  .tr-second { align-self: flex-start; height: 22px; padding: 0 8px; border-radius: 6px; border: 1px dashed var(--line); font-size: 14px; color: var(--text-dim);
+    display: inline-flex; align-items: center; }
+  @media (max-width: 860px) {
+    .tr-main > .doc { padding: 12px 16px 24px; }
+    .tr-main > .doc-tools, .tr-main > .tr-tagbar { padding-left: 16px; padding-right: 16px; }
+  }
+  /* a section title from the file, as a bookmark: title, then its time range */
+  .tr-anchor.tr-sec span { gap: 8px; font-family: inherit; letter-spacing: 0; }
+  .tr-anchor.tr-sec b { font-size: 14px; font-weight: 700; color: var(--text); text-transform: none; }
+  .tr-anchor.tr-sec i { font-style: normal; font-family: var(--font-mono); font-size: 14px; color: var(--text-dim); }
+  .tr-anchor.tr-sec svg { color: var(--text-dim); }
+  /* a line of context (the compiler's narration, not anyone's words) */
+  .tr-note .tr-spk { font-weight: 500; font-style: normal; }
+  .tr-detail .doc .tr-note .tr-txt p, .tr-note .tr-txt { font-size: 15px; color: var(--text-dim); }
+  /* a quote that is a turn of its own reads as speech, not as a pull quote */
+  .tr-detail .doc .tr-turn:not(.tr-mod) > .tr-txt > blockquote:first-child { padding: 0; border: 0; font-size: 16px; line-height: 1.7; color: var(--text); }
+
+  /* ---- toasts: top right, under the header ----
+     icon · what happened (+ one quiet line) · the action · close. An offered
+     action drains a bar right → left while it is on offer. */
+  .toast, body.lin-all .toast { top: 72px; right: var(--s-5); bottom: auto; left: auto; transform: translateY(-8px);
+    display: flex; align-items: center; gap: 12px; width: 380px; max-width: calc(100vw - 32px); box-sizing: border-box;
+    padding: 12px 8px 14px 14px; border-radius: 14px; overflow: hidden; z-index: 650;
+    background: #141413; color: #FAF9F5; box-shadow: 0 16px 40px -12px rgba(10,10,10,.45), 0 2px 6px rgba(10,10,10,.18); }
+  .toast.show, body.lin-all .toast.show { transform: translateY(0); }
+  .toast-ico { flex: none; display: inline-flex; align-self: flex-start; margin-top: 1px; }
+  .toast-ico.ok { color: #7FD39B; }
+  .toast-ico.info { color: #C9C5BC; }
+  .toast-txt { flex: 1; min-width: 0; display: flex; flex-direction: column; gap: 2px; }
+  .toast-txt b { font-size: 15px; font-weight: 600; line-height: 1.35; }
+  .toast-txt small { font-size: 14px; line-height: 1.35; color: rgba(250,249,245,.62); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .toast .toast-act, body.lin-all .toast .toast-act { flex: none; margin: 0; height: 32px; padding: 0 12px; border: 0; border-radius: 8px;
+    background: #FAF9F5; color: #141413; font: inherit; font-size: 14px; font-weight: 600; cursor: pointer; }
+  .toast .toast-act:hover { background: #FFFFFF; }
+  .toast-x { flex: none; width: 32px; height: 32px; border: 0; border-radius: 8px; background: none; color: rgba(250,249,245,.6);
+    display: inline-flex; align-items: center; justify-content: center; cursor: pointer; }
+  .toast-x:hover { background: rgba(250,249,245,.1); color: #FAF9F5; }
+  .toast-bar { position: absolute; left: 0; right: 0; bottom: 0; height: 3px; background: var(--accent); transform-origin: left center; }
+  @media (max-width: 600px) { .toast, body.lin-all .toast { left: 16px; right: 16px; top: 12px; width: auto; max-width: none; } }
