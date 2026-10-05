@@ -85,6 +85,12 @@ minutes a new visitor spends in it.
   on a card removes it from the persona file only. The Evidence and Signal
   files stay, and a detached signal loses every link to it. Each removal asks
   you to type `delete` first, and the toast offers Undo.
+- **＋ Add under every column** of the poster's flow modules (Persona
+  improvement and Additional information). In Additional information the
+  button turns into a card you type into: Enter saves it as a bullet in that
+  section and opens the next card right away, and Esc backs out. A quote
+  typed without quote marks is wrapped in them, and a trailing ` — source`
+  stays outside.
 - **Three views of the research map** — *Columns* (one column per type with
   its count on top), *Free* (an Obsidian-style layout where files settle by
   how they link, dot size by link count) and *Flow* (the Sankey, band

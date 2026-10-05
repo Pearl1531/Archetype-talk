@@ -487,6 +487,35 @@ function ppDeleteImprovement(e, node, evid, sigs, corr){
     ()=> ppSavePersona(e, md=> ppDropCorr(md, c.title), tr('Correlation deleted')));
 }
 
+/* "+ Add" under a column: the button turns into a card you type into, Enter
+   writes the bullet into that section and opens the next one, Esc backs out */
+function ppQuickAdd(e, btn){
+  const sec = btn.dataset.ppQuick, quote = sec==='Relevant Quotes';
+  const form = document.createElement('div');
+  form.className = 'pp-card pp-quick-card';
+  form.innerHTML = `<textarea rows="2" placeholder="${esc(quote ? tr('"Verbatim quote" — source') : tr('New entry, in your own words…'))}"></textarea><div class="pp-quick-hint">${tr('Enter — save · Shift+Enter — new line · Esc — cancel')}</div>`;
+  btn.replaceWith(form);
+  const ta = form.querySelector('textarea'); ta.focus();
+  const back = ()=> form.replaceWith(btn);
+  ta.onblur = ()=>{ if(!ta.value.trim()) back(); };
+  ta.onkeydown = async ev=>{
+    if(ev.key==='Escape'){ ev.stopPropagation(); back(); return; }   // not the poster's Esc
+    if(ev.key!=='Enter' || ev.shiftKey || ev.isComposing) return;
+    ev.preventDefault();
+    let txt = ppOneLine(ta.value); if(!txt) return;
+    if(quote && !/^["“„]/.test(txt)){   // the card reads a quote between quote marks; a trailing " — source" stays outside
+      const m = txt.match(/^(.*\S)\s+—\s+([^—]+)$/);
+      txt = m ? `"${m[1]}" — ${m[2]}` : `"${txt}"`;
+    }
+    ta.onblur = null; ta.disabled = true;
+    const w = await ensureWritable(e); if(!w){ ta.disabled = false; return; }
+    if(await saveEntityText(w, ppAddBullet(w.md, sec, txt))){
+      ppAfterSave(w.id, tr('Added to {sec} ✓').replace('{sec}', sec));
+      posterView.querySelector(`[data-pp-quick="${sec}"]`)?.click();   // straight on to the next card
+    } else ta.disabled = false;
+  };
+}
+
 function posterOpen(id){
   const e=ENTITIES[id]; if(!e || e.type!=='Persona') return;
   const h1=(e.body.match(/^#\s+(.+—.+)$/m)||[])[1] || e.title;
@@ -516,13 +545,14 @@ function posterOpen(id){
   const pick = (id, label) => `<button type="button" class="pp-pick-btn" data-pp-pick="${id}" title="${esc(label || tr('Connect to pains'))}" aria-label="${esc(label || tr('Connect to pains'))}">⟷</button>`;
   /* sec = canonical ## heading → the label grows count + add/full-list actions,
      and an empty section renders as an honest gap instead of vanishing */
-  const col=(label,icon,html,sec,count)=>{
+  const quick = (attr, val) => `<button type="button" class="pp-quick" ${attr}="${esc(val)}">＋ ${tr('Add')}</button>`;
+  const col=(label,icon,html,sec,count,foot='')=>{
     if(!html && !sec) return '';
     const acts = sec?`<span class="pp-acts"><button type="button" class="pp-act" data-pp-list="${esc(sec)}" title="${esc(tr('Full list — every entry in this section'))}">${tr('All')} (${count||0})</button><button type="button" class="pp-act" data-pp-add="${esc(sec)}" title="${esc(tr('Add a new entry to this section of the file'))}">＋ ${tr('Add')}</button></span>`:'';
     const body = html || `<div class="pp-empty">${tr('Nothing in this section yet — an honest gap, nothing invented. Add the first entry or fill it from research.')}</div>`;
-    return `<div class="pp-col"><div class="pp-label">${icon||''}<span>${label}</span>${acts}</div>${body}</div>`;
+    return `<div class="pp-col"><div class="pp-label">${icon||''}<span>${label}</span>${acts}</div>${body}${foot}</div>`;
   };
-  const flowCol=(lv,name,cards,kind)=> `<div class="pp-col"><div class="pp-lv-row"><div class="pp-lv"><b>${lv}:</b> ${name}</div><button type="button" class="pp-act" data-pp-new="${kind}" title="${esc(tr('Add to this persona — written into the file'))}">＋ ${tr('Add')}</button></div><span class="pp-dot"></span>${cards||`<div class="pp-empty">${tr('Nothing here yet.')}</div>`}</div>`;
+  const flowCol=(lv,name,cards,kind)=> `<div class="pp-col"><div class="pp-lv"><b>${lv}:</b> ${name}</div><span class="pp-dot"></span>${cards||`<div class="pp-empty">${tr('Nothing here yet.')}</div>`}${quick('data-pp-new', kind)}</div>`;
   const del = id => `<button type="button" class="pp-del" data-pp-del="${id}" title="${esc(tr('Remove from this persona'))}" aria-label="${esc(tr('Remove from this persona'))}"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 7l16 0"/><path d="M10 11l0 6"/><path d="M14 11l0 6"/><path d="M5 7l1 12a2 2 0 0 0 2 2h8a2 2 0 0 0 2 -2l1 -12"/><path d="M9 7v-3a1 1 0 0 1 1 -1h4a1 1 0 0 1 1 1v3"/></svg></button>`;
 
   posterView.innerHTML = `
@@ -557,9 +587,9 @@ function posterOpen(id){
     </section>
     <div class="pp-divider"><span>${tr('Additional information')}</span></div>
     <section class="pp-flow pp-extra">
-      ${col(tr('Relevant quotes'), ICONS.Transcript, quotes.length?quotes.map((q,i)=>`<div class="pp-card pp-qcard" data-pp-node="q${i}">“${esc(q.q)}”${q.qsrc?`<div class="pp-src">${esc(q.qsrc)}</div>`:''}${pick('q'+i)}${port('r')}</div>`).join(''):'', 'Relevant Quotes', quotes.length)}
-      ${col(tr('Pains'), ICONS.Signal, pains.length?pains.map((p,i)=>`<div class="pp-card pp-pain" data-pp-node="p${i}">${port('l')}${esc(p.t)}${p.src?`<div class="pp-src">${esc(p.src)}</div>`:''}${port('r')}</div>`).join(''):'')}
-      ${col(tr('Potential pain relievers'), ICONS.IdeaForImprovement, reliev.length?reliev.map((r,i)=>`<div class="pp-card pp-rel" data-pp-node="r${i}">${port('l')}${esc(r.b.t)}${pick('r'+i)}</div>`).join(''):'', 'Potential Pain Relievers', reliev.length)}
+      ${col(tr('Relevant quotes'), ICONS.Transcript, quotes.length?quotes.map((q,i)=>`<div class="pp-card pp-qcard" data-pp-node="q${i}">“${esc(q.q)}”${q.qsrc?`<div class="pp-src">${esc(q.qsrc)}</div>`:''}${pick('q'+i)}${port('r')}</div>`).join(''):'', 'Relevant Quotes', quotes.length, quick('data-pp-quick', 'Relevant Quotes'))}
+      ${col(tr('Pains'), ICONS.Signal, pains.length?pains.map((p,i)=>`<div class="pp-card pp-pain" data-pp-node="p${i}">${port('l')}${esc(p.t)}${p.src?`<div class="pp-src">${esc(p.src)}</div>`:''}${port('r')}</div>`).join(''):'', null, 0, quick('data-pp-quick', 'Pains'))}
+      ${col(tr('Potential pain relievers'), ICONS.IdeaForImprovement, reliev.length?reliev.map((r,i)=>`<div class="pp-card pp-rel" data-pp-node="r${i}">${port('l')}${esc(r.b.t)}${pick('r'+i)}</div>`).join(''):'', 'Potential Pain Relievers', reliev.length, quick('data-pp-quick', 'Potential Pain Relievers'))}
     </section>
     <div class="pp-foot"><button class="btn btn-outline" id="ppBack">← Back to document view</button></div>`;
   document.body.classList.add('poster-open');
@@ -576,6 +606,7 @@ function posterOpen(id){
   PP_ROS.forEach(r=> r.disconnect()); PP_ROS = [];   // observers belong to one render
   ppWireFlow(e, evid, sigs, corr);
   ppWireLinks(e, pains, quotes, reliev);
+  posterView.querySelectorAll('[data-pp-quick]').forEach(b=> b.onclick = ()=> ppQuickAdd(e, b));
   posterView.onclick = ev=>{ if(!ev.target.closest('.pp-pick, [data-pp-pick]')) posterView.querySelector('.pp-pick')?.remove(); };
 }
 

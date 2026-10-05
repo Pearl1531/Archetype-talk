@@ -235,8 +235,6 @@
   .pp-wire-hit:hover + .pp-wire, .pp-wire-hit:hover { stroke: color-mix(in srgb, var(--accent) 30%, transparent); }
 
   /* adding / removing Persona improvement elements */
-  .pp-lv-row { display: flex; align-items: flex-start; justify-content: space-between; gap: 8px; }
-  .pp-lv-row .pp-act { flex: none; }
   .pp-del { position: absolute; top: 6px; right: 10px; z-index: 4; width: 26px; height: 26px; border-radius: 8px;
     display: grid; place-items: center; color: var(--text-dim); opacity: 0; transition: opacity .12s, color .12s, background .12s; }
   .pp-card:has(.pp-pick-btn) .pp-del { right: 40px; }
@@ -249,7 +247,7 @@
   .pp-modal code { font-family: var(--font-mono); font-size: 14px; }
   .pp-modal .set-input { width: 100%; }
   .pp-del-word { font-family: var(--font-mono); text-transform: none; color: var(--accent-text, var(--accent)); }
-  @media print { .pp-del, .pp-lv-row .pp-act { display: none !important; } }
+  @media print { .pp-del { display: none !important; } }
   .pp-modal .pp-keep { font-size: var(--text-caption); color: var(--text-dim); }
   .pp-modal .btn-danger:not([disabled]) { background: var(--accent); border-color: var(--accent); color: #fff; }
   /* the hover tools float over the first line like a small toolbar, so they read over text */
@@ -258,3 +256,14 @@
   .pp-improve .pp-pick-btn:hover { background: var(--bg-elev-2); }
   .pp-improve .pp-del:hover { background: color-mix(in srgb, var(--accent) 10%, var(--bg-elev)); border-color: var(--accent); }
   .pp-improve .pp-card:has(.pp-pick-btn) .pp-del { right: 42px; }
+  /* "+ Add" under each column of the flow modules: a ghost card, typed into in place */
+  .pp-quick { width: 100%; padding: 12px; border: 1px dashed var(--line); border-radius: var(--r-md);
+    font-family: var(--font-mono); font-size: 14px; text-transform: uppercase; letter-spacing: .06em;
+    color: var(--text-dim); text-align: center; transition: color .12s, border-color .12s, background .12s; }
+  .pp-quick:hover, .pp-quick:focus-visible { color: var(--text); border-color: var(--text); background: var(--bg-elev); }
+  .pp-quick-card { border-color: var(--text); }
+  .pp-quick-card textarea { width: 100%; border: 0; outline: none; resize: vertical; background: transparent;
+    font: inherit; font-size: var(--text-body); line-height: 1.5; color: var(--text); }
+  .pp-quick-hint { margin-top: 6px; font-size: var(--text-caption); color: var(--text-dim); }
+  .pp-extra .pp-act[data-pp-add] { display: none; }   /* the column's own "+ Add" sits underneath */
+  @media print { .pp-quick { display: none !important; } }
