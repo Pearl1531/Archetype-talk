@@ -53,6 +53,23 @@ The Persona file is a hub. Its sections point outward to typed files:
   (space → `%20`, apostrophe → `%27`).
 - Prefer linking to a `Signal` over pasting a raw quote — the Signal holds the quote, date, and transcript link.
 
+### Connections between sections — quotes → pains → relievers
+
+A **Relevant Quotes** or **Potential Pain Relievers** bullet may end with
+`(→ <Pain>; <Pain>)`. That token says which of this persona's **Pains** it is
+about, or would ease.
+- **Naming a Pain:** use its Signal's title, or the Pain's own text when it has
+  no Signal.
+- **One-to-many:** just list more Pains.
+- **Implicit links:** a quote and a Pain citing the same Signal are already
+  connected, so don't write the token for them.
+
+Read these tokens when you reason about the persona, e.g. "what would ease X?"
+or "which quote backs X?". They are the researcher's own judgement. **Never
+add, remove or rewire them without the researcher's approval** (CLAUDE.md,
+rule 6): propose the connection instead. The app's persona poster draws and
+edits them.
+
 ## Source tags
 
 Add after a claim to mark confidence:

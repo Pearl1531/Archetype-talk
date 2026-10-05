@@ -96,7 +96,8 @@ function personaEditorialHtml(e){
         <span class="pe-lvl">${dxBars(lv,5)}</span><span class="pe-lvl-t">${esc(tr('{n} of 5').replace('{n}', lv))} — ${esc(tr(LEVEL_TEXT[lv][0]))}</span></div>
     </section>`;
 
-  /* frustrations */
+  /* frustrations — with the relievers the researcher connected to each (the poster's `(→ …)` links) */
+  const relievers = ppRaw(e.md, 'Potential Pain Relievers');
   const painRows = peItems(section(e.body,'Pains')).map(it=>{
     const sigX = peLinks(it.text).find(x=> x.e.type==='Signal');
     const sig = sigX && sigX.e;
@@ -111,7 +112,11 @@ function personaEditorialHtml(e){
         <td class="pe-src">${sig ? `<span class="pe-h">●</span> ${peLink({e:sig}, tr('Signal:'))}` : `<span class="pe-none">◌ ${tr('No source yet')}</span>`}
           ${src.tr.map(x=>`<br><span class="pe-h">●</span> ${peLink({e:x.e, label: x.e.title + (x.anchor ? ' · '+x.anchor : '')})}`).join('')}
           ${src.ev.map(x=>`<br><span class="pe-r">○</span> ${peLink({e:x.e}, tr('Evidence:'))}`).join('')}</td>
-        <td class="pe-idea">${fix.length ? fix.map(i=> peLink({e:i, label: i.title.replace(/^Idea:?\s*\d*\s*/,'')})).join('<br>') : `<b class="pe-warn">${tr('No idea yet')}</b>`}</td>
+        <td class="pe-idea">${fix.length ? fix.map(i=> peLink({e:i, label: i.title.replace(/^Idea:?\s*\d*\s*/,'')})).join('<br>') : `<b class="pe-warn">${tr('No idea yet')}</b>`}${(()=>{
+          const key = (sig ? sig.title : title).toLowerCase();
+          const eased = relievers.filter(r=> r.to.some(n=> n.toLowerCase()===key)).map(r=> r.b.t.split(/\s+—\s+/)[0]);
+          return eased.length ? `<div class="pe-sub">${tr('Eased by:')} ${eased.map(esc).join(', ')}</div>` : '';
+        })()}</td>
       </tr>`;
   }).join('');
 

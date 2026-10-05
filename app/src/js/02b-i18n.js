@@ -555,6 +555,13 @@ const PL = {
   'Map': 'Mapa',
   'Flow': 'Przepływ',
   // Overview + rail, Editorial (2026-10)
+  'Click to remove this connection': 'Kliknij, żeby usunąć to połączenie',
+  'Drag onto a card to connect': 'Przeciągnij na kartę, żeby połączyć',
+  'Connect to pains': 'Połącz z bólami',
+  'same signal': 'ten sam sygnał',
+  'Connected ✓ — written into the file': 'Połączone ✓ — zapisane w pliku',
+  'Connection removed': 'Połączenie usunięte',
+  'Eased by:': 'Łagodzi to:',
   '+{n} set aside': '+{n} odłożona',
   'Based on': 'Na podstawie',
   'Built from': 'Zbudowana z',

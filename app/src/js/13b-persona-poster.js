@@ -27,7 +27,7 @@ function posterBullets(sec){
   const out=[];
   sec.split('\n').forEach(l=>{
     if(/^- /.test(l)){
-      let t=l.slice(2).trim(), src='', sid=null;
+      let t=l.slice(2).trim().replace(PP_LINK_RE,''), src='', sid=null;
       const lead=t.match(/^\[([^\]]+)\]\(([^)]*)\)\s*/); if(lead){ src=lead[1]; sid=resolveRef(lead[2]); t=t.slice(lead[0].length); }
       const tail=t.match(/\s*\[([^\]]+)\]\(([^)]*)\)\s*$/); if(tail){ if(!src){ src=tail[1]; sid=resolveRef(tail[2]); } t=t.slice(0,t.length-tail[0].length); }
       out.push({ t:stripLinks(t), sub:'', src, sid });
@@ -63,6 +63,137 @@ function posterCards(items, cls){
   return items.map(b=>`<div class="pp-card ${cls||''}">${esc(b.t)}${b.sub?`<div class="pp-sub">${esc(b.sub)}</div>`:''}${posterSrc(b)}</div>`).join('');
 }
 
+/* ---------- connections: quotes → pains → relievers ----------
+   A persona is built from parts that answer each other: this quote is about
+   that pain, this reliever eases those two. Two kinds of connection:
+
+   · derived — a quote and a pain that cite the SAME Signal are about the same
+     observation; drawn automatically, not editable (change the links instead)
+   · written — a trailing `(→ Pain; Other pain)` on a Relevant Quotes or
+     Potential Pain Relievers bullet. One-to-many is just a longer list. A pain
+     is named by its Signal's title (or, without a Signal, its own text). The
+     token is plain text in the file, so the researcher can type it by hand,
+     the poster can draw and edit it, and any AI agent reads it as written —
+     Personas/_template.md documents it. */
+const PP_LINK_RE = /\s*\(→\s*([^)]*)\)\s*$/;
+const PP_LINKABLE = { q: 'Relevant Quotes', r: 'Potential Pain Relievers' };
+let PP_RO = null;
+/* the top-level bullets of one ## section with their line numbers in the file —
+   the same bullets, in the same order, as posterBullets() shows */
+function ppRaw(md, sec){
+  const lines = md.split('\n');
+  const re = new RegExp('^##\\s*' + sec.replace(/[.*+?^${}()|[\]\\]/g,'\\$&') + '\\s*$', 'i');
+  const h = lines.findIndex(l=> re.test(l)); if(h < 0) return [];
+  const out = [];
+  for(let i = h+1; i < lines.length && !/^#{1,2}\s/.test(lines[i]); i++){
+    if(!/^- /.test(lines[i])) continue;
+    const b = posterBullets(lines[i])[0]; if(!b) continue;   // same filter as the cards (no comments, no empties)
+    const m = lines[i].match(PP_LINK_RE);
+    out.push({ i, b, to: m ? m[1].split(';').map(x=> x.trim()).filter(Boolean) : [] });
+  }
+  return out;
+}
+const ppPainKey = p => (p.src || p.t).trim();
+function ppSetLinks(md, lineNo, names){
+  const lines = md.split('\n');
+  lines[lineNo] = lines[lineNo].replace(PP_LINK_RE, '') + (names.length ? ` (→ ${names.join('; ')})` : '');
+  return lines.join('\n');
+}
+/* change one bullet's written links and save — through the same path as every edit (file / sandbox / draft) */
+async function ppSaveLinks(e, kind, idx, names, msg){
+  const w = await ensureWritable(e); if(!w) return;
+  const item = ppRaw(w.md, PP_LINKABLE[kind])[idx]; if(!item) return;
+  const keep = posterView.scrollTop;
+  if(await saveEntityText(w, ppSetLinks(w.md, item.i, names))){
+    posterOpen(w.id); posterView.scrollTop = keep;
+    toast(msg, {label: tr('Undo'), fn: async()=>{ await undoLastSave(); if(document.body.classList.contains('poster-open')){ posterOpen(w.id); posterView.scrollTop = keep; } }});
+  }
+}
+/* draw the connections over the three columns and wire drag-to-connect,
+   click-to-remove and the keyboard checklist */
+function ppWireLinks(e, pains, quotes, reliev){
+  const box = posterView.querySelector('.pp-extra'); if(!box) return;
+  const svg = document.createElementNS('http://www.w3.org/2000/svg','svg');
+  svg.setAttribute('class','pp-wires'); svg.setAttribute('aria-hidden','true');
+  box.prepend(svg);
+  const keyIdx = {}; pains.forEach((p,i)=> keyIdx[ppPainKey(p).toLowerCase()] = i);
+  const edges = [];
+  quotes.forEach((q,qi)=>{
+    const auto = new Set();
+    pains.forEach((p,pi)=>{ if(q.b.sid && p.sid && q.b.sid===p.sid){ auto.add(pi); edges.push({ a:`q${qi}`, b:`p${pi}`, kind:'auto' }); } });
+    q.to.forEach(n=>{ const pi = keyIdx[n.toLowerCase()]; if(pi!=null && !auto.has(pi)) edges.push({ a:`q${qi}`, b:`p${pi}`, kind:'man', side:'q', idx:qi, name:n }); });
+  });
+  reliev.forEach((r,ri)=> r.to.forEach(n=>{ const pi = keyIdx[n.toLowerCase()]; if(pi!=null) edges.push({ a:`p${pi}`, b:`r${ri}`, kind:'man', side:'r', idx:ri, name:n }); }));
+  const node = id => box.querySelector(`[data-pp-node="${id}"]`);
+  const draw = ()=>{
+    const B = box.getBoundingClientRect();
+    svg.setAttribute('width', B.width); svg.setAttribute('height', B.height);
+    svg.innerHTML = edges.map((ed,k)=>{
+      const A = node(ed.a), Z = node(ed.b); if(!A || !Z) return '';
+      const a = A.getBoundingClientRect(), z = Z.getBoundingClientRect();
+      const x1 = a.right - B.left, y1 = a.top + a.height/2 - B.top, x2 = z.left - B.left, y2 = z.top + z.height/2 - B.top;
+      const c = Math.max(30, (x2-x1)/2);
+      const d = `M${x1} ${y1} C${x1+c} ${y1} ${x2-c} ${y2} ${x2} ${y2}`;
+      return `<path class="pp-wire ${ed.kind}" d="${d}"/>${ed.kind==='man' ? `<path class="pp-wire-hit" data-edge="${k}" d="${d}"><title>${esc(tr('Click to remove this connection'))}</title></path>` : ''}`;
+    }).join('') + '<path class="pp-wire drag" id="ppDrag" d=""/>';
+    svg.querySelectorAll('[data-edge]').forEach(h=> h.onclick = ()=>{
+      const ed = edges[+h.dataset.edge];
+      const cur = (ed.side==='q' ? quotes : reliev)[ed.idx].to.filter(n=> n.toLowerCase()!==ed.name.toLowerCase());
+      ppSaveLinks(e, ed.side, ed.idx, cur, tr('Connection removed'));
+    });
+  };
+  draw();
+  if(PP_RO) PP_RO.disconnect();             // one observer per render of the poster
+  PP_RO = new ResizeObserver(draw); PP_RO.observe(box);
+  posterView.onclick = ev=>{ if(!ev.target.closest('.pp-pick, [data-pp-pick]')) posterView.querySelector('.pp-pick')?.remove(); };
+  /* drag from a port onto a card of the neighbouring column */
+  box.querySelectorAll('.pp-port').forEach(port=> port.onpointerdown = ev=>{
+    ev.preventDefault();
+    const from = port.closest('[data-pp-node]').dataset.ppNode;
+    const drag = svg.querySelector('#ppDrag');
+    const B = box.getBoundingClientRect(), P = port.getBoundingClientRect();
+    const x1 = P.left + P.width/2 - B.left, y1 = P.top + P.height/2 - B.top;
+    box.classList.add('pp-linking');
+    const move = mv=>{ const x2 = mv.clientX - B.left, y2 = mv.clientY - B.top, c = Math.max(30, Math.abs(x2-x1)/2), dir = x2 >= x1 ? 1 : -1;
+      drag.setAttribute('d', `M${x1} ${y1} C${x1+c*dir} ${y1} ${x2-c*dir} ${y2} ${x2} ${y2}`); };
+    const up = upv=>{
+      document.removeEventListener('pointermove', move); document.removeEventListener('pointerup', up);
+      box.classList.remove('pp-linking'); drag.setAttribute('d','');
+      const hit = document.elementFromPoint(upv.clientX, upv.clientY);
+      const to = hit && hit.closest && hit.closest('[data-pp-node]'); if(!to) return;
+      const pair = [from, to.dataset.ppNode].sort().join(' ');   // p… sorts before q… and r…
+      const m = pair.match(/^p(\d+) ([qr])(\d+)$/); if(!m) return;   // only quote↔pain and pain↔reliever
+      const pi = +m[1], side = m[2], idx = +m[3], list = side==='q' ? quotes : reliev;
+      const name = ppPainKey(pains[pi]);
+      if(list[idx].to.some(n=> n.toLowerCase()===name.toLowerCase()) || (side==='q' && list[idx].b.sid && list[idx].b.sid===pains[pi].sid)) return;
+      ppSaveLinks(e, side, idx, [...list[idx].to, name], tr('Connected ✓ — written into the file'));
+    };
+    document.addEventListener('pointermove', move); document.addEventListener('pointerup', up);
+  });
+  /* the same thing without a mouse: a checklist of pains per quote / reliever */
+  box.querySelectorAll('[data-pp-pick]').forEach(btn=> btn.onclick = ev=>{
+    ev.stopPropagation();
+    const [side, idx] = [btn.dataset.ppPick[0], +btn.dataset.ppPick.slice(1)];
+    const item = (side==='q' ? quotes : reliev)[idx];
+    const old = posterView.querySelector('.pp-pick'); if(old){ old.remove(); if(old.dataset.for===btn.dataset.ppPick) return; }
+    const menu = document.createElement('div');
+    menu.className = 'pp-pick'; menu.dataset.for = btn.dataset.ppPick; menu.setAttribute('role','group');
+    menu.setAttribute('aria-label', tr('Connect to pains'));
+    menu.innerHTML = `<b>${tr('Connect to pains')}</b>` + pains.map((p,pi)=>{
+      const name = ppPainKey(p), auto = side==='q' && item.b.sid && item.b.sid===p.sid;
+      const on = auto || item.to.some(n=> n.toLowerCase()===name.toLowerCase());
+      return `<label class="${auto?'auto':''}"><input type="checkbox" data-pain="${pi}"${on?' checked':''}${auto?' disabled':''}> <span>${esc(p.t)}${auto?` <small>${tr('same signal')}</small>`:''}</span></label>`;
+    }).join('');
+    btn.closest('.pp-card').appendChild(menu);
+    menu.querySelectorAll('input[data-pain]:not([disabled])').forEach(cb=> cb.onchange = ()=>{
+      const name = ppPainKey(pains[+cb.dataset.pain]);
+      const next = cb.checked ? [...item.to, name] : item.to.filter(n=> n.toLowerCase()!==name.toLowerCase());
+      ppSaveLinks(e, side, idx, next, tr(cb.checked ? 'Connected ✓ — written into the file' : 'Connection removed'));
+    });
+    menu.querySelector('input:not([disabled])')?.focus();
+  });
+}
+
 function posterOpen(id){
   const e=ENTITIES[id]; if(!e || e.type!=='Persona') return;
   const h1=(e.body.match(/^#\s+(.+—.+)$/m)||[])[1] || e.title;
@@ -82,11 +213,14 @@ function posterOpen(id){
   const sigs=sigIds.map(id=>{ const x=ENTITIES[id];
     const ln=(x.body.split('\n').find(l=>l.trim() && !/^#/.test(l) && !/^>/.test(l) && !/^(-{3,}|\*{3,})$/.test(l))||'').trim();
     return { id, t:x.title, sub:trim(stripLinks(ln),150) }; });
-  const reliev=posterBullets(section(e.body,'Potential Pain Relievers'));
-  const quotes=posterBullets(section(e.body,'Relevant Quotes')).map(b=>{
-    const m=b.t.match(/"(.+?)"\s*(?:—\s*(.+))?$/s);
-    return m? { q:m[1], src:m[2]||'' } : { q:b.t, src:'' };
+  const reliev=ppRaw(e.md, 'Potential Pain Relievers');
+  const quotes=ppRaw(e.md, 'Relevant Quotes').map(x=>{
+    const m=x.b.t.match(/"(.+?)"\s*(?:—\s*(.+))?$/s);
+    return Object.assign(x, m? { q:m[1], qsrc:m[2]||'' } : { q:x.b.t, qsrc:'' });
   });
+  // always offered: saving goes through ensureWritable, which asks for the folder when it has to
+  const port = side => `<span class="pp-port pp-port-${side}" title="${esc(tr('Drag onto a card to connect'))}"></span>`;
+  const pick = id => `<button type="button" class="pp-pick-btn" data-pp-pick="${id}" title="${esc(tr('Connect to pains'))}" aria-label="${esc(tr('Connect to pains'))}">⟷</button>`;
   /* sec = canonical ## heading → the label grows count + add/full-list actions,
      and an empty section renders as an honest gap instead of vanishing */
   const col=(label,icon,html,sec,count)=>{
@@ -130,9 +264,9 @@ function posterOpen(id){
     </section>`:''}
     <div class="pp-divider"><span>${tr('Additional information')}</span></div>
     <section class="pp-flow pp-extra">
-      ${col(tr('Relevant quotes'), ICONS.Transcript, quotes.length?quotes.map(q=>`<div class="pp-card pp-qcard">“${esc(q.q)}”${q.src?`<div class="pp-src">${esc(q.src)}</div>`:''}</div>`).join(''):'', 'Relevant Quotes', quotes.length)}
-      ${col(tr('Pains'), ICONS.Signal, pains.length?posterCards(pains.map(p=>({t:p.t})),'pp-pain'):'')}
-      ${col(tr('Potential pain relievers'), ICONS.IdeaForImprovement, reliev.length?posterCards(reliev,'pp-rel'):'', 'Potential Pain Relievers', reliev.length)}
+      ${col(tr('Relevant quotes'), ICONS.Transcript, quotes.length?quotes.map((q,i)=>`<div class="pp-card pp-qcard" data-pp-node="q${i}">“${esc(q.q)}”${q.qsrc?`<div class="pp-src">${esc(q.qsrc)}</div>`:''}${pick('q'+i)}${port('r')}</div>`).join(''):'', 'Relevant Quotes', quotes.length)}
+      ${col(tr('Pains'), ICONS.Signal, pains.length?pains.map((p,i)=>`<div class="pp-card pp-pain" data-pp-node="p${i}">${port('l')}${esc(p.t)}${p.src?`<div class="pp-src">${esc(p.src)}</div>`:''}${port('r')}</div>`).join(''):'')}
+      ${col(tr('Potential pain relievers'), ICONS.IdeaForImprovement, reliev.length?reliev.map((r,i)=>`<div class="pp-card pp-rel" data-pp-node="r${i}">${port('l')}${esc(r.b.t)}${pick('r'+i)}</div>`).join(''):'', 'Potential Pain Relievers', reliev.length)}
     </section>
     <div class="pp-foot"><button class="btn btn-outline" id="ppBack">← Back to document view</button></div>`;
   document.body.classList.add('poster-open');
@@ -146,6 +280,7 @@ function posterOpen(id){
   posterView.querySelectorAll('[data-pp-list]').forEach(b=> b.onclick=()=> ppListOpen(e.id, b.dataset.ppList));
   posterView.querySelectorAll('[data-pp-add]').forEach(b=> b.onclick=()=> ppListOpen(e.id, b.dataset.ppAdd, {add:true}));
   posterView.querySelectorAll('[data-goto]').forEach(el=> el.onclick=()=>{ close(); location.hash='#'+el.dataset.goto; });
+  ppWireLinks(e, pains, quotes, reliev);
 }
 
 /* append "- text" at the end of ## sec (creating the section if missing) */

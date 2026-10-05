@@ -156,3 +156,37 @@
     .pp-hero, .pp-duo { grid-template-columns: 1fr; }
     .pp-grid { grid-template-columns: 1fr; }
   }
+
+  /* ---- connections in "Additional information": quote → pain → reliever ----
+     derived (same signal) = thin ink; written (→ token in the file) = ember.
+     Ports sit on the card edges; drag one onto a neighbouring card to connect,
+     click an ember wire to remove it (Undo in the toast). */
+  .pp-extra { position: relative; column-gap: 72px; }
+  .pp-extra .pp-card { position: relative; }
+  .pp-wires { position: absolute; left: 0; top: 0; z-index: 3; pointer-events: none; overflow: visible; }
+  .pp-wire { fill: none; stroke-width: 1.6; }
+  .pp-wire.auto { stroke: var(--text); stroke-opacity: .35; stroke-dasharray: 4 4; }
+  .pp-wire.man { stroke: var(--accent); stroke-width: 2.2; }
+  .pp-wire.drag { stroke: var(--accent); stroke-width: 2; stroke-dasharray: 6 4; }
+  .pp-wire-hit { fill: none; stroke: transparent; stroke-width: 14; pointer-events: stroke; cursor: pointer; }
+  .pp-wire-hit:hover { stroke: color-mix(in srgb, var(--accent) 25%, transparent); }
+  .pp-port { position: absolute; top: 50%; width: 14px; height: 14px; margin-top: -7px; border-radius: 50%; z-index: 4;
+    background: var(--bg-elev); border: 2px solid var(--text); cursor: crosshair; touch-action: none; opacity: .55; transition: opacity .12s, transform .12s; }
+  .pp-port-r { right: -8px; } .pp-port-l { left: -8px; }
+  .pp-card:hover .pp-port, .pp-linking .pp-port { opacity: 1; }
+  .pp-port:hover { transform: scale(1.25); background: var(--accent); border-color: var(--accent); }
+  .pp-linking .pp-card { outline: 1px dashed transparent; }
+  .pp-linking .pp-card:hover { outline-color: var(--accent); }
+  .pp-pick-btn { position: absolute; top: 6px; right: 10px; width: 26px; height: 26px; border-radius: 8px; color: var(--text-dim);
+    font-size: 15px; opacity: 0; transition: opacity .12s; }
+  .pp-card:hover .pp-pick-btn, .pp-pick-btn:focus-visible { opacity: 1; }
+  .pp-pick-btn:hover { background: var(--bg-elev-2); color: var(--text); }
+  .pp-pick { position: absolute; top: 36px; right: 8px; z-index: 6; width: 280px; padding: 10px 12px; border-radius: 12px;
+    background: var(--bg-elev); border: 1px solid var(--line); box-shadow: var(--shadow); display: flex; flex-direction: column; gap: 6px;
+    font-style: normal; font-size: var(--text-body); color: var(--text); text-align: left; }
+  .pp-pick b { font-size: var(--text-caption); color: var(--text-dim); font-weight: 600; }
+  .pp-pick label { display: flex; gap: 8px; align-items: flex-start; cursor: pointer; line-height: 1.35; }
+  .pp-pick label.auto { color: var(--text-dim); cursor: default; }
+  .pp-pick small { color: var(--text-dim); }
+  .pp-pick input { margin-top: 2px; accent-color: var(--accent); }
+  @media print { .pp-port, .pp-pick-btn, .pp-pick { display: none !important; } }

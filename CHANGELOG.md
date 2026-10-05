@@ -49,6 +49,19 @@ minutes a new visitor spends in it.
 
 ### Added
 
+- **Connections between persona parts.** In the poster's *Additional
+  information*, quotes, pains and pain relievers are joined by lines:
+  - a quote and a pain that cite the same Signal are linked automatically
+    (dashed);
+  - anything else is linked by hand: drag from a card's port onto a card in the
+    next column, or tick pains in the ⟷ checklist;
+  - click an ember line to remove it, with Undo.
+
+  One-to-many works. Each written link is a plain `(→ Pain; Other pain)` at
+  the end of the bullet in the persona file, so it can also be typed by hand
+  and any agent reads it as written. The convention is documented in
+  `Personas/_template.md` and the ai-persona skill's template reference.
+  **File schema:** this token is new and optional.
 - **Three views of the research map** — *Columns* (one column per type with
   its count on top), *Free* (an Obsidian-style layout where files settle by
   how they link, dot size by link count) and *Flow* (the Sankey, band
