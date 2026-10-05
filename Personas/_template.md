@@ -130,8 +130,9 @@ voices:                   # ElevenLabs voice per language, auto-selected — see
 
 <!-- Connections (optional): a trailing `(→ <Pain>; <Pain>)` ties this bullet to the
      Pains it is about. A Pain is named by its Signal's title — or by its own text when it
-     has no Signal. One-to-many is just a longer list. A quote and a Pain that link the
-     SAME Signal are connected already; don't repeat that here. The app's persona poster
+     has no Signal. One-to-many is just a longer list. Without a token, a quote is connected
+     to the Pains that link the SAME Signal; with a token, the token is the whole list
+     (`(→ none)` = deliberately connected to no Pain). The app's persona poster
      draws these and lets the researcher add or remove them; agents read them as written
      and propose new ones only with the researcher's approval (CLAUDE.md, rule 6). -->
 - [<Signal / Evidence>](../Signals/<file>.md) "<user quote — verbatim, original language>" — <source>

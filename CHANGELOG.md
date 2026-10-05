@@ -68,8 +68,13 @@ minutes a new visitor spends in it.
   - evidence ↔ signal goes in the Signal's `evidences:` list;
   - signal or evidence ↔ correlation goes in as a link inside that
     correlation's block in the persona file;
-  - a link that only appears in a signal's prose is drawn dashed and edited in
-    the file.
+  - a link that only appears in a signal's prose is drawn dashed; removing it
+    unlinks the words and keeps the text.
+
+  Every line can be removed, including the implicit ones. Removing a quote's
+  same-signal link writes an explicit token, `(→ none)` when nothing is left,
+  because a token is always the complete list. Hovering a card lights its
+  whole stream (upstream and downstream) and dims everything else.
 - **Three views of the research map** — *Columns* (one column per type with
   its count on top), *Free* (an Obsidian-style layout where files settle by
   how they link, dot size by link count) and *Flow* (the Sankey, band

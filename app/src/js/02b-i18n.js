@@ -555,6 +555,7 @@ const PL = {
   'Map': 'Mapa',
   'Flow': 'Przepływ',
   // Overview + rail, Editorial (2026-10)
+  'Link removed from the signal’s text': 'Link usunięty z treści sygnału',
   'Nothing to connect in this section yet.': 'W tej sekcji nie ma jeszcze czego łączyć.',
   'Connected ✓ — written into the signal file': 'Połączone ✓ — zapisane w pliku sygnału',
   'Backed by evidence': 'Poparte dowodami',

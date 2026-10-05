@@ -88,21 +88,23 @@ function ppRaw(md, sec){
     if(!/^- /.test(lines[i])) continue;
     const b = posterBullets(lines[i])[0]; if(!b) continue;   // same filter as the cards (no comments, no empties)
     const m = lines[i].match(PP_LINK_RE);
-    out.push({ i, b, to: m ? m[1].split(';').map(x=> x.trim()).filter(Boolean) : [] });
+    out.push({ i, b, has: !!m, to: m ? m[1].split(';').map(x=> x.trim()).filter(x=> x && !/^none$/i.test(x)) : [] });
   }
   return out;
 }
 const ppPainKey = p => (p.src || p.t).trim();
-function ppSetLinks(md, lineNo, names){
+function ppSetLinks(md, lineNo, names /*, explicit */){
   const lines = md.split('\n');
-  lines[lineNo] = lines[lineNo].replace(PP_LINK_RE, '') + (names.length ? ` (→ ${names.join('; ')})` : '');
+  // explicit = the token is the whole list (a quote's same-signal link no longer applies): empty → "none"
+  lines[lineNo] = lines[lineNo].replace(PP_LINK_RE, '') + (names.length ? ` (→ ${names.join('; ')})` : (arguments[3] ? ' (→ none)' : ''));
   return lines.join('\n');
 }
 /* change one bullet's written links and save — through the same path as every edit (file / sandbox / draft) */
 async function ppSaveLinks(e, kind, idx, names, msg){
   const w = await ensureWritable(e); if(!w) return;
   const item = ppRaw(w.md, PP_LINKABLE[kind])[idx]; if(!item) return;
-  if(await saveEntityText(w, ppSetLinks(w.md, item.i, names))) ppAfterSave(w.id, msg);
+  // a quote with a same-signal pain keeps an explicit list, so removing that implicit link sticks
+  if(await saveEntityText(w, ppSetLinks(w.md, item.i, names, kind==='q'))) ppAfterSave(w.id, msg);
 }
 /* ---------- the wire layer, shared by both three-column sections ----------
    Cards carry data-pp-node; `edges` are {a, b, kind:'auto'|'man', …}. Draws
@@ -123,10 +125,37 @@ function ppWires(box, edges, onRemove, onConnect){
       const x1 = a.right - B.left, y1 = a.top + a.height/2 - B.top, x2 = z.left - B.left, y2 = z.top + z.height/2 - B.top;
       const c = Math.max(30, (x2-x1)/2);
       const d = `M${x1} ${y1} C${x1+c} ${y1} ${x2-c} ${y2} ${x2} ${y2}`;
-      return `<path class="pp-wire ${ed.kind}${ed.long?' long':''}" d="${d}"/>${ed.kind==='man' ? `<path class="pp-wire-hit" data-edge="${k}" d="${d}"><title>${esc(tr('Click to remove this connection'))}</title></path>` : ''}`;
+      return `<path class="pp-wire ${ed.kind}${ed.long?' long':''}" data-wire="${k}" d="${d}"/><path class="pp-wire-hit" data-edge="${k}" d="${d}"><title>${esc(tr('Click to remove this connection'))}</title></path>`;
     }).join('') + '<path class="pp-wire drag" d=""/>';
-    svg.querySelectorAll('[data-edge]').forEach(h=> h.onclick = ()=> onRemove(edges[+h.dataset.edge]));
+    svg.querySelectorAll('[data-edge]').forEach(h=>{
+      h.onclick = ()=> onRemove(edges[+h.dataset.edge]);
+      h.onmouseenter = ()=> clearTimeout(unhot);   // moving from a card onto its wire keeps the stream lit
+      h.onmouseleave = ()=> leave();
+    });
+    if(hot) light(hot);
   };
+  /* hover a card → light its stream: everything reachable downstream (a→b)
+     and upstream (b→a) from it; every other wire and card steps back */
+  let hot = null, unhot = 0;
+  const light = id=>{
+    hot = id;
+    const nodes = new Set([id]), lit = new Set();
+    const walk = (start, fwd)=>{
+      const q = [start];
+      while(q.length){ const n = q.shift(); edges.forEach((ed,k)=>{ const [x, y] = fwd ? [ed.a, ed.b] : [ed.b, ed.a];
+        if(x===n){ lit.add(k); if(!nodes.has(y)){ nodes.add(y); q.push(y); } } }); }
+    };
+    walk(id, true); walk(id, false);
+    box.classList.toggle('pp-focus', !!id);
+    box.querySelectorAll('[data-pp-node]').forEach(c=> c.classList.toggle('pp-hot', nodes.has(c.dataset.ppNode)));
+    svg.querySelectorAll('[data-wire],[data-edge]').forEach(p=> p.classList.toggle('hot', lit.has(+(p.dataset.wire ?? p.dataset.edge))));
+  };
+  const leave = ()=>{ clearTimeout(unhot); unhot = setTimeout(()=>{ hot = null; box.classList.remove('pp-focus');
+    box.querySelectorAll('.pp-hot').forEach(c=> c.classList.remove('pp-hot')); svg.querySelectorAll('.hot').forEach(p=> p.classList.remove('hot')); }, 160); };
+  box.querySelectorAll('[data-pp-node]').forEach(c=>{
+    c.addEventListener('mouseenter', ()=>{ clearTimeout(unhot); if(!box.classList.contains('pp-linking')) light(c.dataset.ppNode); });
+    c.addEventListener('mouseleave', leave);
+  });
   draw();
   const ro = new ResizeObserver(draw); ro.observe(box); PP_ROS.push(ro);
   box.querySelectorAll('.pp-port').forEach(port=> port.onpointerdown = ev=>{
@@ -171,29 +200,31 @@ function ppAfterSave(personaId, msg){
 function ppWireLinks(e, pains, quotes, reliev){
   const box = posterView.querySelector('.pp-extra'); if(!box) return;
   const keyIdx = {}; pains.forEach((p,i)=> keyIdx[ppPainKey(p).toLowerCase()] = i);
-  const edges = [];
-  quotes.forEach((q,qi)=>{
-    const auto = new Set();
-    pains.forEach((p,pi)=>{ if(q.b.sid && p.sid && q.b.sid===p.sid){ auto.add(pi); edges.push({ a:`q${qi}`, b:`p${pi}`, kind:'auto' }); } });
-    q.to.forEach(n=>{ const pi = keyIdx[n.toLowerCase()]; if(pi!=null && !auto.has(pi)) edges.push({ a:`q${qi}`, b:`p${pi}`, kind:'man', side:'q', idx:qi, name:n }); });
-  });
-  reliev.forEach((r,ri)=> r.to.forEach(n=>{ const pi = keyIdx[n.toLowerCase()]; if(pi!=null) edges.push({ a:`p${pi}`, b:`r${ri}`, kind:'man', side:'r', idx:ri, name:n }); }));
+  /* a quote's pains: its token when it has one (the whole list, as written),
+     otherwise the pains that cite the same Signal */
+  const sameSig = q => pains.filter(p=> q.b.sid && p.sid && q.b.sid===p.sid).map(ppPainKey);
   const listOf = side => side==='q' ? quotes : reliev;
+  const effective = (side, item) => side==='q' && !item.has ? sameSig(item) : item.to;
+  const edges = [];
+  quotes.forEach((q,qi)=> effective('q', q).forEach(n=>{ const pi = keyIdx[n.toLowerCase()];
+    if(pi!=null) edges.push({ a:`q${qi}`, b:`p${pi}`, kind: q.has ? 'man' : 'auto', side:'q', idx:qi, name:n }); }));
+  reliev.forEach((r,ri)=> r.to.forEach(n=>{ const pi = keyIdx[n.toLowerCase()]; if(pi!=null) edges.push({ a:`p${pi}`, b:`r${ri}`, kind:'man', side:'r', idx:ri, name:n }); }));
+  const without = (side, idx, name) => effective(side, listOf(side)[idx]).filter(n=> n.toLowerCase()!==name.toLowerCase());
   ppWires(box, edges,
-    ed=> ppSaveLinks(e, ed.side, ed.idx, listOf(ed.side)[ed.idx].to.filter(n=> n.toLowerCase()!==ed.name.toLowerCase()), tr('Connection removed')),
+    ed=> ppSaveLinks(e, ed.side, ed.idx, without(ed.side, ed.idx, ed.name), tr('Connection removed')),
     (from, to)=>{
       const m = [from, to].sort().join(' ').match(/^p(\d+) ([qr])(\d+)$/); if(!m) return;   // only quote↔pain and pain↔reliever
-      const pi = +m[1], side = m[2], idx = +m[3], item = listOf(side)[idx], name = ppPainKey(pains[pi]);
-      if(item.to.some(n=> n.toLowerCase()===name.toLowerCase()) || (side==='q' && item.b.sid && item.b.sid===pains[pi].sid)) return;
-      ppSaveLinks(e, side, idx, [...item.to, name], tr('Connected ✓ — written into the file'));
+      const pi = +m[1], side = m[2], idx = +m[3], cur = effective(side, listOf(side)[idx]), name = ppPainKey(pains[pi]);
+      if(cur.some(n=> n.toLowerCase()===name.toLowerCase())) return;
+      ppSaveLinks(e, side, idx, [...cur, name], tr('Connected ✓ — written into the file'));
     });
   box.querySelectorAll('[data-pp-pick]').forEach(btn=> btn.onclick = ev=>{
     ev.stopPropagation();
-    const side = btn.dataset.ppPick[0], idx = +btn.dataset.ppPick.slice(1), item = listOf(side)[idx];
+    const side = btn.dataset.ppPick[0], idx = +btn.dataset.ppPick.slice(1), cur = effective(side, listOf(side)[idx]);
     ppPickMenu(btn, tr('Connect to pains'), pains.map(p=>{
-      const name = ppPainKey(p), auto = side==='q' && item.b.sid && item.b.sid===p.sid;
-      return { name, label: p.t, auto, note: auto ? tr('same signal') : '', on: auto || item.to.some(n=> n.toLowerCase()===name.toLowerCase()) };
-    }), (row, on)=> ppSaveLinks(e, side, idx, on ? [...item.to, row.name] : item.to.filter(n=> n.toLowerCase()!==row.name.toLowerCase()),
+      const name = ppPainKey(p);
+      return { name, label: p.t, on: cur.some(n=> n.toLowerCase()===name.toLowerCase()) };
+    }), (row, on)=> ppSaveLinks(e, side, idx, on ? [...cur, row.name] : without(side, idx, row.name),
         tr(on ? 'Connected ✓ — written into the file' : 'Connection removed')));
   });
 }
@@ -212,6 +243,12 @@ function ppSigEvidence(sig){
   const bodyIds = new Set();
   for(const m of sig.body.matchAll(MD_LINK)){ const id = resolveRef(m[2]); if(id && ENTITIES[id] && ENTITIES[id].type==='Evidence' && !fmIds.has(id)) bodyIds.add(id); }
   return { fm, fmIds, bodyIds };
+}
+async function ppUnlinkInSignal(personaId, sigId, evId){
+  const sig = ENTITIES[sigId]; if(!sig) return;
+  const w = await ensureWritable(sig); if(!w) return;
+  const md = w.md.replace(MD_LINK, (all, lab, href)=> resolveRef(href)===evId ? lab : all);   // keep the words, drop the link
+  if(md !== w.md && await saveEntityText(w, md)) ppAfterSave(personaId, tr('Link removed from the signal’s text'));
 }
 async function ppSaveSigEvidence(personaId, sigId, evId, on){
   const sig = ENTITIES[sigId], ev = ENTITIES[evId]; if(!sig || !ev) return;
@@ -259,14 +296,14 @@ function ppWireFlow(e, evid, sigs, corr){
   sigs.forEach((x,si)=>{
     const r = ppSigEvidence(ENTITIES[x.id]);
     r.fmIds.forEach(id=>{ if(eIdx[id]!=null) edges.push({ a:`e${eIdx[id]}`, b:`s${si}`, kind:'man', sig:x.id, ev:id }); });
-    r.bodyIds.forEach(id=>{ if(eIdx[id]!=null) edges.push({ a:`e${eIdx[id]}`, b:`s${si}`, kind:'auto' }); });
+    r.bodyIds.forEach(id=>{ if(eIdx[id]!=null) edges.push({ a:`e${eIdx[id]}`, b:`s${si}`, kind:'auto', sig:x.id, ev:id }); });
   });
   corr.forEach((c,ci)=> c.links.forEach(l=>{
     if(l.id && sIdx[l.id]!=null) edges.push({ a:`s${sIdx[l.id]}`, b:`c${ci}`, kind:'man', corr:c.title, target:l.id });
     else if(l.id && eIdx[l.id]!=null) edges.push({ a:`e${eIdx[l.id]}`, b:`c${ci}`, kind:'man', long:true, corr:c.title, target:l.id });
   }));
   ppWires(box, edges,
-    ed=> ed.corr ? ppSaveCorr(e, ed.corr, ed.target, false) : ppSaveSigEvidence(e.id, ed.sig, ed.ev, false),
+    ed=> ed.corr ? ppSaveCorr(e, ed.corr, ed.target, false) : ed.kind==='auto' ? ppUnlinkInSignal(e.id, ed.sig, ed.ev) : ppSaveSigEvidence(e.id, ed.sig, ed.ev, false),
     (from, to)=>{
       const [a, b] = [from, to].sort();   // c… < e… < s…
       const ev = n => evid[+n.slice(1)].sid, sg = n => sigs[+n.slice(1)].id, co = n => corr[+n.slice(1)];
@@ -282,8 +319,8 @@ function ppWireFlow(e, evid, sigs, corr){
     if(kind==='s'){
       const r = ppSigEvidence(ENTITIES[sigs[idx].id]);
       ppPickMenu(btn, tr('Backed by evidence'), evid.filter(x=> x.sid).map(x=>({ id: x.sid, label: x.src || x.t,
-        auto: r.bodyIds.has(x.sid), note: r.bodyIds.has(x.sid) ? tr('linked in the signal’s text') : '', on: r.fmIds.has(x.sid) || r.bodyIds.has(x.sid) })),
-        (row, on)=> ppSaveSigEvidence(e.id, sigs[idx].id, row.id, on));
+        prose: r.bodyIds.has(x.sid), note: r.bodyIds.has(x.sid) ? tr('linked in the signal’s text') : '', on: r.fmIds.has(x.sid) || r.bodyIds.has(x.sid) })),
+        (row, on)=> !on && row.prose ? ppUnlinkInSignal(e.id, sigs[idx].id, row.id) : ppSaveSigEvidence(e.id, sigs[idx].id, row.id, on));
     } else {
       const c = corr[idx], has = new Set(c.links.map(l=> l.id));
       ppPickMenu(btn, tr('Stands on'), [...sigs.map(x=>({ id:x.id, label:'● '+x.t })), ...evid.filter(x=> x.sid).map(x=>({ id:x.sid, label:'○ '+(x.src || x.t) }))]

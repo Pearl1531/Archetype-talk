@@ -61,8 +61,10 @@ about, or would ease.
 - **Naming a Pain:** use its Signal's title, or the Pain's own text when it has
   no Signal.
 - **One-to-many:** just list more Pains.
-- **Implicit links:** a quote and a Pain citing the same Signal are already
-  connected, so don't write the token for them.
+- **Implicit links:** a quote **without** a token is connected to the Pains
+  citing the same Signal.
+- **The token wins:** when a quote has a token, the token is the complete
+  list. `(→ none)` means the researcher deliberately connected it to no Pain.
 
 Read these tokens when you reason about the persona, e.g. "what would ease X?"
 or "which quote backs X?". They are the researcher's own judgement. **Never
