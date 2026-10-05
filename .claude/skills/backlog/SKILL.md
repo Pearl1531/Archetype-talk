@@ -48,6 +48,14 @@ in the review output, never in the file.
 An empty `Priority` cell is not "minor": it means nobody has decided. The app shows
 a dashed guess read from the wording and writes nothing.
 
+### `Status` — three states, two tables
+
+- `open`, in the Open questions table: **to run**.
+- `in study`, also in Open questions: **a round is booked and the answer is not in yet**. The app's Board writes it when someone drags a card into "In a study". The row stays open, and the question still needs an answer.
+- A row in **Closed / turned into research** is answered. Its status is `closed — <what answered it>`.
+
+Treat `in study` rows as scheduled. Don't propose them again as the next round, and don't close them until the research has actually happened.
+
 ## Review workflow
 
 1. Read `Research backlog.md` (Open questions table).

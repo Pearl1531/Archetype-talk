@@ -25,6 +25,13 @@ let BL_LIST = 'open';   // which list the left column is showing: open | closed
 let BL_FILTERS_OPEN = false;   // the filter drawer under the bar
 let BL_TEXT = '';              // the text filter in the list header, kept across re-renders
 let BL_SHEET = null;           // method id explained in the right-hand sheet
+let BL_VIEW = store.get('at-bl-view')==='board' ? 'board' : 'table';   // Table (grouped rows) or Board (one column per status)
+let BL_GROUP = 'priority';     // table groups: priority | status | persona | none
+let BL_SORT = 'priority';      // priority | newest | oldest
+let BL_SHUT = {};              // collapsed table groups
+let BL_PICK = null;            // the property picker open in the panel: sev | kind | status
+let BL_NEW_ST = 'run';         // the column a "+" on the board adds to
+let BL_ITEMS = [], BL_ORDER = [];   // this render's rows, and the order ‹ › pages through
 
 /* Feather icons (feathericons.com, MIT) — the set this app already uses. */
 const BL_ICONS = {
@@ -34,6 +41,22 @@ const BL_ICONS = {
   info:   '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><line x1="12" y1="16" x2="12" y2="12"/><line x1="12" y1="8" x2="12.01" y2="8"/></svg>',
   x:      '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>',
   search: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="7"/><path d="m21 21-4.3-4.3"/></svg>',
+  table: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><path d="M3 10h18M10 3v18"/></svg>',
+  board: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 4h6M14 4h6"/><rect x="4" y="8" width="6" height="12" rx="2"/><rect x="14" y="8" width="6" height="6" rx="2"/></svg>',
+  sort: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 9l4-4 4 4M7 5v14M21 15l-4 4-4-4M17 19V5"/></svg>',
+  group: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 4 4 8l8 4 8-4-8-4M4 12l8 4 8-4M4 16l8 4 8-4"/></svg>',
+  chev: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m6 9 6 6 6-6"/></svg>',
+  left: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m15 6-6 6 6 6"/></svg>',
+  right: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m9 6 6 6-6 6"/></svg>',
+  check: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m5 12 5 5L20 7"/></svg>',
+  plus: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 5v14M5 12h14"/></svg>',
+  flag: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 5a5 5 0 0 1 7 0 5 5 0 0 0 7 0v9a5 5 0 0 1-7 0 5 5 0 0 0-7 0zM5 21v-7"/></svg>',
+  kind: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 6h16M4 12h10M4 18h6"/></svg>',
+  user: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="8" r="4"/><path d="M6 21v-2a4 4 0 0 1 4-4h4a4 4 0 0 1 4 4v2"/></svg>',
+  status: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="9" stroke-dasharray="3 3"/></svg>',
+  source: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M9 15l6-6M11 6l.46-.54a5 5 0 0 1 7.07 7.07L18 13M13 18l-.4.53a5.07 5.07 0 0 1-7.12 0 4.97 4.97 0 0 1 0-7.07L6 11"/></svg>',
+  cal: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 7a2 2 0 0 1 2-2h12a2 2 0 0 1 2 2v12a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2zM16 3v4M8 3v4M4 11h16"/></svg>',
+  doc: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M14 3v4a1 1 0 0 0 1 1h4"/><path d="M17 21H7a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h7l5 5v11a2 2 0 0 1-2 2zM9 13h6M9 17h4"/></svg>',
 };
 
 /* ---- markdown table parsing (pipe-escape aware) ---- */
@@ -352,7 +375,7 @@ function blRecommend(question, kind){
   BL_METHODS.forEach(m=>{ if(pick.length<3 && !pick.includes(m)) pick.push(m); });
   return { f, methods: pick.slice(0,3), primary, other };
 }
-const BL_RANK_LABEL = ['Start here', 'Or', 'Then, to be sure'];
+const BL_RANK_LABEL = ['Suggested first', 'Alternative', 'To cross-check'];   // a recommendation, never a verdict
 /* One sentence, one matched fragment from the question itself. The fragment is
    the researcher's own wording — never translated, only quoted. */
 function blWhy(sentence, hit, plain){
@@ -408,20 +431,16 @@ function blPersonaLink(name){
    inline panel used to hide behind a caret, given a permanent home. */
 function blMethodCards(q, kind){
   const rec = blRecommend(q, kind);
-  /* Where the answer lands in the graph, which skill writes it — true, and
-     nobody reading a method for the first time needs it on the card. It moved
-     into the sheet behind the ⓘ, with the explanation of the method itself. */
   return rec.methods.map((m,i)=>`
-    <div class="bl-m ${m.kind}">
-      <div class="bl-m-rank">${tr(BL_RANK_LABEL[i]||'Also')}</div>
-      <div class="bl-m-body">
-        <h4>${tr(m.label)}<span class="bl-m-kind">${BL_KINDS[m.kind].ico} ${tr(BL_KINDS[m.kind].label)}</span>
-          <button class="bl-m-info" data-act="about" data-m="${m.id}"
-            title="${esc(tr('What this method is'))}" aria-label="${esc(tr('What this method is'))}">${BL_ICONS.info}</button></h4>
-        <div class="bl-m-shape">${tr(m.shape)}</div>
-        <p class="bl-m-why"><b>${tr('Why this question:')}</b> ${m.why(rec.f)}</p>
-        <p class="bl-m-blind"><b>${tr('Won’t tell you:')}</b> ${tr(m.blind)}</p>
-      </div>
+    <div class="bl-m ${m.kind}${i?'':' first'}">
+      <span class="bl-m-rank">${tr(BL_RANK_LABEL[i]||'Also')}</span>
+      <span class="bl-m-body">
+        <b>${tr(m.label)}</b>
+        <span class="bl-m-shape">${tr(m.shape)} · <span class="bl-m-kind">${BL_KINDS[m.kind].ico} ${tr(BL_KINDS[m.kind].label)}</span></span>
+        ${i ? '' : `<span class="bl-m-why">${m.why(rec.f)}</span>`}
+      </span>
+      <span class="bl-m-side">
+        <button class="bl-m-info" data-act="about" data-m="${m.id}" title="${esc(tr('What this method is'))}" aria-label="${esc(tr('What this method is'))}">${BL_ICONS.info}</button></span>
     </div>`).join('');
 }
 /* ---------- the method sheet ----------
@@ -456,84 +475,150 @@ function blSheet(){
       </div>
     </aside>`;
 }
-function blDetailEmpty(){
-  return `<div class="bl-detail bl-detail-empty">
-      <h3>${esc(tr('Pick a question'))}</h3>
-      <p>${esc(tr('Every row carries what we already know about answering it: how urgent it looks, whether it needs a story or a number, and the two or three methods that fit — with what each one will not tell you.'))}</p>
+/* ---------- three states, two tables ----------
+   The file keeps two tables, open and closed. "In a study" is an open row whose
+   Status cell says so: the round is booked, the answer is not in yet. Answered
+   is the closed table — getting there always records what answered it. */
+const BL_STATUS = { run:{ label:'To run' }, study:{ label:'In a study' }, answered:{ label:'Answered' } };
+function blStatusOf(which, t, row){
+  if(which==='closed') return 'answered';
+  return /^(in[ -]?study|planned|booked|w badaniu|zaplanowan)/i.test(blGet(t,row,'status').trim()) ? 'study' : 'run';
+}
+/* every row of both tables, with what the page shows about it */
+function blItems(){
+  const out = [];
+  [['open', BL.open.table], ['closed', BL.closed.table]].forEach(([which, t])=> t.rows.forEach((row, i)=> out.push({
+    which, i, t, row, key: which+':'+i,
+    q: blGet(t,row,'question') || row.find(c=>c) || tr('(empty row)'),
+    persona: blGet(t,row,'persona').replace(/^[-—–\s]+$/,''),   // "—" in the cell means none
+    date: blGet(t,row,'date'), src: blGet(t,row,'source'),
+    S: blSevOf(t,row), K: blKindOf(t,row), st: blStatusOf(which,t,row) })));
+  return out;
+}
+const blRank = x => BL_SEV_ORDER.indexOf(x.S.sev);
+function blSorted(xs){
+  const newest = (a,b)=> (b.date||'').localeCompare(a.date||'');
+  const by = BL_SORT==='newest' ? newest : BL_SORT==='oldest' ? (a,b)=> -newest(a,b) : (a,b)=> blRank(a)-blRank(b) || newest(a,b);
+  return xs.slice().sort(by);
+}
+function blGroups(xs){
+  if(BL_GROUP==='none') return [{ id:'all', label: tr('All questions'), items: xs }];
+  if(BL_GROUP==='status') return ['run','study','answered'].map(st=>({ id:st, st, label: tr(BL_STATUS[st].label), items: xs.filter(x=> x.st===st) })).filter(g=> g.items.length);
+  if(BL_GROUP==='persona') return [...new Set(xs.map(x=> x.persona))].map(n=>({ id:'p:'+n, label: n || tr('No persona'), items: xs.filter(x=> x.persona===n) }));
+  return BL_SEV_ORDER.map(sev=>({ id:sev, sev, label: tr(BL_SEVS[sev].label), items: xs.filter(x=> x.S.sev===sev) })).filter(g=> g.items.length);
+}
+function blShortDate(d){
+  const m = String(d||'').match(/^(\d{4})-(\d{2})-(\d{2})/); if(!m) return esc(d||'');
+  return new Date(+m[1], +m[2]-1, +m[3]).toLocaleDateString(LANG==='pl' ? 'pl-PL' : 'en-GB', { day:'numeric', month:'short' });
+}
+/* ---- cells ----
+   A suggestion (nothing in the file) is drawn dashed with a "?"; a value
+   someone wrote is solid. The difference is the whole point of the column. */
+const blMark = sev => `<i class="bl-mark ${sev}" aria-hidden="true"></i>`;
+function blSevPill(x){
+  return `<span class="bl-pill sev-${x.S.sev}${x.S.sure?'':' guess'}" title="${esc(x.S.sure ? tr(BL_SEVS[x.S.sev].label) : tr('Suggested from the wording — nothing is written until you decide'))}">${blMark(x.S.sev)}${tr(BL_SEVS[x.S.sev].label)}${x.S.sure?'':'<span class="bl-qm">?</span>'}</span>`;
+}
+function blKindChip(x){
+  return `<span class="bl-kchip${x.K.sure?'':' guess'}" title="${esc(tr(BL_KINDS[x.K.kind].blurb))}">${BL_KINDS[x.K.kind].ico} ${tr(BL_KINDS[x.K.kind].label)}</span>`;
+}
+const blStChip = st => `<span class="bl-st st-${st}"><i aria-hidden="true"></i>${tr(BL_STATUS[st].label)}</span>`;
+function blWho(name, link){
+  if(!name) return `<span class="bl-who none">${tr('No persona')}</span>`;
+  const id = blPersonaLink(name), e = id && ENTITIES[id];
+  const face = e ? dxPortrait(e, 'bl-face') : `<span class="bl-face dx-noimg">${esc(name[0].toUpperCase())}</span>`;
+  return link && id
+    ? `<a class="bl-who" href="#${id}" title="${esc(tr('Open the persona'))}">${face}${esc(name)}<span class="bl-ext" aria-hidden="true">↗</span></a>`
+    : `<span class="bl-who">${face}${esc(name)}</span>`;
+}
+/* ---- Table: rows grouped (by priority unless you pick otherwise) ---- */
+function blTable(groups){
+  const th = `<div class="bl-tr bl-th"><span>${tr('Question')}</span><span>${tr('Priority')}</span><span>${tr('Type')}</span><span>${tr('Persona')}</span><span>${tr('Status')}</span><span class="r">${tr('Added')}</span></div>`;
+  const body = groups.map(g=>{
+    const shut = !!BL_SHUT[g.id];
+    return `<button class="bl-group${shut?' shut':''}" data-act="group" data-g="${esc(g.id)}" aria-expanded="${!shut}">${BL_ICONS.chev}${g.sev ? blMark(g.sev) : ''}${esc(g.label)}<span class="n">${g.items.length}</span></button>`
+      + (shut ? '' : g.items.map(x=> `
+      <div class="bl-tr${BL_SEL===x.key?' sel':''}" data-k="${x.key}" data-text="${esc(x.q.toLowerCase())}">
+        <button class="bl-tq" data-act="sel" data-k="${x.key}">${esc(x.q)}</button>
+        <span>${blSevPill(x)}</span><span>${blKindChip(x)}</span><span>${blWho(x.persona)}</span><span>${blStChip(x.st)}</span>
+        <span class="bl-date r">${blShortDate(x.date)}</span>
+      </div>`).join(''));
+  }).join('');
+  return `<div class="bl-table">${th}${body || `<div class="bl-empty">${tr('Nothing matches the filters.')}</div>`}
+    <button class="bl-add-row" data-act="new">${BL_ICONS.plus}${tr('New question')}</button></div>`;
+}
+/* ---- Board: one column per status; drag a card to move it ---- */
+function blBoard(xs){
+  const hint = { run:'Nothing to run.', study:'Drag a question here when a round is booked.', answered:'Answered questions keep a note on what answered them.' };
+  const col = st=>{
+    const cards = xs.filter(x=> x.st===st);
+    return `<section class="bl-col" data-drop="${st}" aria-label="${esc(tr(BL_STATUS[st].label))}">
+      <div class="bl-col-head"><span class="bl-col-pill">${blStChip(st)}<span class="n">${cards.length}</span></span>
+        ${st==='answered' ? '' : `<button class="bl-icon" data-act="new" data-st="${st}" title="${esc(tr('Add a question to this column'))}" aria-label="${esc(tr('Add a question to this column'))}">${BL_ICONS.plus}</button>`}</div>
+      ${cards.map(x=>{
+        const first = blRecommend(blGet(x.t,x.row,'question'), x.K.kind).methods[0];
+        return `<article class="bl-card${BL_SEL===x.key?' sel':''}" draggable="true" data-k="${x.key}" data-text="${esc(x.q.toLowerCase())}">
+          <div class="bl-card-top">${blSevPill(x)}${blKindChip(x)}</div>
+          <button class="bl-card-q" data-act="sel" data-k="${x.key}">${esc(x.q)}</button>
+          ${st==='answered' ? '' : `<div class="bl-card-next"><span>${tr('Suggested first')}</span>${tr(first.label)}</div>`}
+          <div class="bl-card-foot">${blWho(x.persona)}<span class="bl-date">${blShortDate(x.date)}</span></div>
+        </article>`; }).join('')}
+      ${cards.length ? '' : `<div class="bl-drop-hint">${tr(hint[st])}</div>`}
+      ${st==='answered' ? '' : `<button class="bl-add-row" data-act="new" data-st="${st}">${BL_ICONS.plus}${tr('New question')}</button>`}
+    </section>`;
+  };
+  return `<div class="bl-board">${col('run')}${col('study')}${col('answered')}</div>`;
+}
+/* ---- the side panel: one question, its properties, how to answer it ---- */
+function blPicker(kind, chip, options){
+  return `<span class="bl-pick-wrap"><button class="bl-chip-btn" data-act="pick" data-p="${kind}" aria-haspopup="listbox" aria-expanded="${BL_PICK===kind}">${chip}${BL_ICONS.chev}</button>
+    ${BL_PICK===kind ? `<span class="bl-menu" role="listbox">${options}</span>` : ''}</span>`;
+}
+function blPanel(){
+  if(!BL_EDIT && !BL_SEL) return '';
+  const shell = (top, body, foot) => `<div class="bl-scrim" data-act="deselect" aria-hidden="true"></div>
+    <aside class="bl-panel" role="dialog" aria-modal="false" aria-label="${esc(tr('Question'))}">
+      <div class="bl-p-top">${top}<button class="bl-icon" data-act="deselect" title="${esc(tr('Close'))}" aria-label="${esc(tr('Close'))}">${BL_ICONS.x}</button></div>
+      <div class="bl-p-body">${body}</div>${foot ? `<div class="bl-p-foot">${foot}</div>` : ''}${blSheet()}
+    </aside>`;
+  if(BL_EDIT) return shell(`<span class="bl-p-kick">${tr(BL_EDIT==='new' ? 'New question' : BL_MODE==='close' ? 'Mark as answered' : 'Edit question')}</span><span class="bl-p-gap"></span>`, blFormPane(), '');
+  const x = BL_ITEMS.find(i=> i.key===BL_SEL);
+  if(!x){ BL_SEL = null; return ''; }
+  const pos = BL_ORDER.indexOf(x.key), S = x.S, K = x.K, key = x.key;
+  const step = (d, ico, lab, off) => `<button class="bl-icon bl-step" data-act="step" data-d="${d}"${off?' disabled':''} title="${esc(tr(lab))}" aria-label="${esc(tr(lab))}">${ico}</button>`;
+  const top = `${step(-1, BL_ICONS.left, 'Previous question', pos<=0)}<span class="bl-p-kick">${tr('{n} of {m}').replace('{n}', pos+1).replace('{m}', BL_ORDER.length)}</span>${step(1, BL_ICONS.right, 'Next question', pos<0 || pos>=BL_ORDER.length-1)}
+    <span class="bl-p-gap"></span>
+    ${x.which==='open'
+      ? `<button class="btn btn-outline btn-sm" data-act="close" data-k="${key}" aria-label="${esc(tr('Mark as answered'))}" title="${esc(tr('Research answered it — move it down with a note on what answered it'))}">${BL_ICONS.check}<span class="bl-hide-sm">${tr('Mark as answered')}</span></button>`
+      : `<button class="btn btn-outline btn-sm" data-act="reopen" data-k="${key}">${tr('Reopen')}</button>`}
+    <button class="bl-icon bl-del" data-act="del" data-k="${key}" title="${esc(tr('Delete the row entirely'))}" aria-label="${esc(tr('Delete the row entirely'))}">${BL_ICONS.trash}</button>`;
+  const prop = (ico, label, val) => `<div class="bl-prop"><span class="bl-prop-l">${ico}${tr(label)}</span><span class="bl-prop-v">${val}</span></div>`;
+  const opt = (act, attrs, on, inner) => `<button role="option" aria-selected="${on}" data-act="${act}" data-k="${key}" ${attrs}>${inner}${on ? BL_ICONS.check : ''}</button>`;
+  const sevChip = `<span class="bl-pill solid sev-${S.sev}">${blMark(S.sev)}${tr(BL_SEVS[S.sev].label)}</span>`;
+  const sevMenu = BL_SEV_ORDER.map(v=> opt('sev', `data-sev="${v}"`, S.sure && S.sev===v, `${blMark(v)}${tr(BL_SEVS[v].label)}`)).join('')
+    + `<span class="bl-menu-note">${tr('Picking one makes it your call — written as locked, so no AI run changes it.')}${S.source==='human' ? ' '+tr('Pick it again to clear it.') : ''}</span>`;
+  const kindMenu = Object.keys(BL_KINDS).map(k=> opt('kind', `data-kind="${k}"`, K.sure && K.kind===k, `${BL_KINDS[k].ico} ${tr(BL_KINDS[k].label)}`)).join('')
+    + `<span class="bl-menu-note">${tr(BL_KINDS[K.kind].blurb)}</span>`;
+  const stMenu = ['run','study','answered'].map(st=> opt('status', `data-st="${st}"`, x.st===st, blStChip(st))).join('');
+  const sugg = `<span class="bl-sugg">${tr('suggested')}</span>`;
+  const body = `
+    <h2 class="bl-p-h">${tr('Question')}</h2>
+    <p class="bl-p-q">${esc(x.q)}</p>
+    <div class="bl-props">
+      ${prop(BL_ICONS.flag, 'Priority', blPicker('sev', sevChip, sevMenu) + (S.sure ? '' : sugg)
+        + dxTip(tr(S.source==='guess' ? 'Suggested, not decided' : S.source==='ai' ? 'Set by an AI run' : 'Your call'), `${tr(BL_SEVS[S.sev].blurb)} ${tr(BL_SEV_SOURCE[S.source])}${S.why ? ' <i>'+S.why+'</i>' : ''}`, 'right'))}
+      ${prop(BL_ICONS.kind, 'Type', blPicker('kind', `<span class="bl-kchip solid">${BL_KINDS[K.kind].ico} ${tr(BL_KINDS[K.kind].label)}</span>`, kindMenu) + (K.sure ? '' : sugg))}
+      ${prop(BL_ICONS.user, 'Persona', blWho(x.persona, true))}
+      ${prop(BL_ICONS.status, 'Status', blPicker('status', blStChip(x.st), stMenu))}
+      ${x.src ? prop(BL_ICONS.source, 'Came from', `<span class="bl-prop-text">${esc(x.src)}</span>`) : ''}
+      ${x.date ? prop(BL_ICONS.cal, 'Added', `<span class="bl-prop-text">${esc(x.date)}</span>`) : ''}
+    </div>
+    <div class="bl-p-sec">
+      <h3>${tr('Recommended validation path')}${dxTip(tr('A suggestion, not a verdict'), tr('Pairing qualitative observations with quantitative data gives you a fuller view of the topic: one shows why something happens, the other how common it is. The methods are read from the question’s wording — pick what fits your round.'), 'right')}</h3>
+      <div class="bl-m-list">${blMethodCards(blGet(x.t,x.row,'question'), K.kind)}</div>
     </div>`;
-}
-function blDetail(){
-  if(BL_EDIT) return blFormPane();
-  const at = BL_SEL ? blRowAt(BL_SEL) : null;
-  if(!at || !at.row){ BL_SEL = null; return blDetailEmpty(); }
-  const { which, t, row } = at;
-  const q = blGet(t,row,'question') || tr('(empty row)');
-  const date = blGet(t,row,'date'), persona = blGet(t,row,'persona');
-  const src = blGet(t,row,'source'), status = blGet(t,row,'status');
-  const pid = blPersonaLink(persona);
-  const { kind, sure } = blKindOf(t, row);
-  const S = blSevOf(t, row);
-  const K = BL_KINDS[kind];
-  return `<div class="bl-detail">
-    <div class="bl-d-head">
-      <div class="bl-d-q">${esc(q)}</div>
-      <div class="bl-meta">
-        ${persona ? (pid ? `<a class="bl-chip bl-link" href="#${pid}">${esc(persona)}</a>` : `<span class="bl-chip">${esc(persona)}</span>`) : ''}
-        ${src ? `<span class="bl-chip bl-src">${esc(src)}</span>` : ''}
-        ${status ? `<span class="bl-chip bl-state ${which==='open'?'on':''}">${esc(status)}</span>` : ''}
-      </div>
-      <div class="bl-d-acts">
-        <button class="btn btn-ghost btn-sm" data-act="edit" data-k="${BL_SEL}">${tr('Edit')}</button>
-        ${which==='open'
-          ? `<button class="btn btn-ghost btn-sm" data-act="close" data-k="${BL_SEL}" title="${esc(tr('Research answered it — move it down with a note on what answered it'))}">${tr('Mark as answered')}</button>`
-          : `<button class="btn btn-ghost btn-sm" data-act="reopen" data-k="${BL_SEL}" title="${esc(tr('Put it back on the list to run'))}">${tr('Reopen')}</button>`}
-        <button class="bl-del" data-act="del" data-k="${BL_SEL}" title="${esc(tr('Delete the row entirely'))}" aria-label="${esc(tr('Delete the row entirely'))}">${BL_ICONS.trash}</button>
-      </div>
-    </div>
-
-    <div class="bl-d-block">
-      <div class="bl-d-h">${tr('Set priority')}</div>
-      <div class="seg bl-sev-seg">${BL_SEV_ORDER.map(s=>
-        `<button data-act="sev" data-k="${BL_SEL}" data-sev="${s}" class="sev-opt ${s}${S.sev===s && S.sure ? ' active' : ''}" title="${esc(tr(BL_SEVS[s].blurb))}">${BL_SEVS[s].ico} ${tr(BL_SEVS[s].label)}</button>`).join('')}</div>
-      <p class="bl-d-note"><b class="sev-${S.sev}">${BL_SEVS[S.sev].ico} ${tr(BL_SEVS[S.sev].label)}${S.sure?'':' '+tr('(suggested)')}</b> — ${tr(BL_SEVS[S.sev].blurb)}</p>
-      ${S.source==='human' ? '' : `<p class="bl-d-note bl-prov prov-${S.source}">${tr(BL_SEV_SOURCE[S.source])}${S.why ? ' <i>'+S.why+'</i>' : ''}</p>`}
-    </div>
-
-    <div class="bl-d-block">
-      <div class="bl-d-h">${tr('Type of research')}</div>
-      <div class="seg bl-kind-seg">${Object.keys(BL_KINDS).map(k=>
-        `<button data-act="kind" data-k="${BL_SEL}" data-kind="${k}" class="${sure&&kind===k?'active':''}" title="${esc(tr(BL_KINDS[k].blurb))}">${tr(BL_KINDS[k].label)}</button>`).join('')}</div>
-      <p class="bl-d-note"><b>${K.ico} ${tr(K.label)}${sure?'':' '+tr('(suggested)')}</b> — ${tr(K.blurb)}</p>
-      ${sure?'':`<p class="bl-d-note bl-prov prov-guess">${tr('Guessed from the wording; nothing is written to the file until you confirm it.')}</p>`}
-    </div>
-
-    <div class="bl-d-block">
-      <div class="bl-d-h">${tr('How to answer it')}</div>
-      <div class="bl-m-list">${blMethodCards(blGet(t,row,'question'), kind)}</div>
-      <p class="bl-panel-foot">${tr('<b>Triangulation</b> — the name is from surveying: you fix a point from two others, and the third corner of the triangle is the thing you are locating. Same here — one question, seen through methods that fail in different ways. Three are suggested above; two is the minimum, and the third earns its place exactly when the first two disagree. Agreement raises confidence; disagreement is a finding, not something to average away.')}</p>
-    </div>
-    ${blSheet()}
-  </div>`;
-}
-/* One row in the left column: the question, in full, as the headline. The kind
-   tag and the date used to ride underneath — both are in the pane a click away,
-   and neither is something you scan a list by. What stays is the priority mark
-   you sort by eye on, who it came from, and the lock. */
-function blRowCard(which, idx, t, row){
-  const key = which+':'+idx;
-  const q = blGet(t,row,'question') || row.find(c=>c) || '(empty row)';
-  const persona = blGet(t,row,'persona').replace(/^[-—–\s]+$/,'');   // "—" in the cell means none
-  const { kind } = blKindOf(t, row);
-  const S = blSevOf(t, row);
-  const sel = BL_SEL===key;
-  return `<button class="bl-row${sel?' sel':''}" data-act="sel" data-k="${key}" data-kind="${kind}" aria-current="${sel}">
-    <span class="bl-sev-mark sev-${S.sev}${S.sure?'':' guess'}" title="${esc(tr(BL_SEVS[S.sev].label)+(S.sure?'':' — '+tr('suggested')))}">${BL_SEVS[S.sev].ico}</span>
-    <span class="bl-q">${esc(q)}</span>
-    ${persona || S.source==='human' ? `<span class="bl-meta">
-      ${persona ? `<span class="bl-chip">${esc(persona)}</span>` : ''}
-      ${S.source==='human' ? `<span class="bl-chip bl-lock" title="${esc(tr('Priority set by you — AI leaves it alone'))}">🔒</span>` : ''}
-    </span>` : ''}
-  </button>`;
+  const foot = `<button class="btn btn-primary" data-act="guide1" data-k="${key}" title="${esc(tr('Copies a prompt that turns this question into a discussion guide for real interviews'))}">${BL_ICONS.doc}${tr('Draft an interview guide')}</button>
+    <button class="btn btn-outline" data-act="edit" data-k="${key}">${tr('Edit')}</button>`;
+  return shell(top, body, foot);
 }
 function blField(h, i, val){
   if(/question/i.test(h)) return `<label class="bl-f"><span>${esc(tr(h))}</span><textarea class="set-input" data-i="${i}" rows="3" placeholder="${esc(tr('What do we need to hear from a real user?'))}">${esc(val)}</textarea></label>`;
@@ -563,7 +648,6 @@ function blFormPane(){
   const t = isNew ? BL.open.table : blRowAt(BL_EDIT).t;
   const row = isNew ? t.header.map(()=> '') : blRowAt(BL_EDIT).row;
   return `<div class="bl-detail bl-editing">
-    <div class="bl-d-head"><div class="bl-d-q">${tr(isNew ? 'New question' : closing ? 'Closing this question' : 'Edit question')}</div></div>
     ${closing ? `<div class="bl-form-head">${tr('The backlog is append-honest, so say what answered it. It moves to <b>Closed / turned into research</b>, it is not lost.')}</div>` : ''}
     ${isNew ? `<div class="bl-form-head">${tr('A question for <b>real</b> people. What a persona could not answer from data is exactly what belongs here.')}</div>` : ''}
     <div class="bl-form">
@@ -576,80 +660,13 @@ function blFormPane(){
     </div>
   </div>`;
 }
-/* the left column: one list at a time (open or answered), filtered by the
-   tiles above it and by the kind segment */
-/* the rows the list shows, most urgent first — "what is critical" is the
-   question you arrive with, so it is never at the bottom. Ties keep file order. */
-function blShown(){
-  const t = (BL_LIST==='open' ? BL.open : BL.closed).table;
-  const rank = r => BL_SEV_ORDER.indexOf(blSevOf(t,r).sev);
-  return t.rows.map((r,i)=>({r,i})).filter(({r})=>
-    (BL_KIND_FILTER==='all' || blKindOf(t,r).kind===BL_KIND_FILTER) &&
-    (BL_SEV_FILTER==='all'  || blSevOf(t,r).sev===BL_SEV_FILTER))
-    .sort((a,b)=> rank(a.r)-rank(b.r) || a.i-b.i);
-}
-function blListPane(){
-  const which = BL_LIST;
-  const sec = which==='open' ? BL.open : BL.closed;
-  const t = sec.table, rows = t.rows;
-  const shown = blShown();
-  const hidden = rows.length - shown.length;
-  const cards = shown.map(({r,i})=> blRowCard(which, i, t, r)).join('');
-  /* The heading is the status, not the section name: a question is either still
-     to be run, or already answered. That is the whole state machine, and it
-     belongs where you are looking at the list. */
-  return `<div class="bl-list">
-    <div class="bl-list-head">
-      <h3>${tr(which==='open' ? 'To run' : 'Answered')}<span class="n">${shown.length}${hidden?` / ${rows.length}`:''}</span></h3>
-    </div>
-    <label class="filter-pill bl-list-filter">
-      ${BL_ICONS.search}
-      <input id="blFilter" placeholder="${esc(tr('Filter questions…'))}" autocomplete="off" aria-label="${esc(tr('Filter backlog questions'))}">
-    </label>
-    <div class="bl-rows">${cards || `<div class="bl-empty">${rows.length
-      ? tr('Nothing matches the filters — {n} hidden.').replace('{n}', hidden)
-      : tr(which==='open' ? 'Nothing open. After the next persona conversation there will be.' : 'Nothing closed yet — questions land here once real research answered them.')}</div>`}</div>
-  </div>`;
-}
-/* the split, counted — a backlog that is 90% "how many" is a signal in itself:
-   you are trying to measure something nobody has understood yet */
-function blKindCounts(){
-  const c = { all:0, qualitative:0, quantitative:0, mixed:0 };
-  const t = (BL_LIST==='open' ? BL.open : BL.closed).table;
-  t.rows.forEach(r=>{ c.all++; c[blKindOf(t,r).kind]++; });
-  return c;
-}
-/* ---------- the tiles ----------
-   Priority at the top, because "what is critical" is the question you arrive
-   with. Each tile is also the filter for its own severity — one control, not a
-   readout plus a duplicate segment underneath it. */
-function blSevCounts(){
-  const t = (BL_LIST==='open' ? BL.open : BL.closed).table;
-  const c = { all: t.rows.length, critical:0, major:0, minor:0, guess:0, ai:0, human:0 };
-  t.rows.forEach(r=>{ const s = blSevOf(t,r); c[s.sev]++; c[s.source]++; });
-  return c;
-}
-function blTiles(c){
-  const tile = (k, label, n, cls) => `
-    <button class="bl-tile${BL_SEV_FILTER===k?' on':''} ${cls||''}" data-act="sevfilter" data-sev="${k}"
-            aria-pressed="${BL_SEV_FILTER===k}">
-      <span class="bl-tile-top">${k==='all' ? '' : `<i class="bl-sev-mark sev-${k}">${BL_SEVS[k].ico}</i>`}${esc(tr(label))}</span>
-      <span class="bl-tile-n">${n}</span>
-    </button>`;
-  return `<div class="bl-tiles">
-    ${tile('all', BL_LIST==='open' ? 'All to run' : 'All answered', c.all)}
-    ${tile('critical','Critical', c.critical, 'critical')}
-    ${tile('major','Major', c.major, 'major')}
-    ${tile('minor','Minor', c.minor, 'minor')}
-    <div class="bl-tile bl-tile-static">
-      <span class="bl-tile-top">${esc(tr('Who set them'))}</span>
-      <span class="bl-tile-prov">
-        <span title="${esc(tr('Set by you — locked'))}"><b>${c.human}</b> ${esc(tr('yours'))}</span>
-        <span title="${esc(tr('Written by an AI run'))}"><b>${c.ai}</b> ${esc(tr('AI'))}</span>
-        <span title="${esc(tr('Only a suggestion from the wording — nothing in the file'))}"><b>${c.guess}</b> ${esc(tr('suggested'))}</span>
-      </span>
-    </div>
-  </div>`;
+/* what the filter drawer narrows: status, type, priority. The Board always
+   shows every status — its columns ARE that filter. */
+function blFiltered(xs, board){
+  return xs.filter(x=>
+    (board || BL_LIST==='all' || (BL_LIST==='open' ? x.st!=='answered' : x.st==='answered')) &&
+    (BL_KIND_FILTER==='all' || x.K.kind===BL_KIND_FILTER) &&
+    (BL_SEV_FILTER==='all' || x.S.sev===BL_SEV_FILTER));
 }
 function blEmptyState(){
   if(WS!=='project') return `<div class="set-banner">${tr('The demo backlog could not be loaded.')}</div>`;
@@ -680,9 +697,9 @@ function renderBacklog(){
      this page and nothing else, and a Polish page under an English title is
      exactly the kind of seam that reads as a bug */
   pageTitle.textContent = tr('Research backlog');
-  pageSub.textContent = tr('The only thing a persona conversation may leave behind: questions for real people. Sharpen them here, then take them to an interview.');
   pageSub.style.display = '';
   if(raw==null){
+    pageSub.textContent = tr('The only thing a persona conversation may leave behind: questions for real people. Sharpen them here, then take them to an interview.');
     grid.innerHTML = blEmptyState();
     const pick = grid.querySelector('#blPick');
     if(pick) pick.onclick = async ()=>{ if(await loadFromPicker()) { await backlogEnter(); } };
@@ -691,73 +708,100 @@ function renderBacklog(){
     renderBacklogCount(); return;
   }
   BL = parseBacklog(raw);
+  BL_ITEMS = blItems();
   const personas = wsEntities().filter(e=>e.type==='Persona').map(e=> e.title);
-  const sandbox = WS==='demo';
-  const sevC = blSevCounts(), kindC = blKindCounts();
-  const nOpen = BL.open.table.rows.length, nClosed = BL.closed.table.rows.length;
-  // how many filters are actually narrowing the list — the badge on the button,
-  // so a filtered list can never look like the whole list
-  // an empty right pane on arrival is a dead end — open the most urgent question
-  if(!BL_EDIT && !(BL_SEL && blRowAt(BL_SEL).row)){ const f = blShown()[0]; BL_SEL = f ? BL_LIST+':'+f.i : null; }
-  const nFilters = (BL_KIND_FILTER!=='all'?1:0) + (BL_SEV_FILTER!=='all'?1:0) + (BL_LIST!=='open'?1:0);
+  const board = BL_VIEW==='board';
+  const shown = blFiltered(BL_ITEMS, board);
+  const groups = board ? null : blGroups(blSorted(shown));
+  // ‹ › in the panel walks the list in the order it is drawn
+  BL_ORDER = board ? ['run','study','answered'].flatMap(st=> blSorted(shown).filter(x=> x.st===st).map(x=> x.key))
+                   : groups.filter(g=> !BL_SHUT[g.id]).flatMap(g=> g.items.map(x=> x.key));
+  const nRun = BL_ITEMS.filter(x=> x.st!=='answered').length, nDone = BL_ITEMS.length - nRun;
+  const who = { guess:0, ai:0, human:0 }; BL_ITEMS.forEach(x=> who[x.S.source]++);
+  const kindC = { all: BL_ITEMS.length, qualitative:0, quantitative:0, mixed:0 }; BL_ITEMS.forEach(x=> kindC[x.K.kind]++);
+  /* the explanation, the provenance split and the demo note live behind one ⓘ:
+     the page itself carries the numbers and the questions */
+  const nStudy = BL_ITEMS.filter(x=> x.st==='study').length;
+  pageSub.innerHTML = `${trn(nRun-nStudy,'{n} to run','{n} to run','{n} do zbadania','{n} do zbadania','{n} do zbadania')}${nStudy ? ' · '+trn(nStudy,'{n} in a study','{n} in a study','{n} w badaniu','{n} w badaniu','{n} w badaniu') : ''} · ${trn(nDone,'{n} answered','{n} answered','{n} z odpowiedzią','{n} z odpowiedzią','{n} z odpowiedzią')}`
+    + dxTip(tr('Research backlog'), `${tr('The only thing a persona conversation may leave behind: questions for real people. A synthetic persona never creates findings — these get answered in interviews, tests or data, and the answer lands in the graph.')}
+      <br><br>${tr('Priorities:')} <b>${who.human}</b> ${tr('yours')} · <b>${who.ai}</b> ${tr('AI')} · <b>${who.guess}</b> ${tr('suggested')}.${WS==='demo' ? ' '+tr('Demo — edits stay in this browser') + '.' : ''} <a href="#help:interface">${tr('Help')}</a>`);
+  const nFilters = (BL_KIND_FILTER!=='all'?1:0) + (BL_SEV_FILTER!=='all'?1:0) + (!board && BL_LIST!=='open'?1:0);
+  const segBtn = (v, label, ico) => `<button data-act="view" data-v="${v}" aria-pressed="${BL_VIEW===v}" class="${BL_VIEW===v?'on':''}">${ico}${tr(label)}</button>`;
+  const sel = (id, ico, label, cur, opts) => `<label class="bl-tool">${ico}<span>${tr(label)}</span><select id="${id}" aria-label="${esc(tr(label))}">${opts.map(([v,l])=> `<option value="${v}"${cur===v?' selected':''}>${tr(l)}</option>`).join('')}</select></label>`;
+  const seg = (act, attr, cur, opts) => `<span class="seg seg-lg">${opts.map(([v,l,n])=> `<button data-act="${act}" data-${attr}="${v}" class="${cur===v?'active':''}">${tr(l)}${n==null?'':`<span class="seg-n">${n}</span>`}</button>`).join('')}</span>`;
   grid.innerHTML = `
     <datalist id="blPersonas">${personas.map(p=>`<option value="${esc(p)}"></option>`).join('')}</datalist>
     <datalist id="blSources">${['warm-up','known unknown (L1)','blind spot — AI-inferred, not raised','persona query','thin claim (L2)'].map(s=>`<option value="${esc(s)}"></option>`).join('')}</datalist>
-
-    ${blTiles(sevC)}
-
     <div class="bl-bar">
-      <button class="btn btn-outline btn-sm bl-filter-btn${nFilters?' on':''}" data-act="filters" aria-expanded="${BL_FILTERS_OPEN}">
-        ${BL_ICONS.filter} ${tr('Filter')}${nFilters?`<span class="bl-filter-n">${nFilters}</span>`:''}
-      </button>
-      <a class="bl-help-link" href="#help:interface" title="${esc(tr('How this page works, and what the terms mean'))}">${BL_ICONS.help} ${tr('Help')}</a>
-      ${sandbox ? `<span class="bl-sandbox">${tr('Demo — edits stay in this browser')}</span>` : ''}
+      <span class="bl-seg" role="group" aria-label="${esc(tr('View'))}">${segBtn('table','Table',BL_ICONS.table)}${segBtn('board','Board',BL_ICONS.board)}</span>
+      <span class="bl-sep" aria-hidden="true"></span>
+      <button class="bl-tool${nFilters?' on':''}" data-act="filters" aria-expanded="${BL_FILTERS_OPEN}">${BL_ICONS.filter}${tr('Filter')}${nFilters?`<span class="bl-filter-n">${nFilters}</span>`:''}</button>
+      ${sel('blSort', BL_ICONS.sort, 'Sort', BL_SORT, [['priority','Priority'],['newest','Newest first'],['oldest','Oldest first']])}
+      ${board ? '' : sel('blGroup', BL_ICONS.group, 'Group', BL_GROUP, [['priority','Priority'],['status','Status'],['persona','Persona'],['none','None']])}
+      <label class="bl-search">${BL_ICONS.search}<input id="blFilter" placeholder="${esc(tr('Search questions'))}" autocomplete="off" aria-label="${esc(tr('Search questions'))}"></label>
       <span class="bl-bar-acts">
-        ${BL_LIST==='open' && nOpen ? `<button class="btn btn-outline btn-sm" data-act="guide" title="${esc(tr('Copies a prompt that turns the questions on screen into a discussion guide for real interviews'))}">⧉ ${tr('Interview guide prompt')}</button>` : ''}
-        <button class="btn btn-primary btn-sm" data-act="new">＋ ${tr('Add a research question')}</button>
+        ${nRun ? `<button class="btn btn-outline btn-sm" data-act="guide" title="${esc(tr('Copies a prompt that turns the open questions into a discussion guide for real interviews'))}">${BL_ICONS.doc}${tr('Interview guide')}</button>` : ''}
+        <button class="btn btn-primary btn-sm" data-act="new">${BL_ICONS.plus}${tr('New question')}</button>
       </span>
     </div>
     ${BL_FILTERS_OPEN ? `<div class="bl-filters">
-      <div class="bl-filters-row">
-        <span class="bl-filters-lab">${tr('Status')}</span>
-        <span class="seg seg-lg bl-list-seg">
-          <button data-act="list" data-list="open" class="${BL_LIST==='open'?'active':''}">${tr('To run')}<span class="seg-n">${nOpen}</span></button>
-          <button data-act="list" data-list="closed" class="${BL_LIST==='closed'?'active':''}">${tr('Answered')}<span class="seg-n">${nClosed}</span></button>
-        </span>
-      </div>
-      <div class="bl-filters-row">
-        <span class="bl-filters-lab">${tr('Type of research')}</span>
-        <span class="seg seg-lg bl-kind-filter">${[['all','Everything'],['qualitative','◐ Qualitative'],['quantitative','▦ Quantitative'],['mixed','◑ Mixed']].map(([k,lab])=>
-          `<button data-act="kindfilter" data-kind="${k}" class="${BL_KIND_FILTER===k?'active':''}">${tr(lab)}<span class="seg-n">${kindC[k]}</span></button>`).join('')}</span>
-      </div>
+      ${board ? '' : `<div class="bl-filters-row"><span class="bl-filters-lab">${tr('Status')}</span>${seg('list','list',BL_LIST,[['open','To run',nRun],['closed','Answered',nDone],['all','Everything',BL_ITEMS.length]])}</div>`}
+      <div class="bl-filters-row"><span class="bl-filters-lab">${tr('Priority')}</span>${seg('sevfilter','sev',BL_SEV_FILTER,[['all','Everything'],['critical','● Critical'],['major','◆ Major'],['minor','○ Minor']])}</div>
+      <div class="bl-filters-row"><span class="bl-filters-lab">${tr('Type of research')}</span>${seg('kindfilter','kind',BL_KIND_FILTER,[['all','Everything',kindC.all],['qualitative','◐ Qualitative',kindC.qualitative],['quantitative','▦ Quantitative',kindC.quantitative],['mixed','◑ Mixed',kindC.mixed]])}</div>
     </div>` : ''}
-
-    <div class="bl-cols">
-      ${blListPane()}
-      ${blDetail()}
-    </div>`;
+    ${board ? blBoard(blSorted(shown)) : blTable(groups)}
+    ${blPanel()}`;
+  document.body.classList.toggle('bl-panel-open', !!(BL_SEL || BL_EDIT));
+  const so = grid.querySelector('#blSort'); if(so) so.onchange = ()=>{ BL_SORT = so.value; renderBacklog(); };
+  const gr = grid.querySelector('#blGroup'); if(gr) gr.onchange = ()=>{ BL_GROUP = gr.value; BL_SHUT = {}; renderBacklog(); };
   /* Typing filters the rows in place rather than re-rendering the page — the
-     caret stays where it is, and the count in the heading follows along so a
-     filtered list never passes for the whole list. */
+     caret stays where it is. */
   const filt = grid.querySelector('#blFilter');
   if(filt){
-    if(BL_TEXT){ filt.value = BL_TEXT; }
+    filt.value = BL_TEXT;
     const apply = ()=>{
       BL_TEXT = filt.value.trim();
       const f = BL_TEXT.toLowerCase();
-      let n = 0;
-      grid.querySelectorAll('.bl-rows .bl-row').forEach(r=>{
-        const hit = !f || r.textContent.toLowerCase().includes(f);
-        r.style.display = hit ? '' : 'none'; if(hit) n++;
-      });
-      const head = grid.querySelector('.bl-list-head h3 .n');
-      if(head && f) head.textContent = n + ' / ' + (BL_LIST==='open' ? nOpen : nClosed);
+      grid.querySelectorAll('.bl-tr[data-text], .bl-card[data-text]').forEach(r=>{ r.style.display = !f || r.dataset.text.includes(f) ? '' : 'none'; });
     };
     filt.oninput = apply;
     if(BL_TEXT) apply();
   }
+  /* Board: drag a card onto another column to change its status. The panel's
+     Status picker does the same for keyboard and touch. */
+  grid.querySelectorAll('.bl-card[draggable]').forEach(c=>{
+    c.ondragstart = ev=>{ ev.dataTransfer.setData('text/plain', c.dataset.k); ev.dataTransfer.effectAllowed = 'move'; c.classList.add('dragging'); };
+    c.ondragend = ()=> c.classList.remove('dragging');
+  });
+  grid.querySelectorAll('.bl-col[data-drop]').forEach(col=>{
+    col.ondragover = ev=>{ ev.preventDefault(); col.classList.add('over'); };
+    col.ondragleave = ev=>{ if(!col.contains(ev.relatedTarget)) col.classList.remove('over'); };
+    col.ondrop = ev=>{ ev.preventDefault(); col.classList.remove('over'); const k = ev.dataTransfer.getData('text/plain'); if(k) blMoveTo(k, col.dataset.drop); };
+  });
   const foc = grid.querySelector('.bl-editing textarea, .bl-editing input');
   if(foc) foc.focus();
+}
+/* to run ⇄ in a study ⇄ answered. Answered is never a silent move: it opens
+   the close form, because closing always records what answered it. */
+function blMoveTo(key, st){
+  const at = blRowAt(key); if(!at.row) return;
+  if(blStatusOf(at.which, at.t, at.row)===st) return;
+  BL_PICK = null;
+  if(st==='answered'){ BL_SEL = key; BL_EDIT = key; BL_MODE = 'close'; renderBacklog(); return; }
+  let t = at.t, row = at.row;
+  if(at.which==='closed'){ const open = BL.open.table; row = blRemap(at.row, at.t, open); at.t.rows.splice(at.idx, 1); open.rows.push(row); t = open; }
+  blSet(t, row, 'status', st==='study' ? 'in study' : 'open');
+  BL_SEL = at.which==='closed' ? 'open:'+(t.rows.length-1) : key;
+  blSave(blSerialize(BL), tr(st==='study' ? 'Moved to “In a study” ✓' : 'Back on the list to run ✓'));
+}
+/* the prompt that turns questions into a discussion guide, in the dialect of
+   the agent you use */
+function blCopyGuide(qs){
+  const agent = pjAgent();
+  const cmd = agent==='codex' ? '$interview-guide' : (agent==='gemini' || agent==='other') ? tr('Follow .claude/skills/interview-guide/SKILL.md.') : '/interview-guide';
+  const txt = cmd + '\n\n' + tr('Build the discussion guide for our next real interviews from these open questions in Research backlog.md, most urgent first:') + '\n' + qs.map(q=> '- '+q).join('\n') + promptLang();
+  const done = ()=> toast(tr('Prompt copied — paste it into your AI assistant ✓'));
+  if(navigator.clipboard && navigator.clipboard.writeText) navigator.clipboard.writeText(txt).then(done, ()=> fallbackCopy(txt, done)); else fallbackCopy(txt, done);
 }
 
 /* ---- actions ---- */
@@ -773,34 +817,44 @@ function blReadForm(card, header){
 }
 grid.addEventListener('click', ev=>{
   if(!BACKLOG_ACTIVE) return;
-  const b = ev.target.closest('button[data-act]'); if(!b) return;
+  // an open picker closes on the first click anywhere else
+  if(BL_PICK && !ev.target.closest('.bl-pick-wrap')){ BL_PICK = null; renderBacklog(); return; }
+  const b = ev.target.closest('[data-act]');
+  if(!b){   // a click anywhere on a table row opens it, not only on its text
+    const tr_ = ev.target.closest('.bl-tr[data-k]');
+    if(tr_ && !ev.target.closest('a')){ BL_SEL = tr_.dataset.k; BL_EDIT = null; BL_SHEET = null; renderBacklog(); }
+    return;
+  }
   const act = b.dataset.act, key = b.dataset.k;
+  if(act==='view'){ BL_VIEW = b.dataset.v; store.set('at-bl-view', BL_VIEW); renderBacklog(); return; }
+  if(act==='group'){ BL_SHUT[b.dataset.g] = !BL_SHUT[b.dataset.g]; renderBacklog(); return; }
+  if(act==='pick'){ BL_PICK = BL_PICK===b.dataset.p ? null : b.dataset.p; renderBacklog(); return; }
+  if(act==='deselect'){ BL_SEL = null; BL_EDIT = null; BL_MODE = 'edit'; BL_SHEET = null; BL_PICK = null; renderBacklog(); return; }
+  if(act==='step'){ const i = BL_ORDER.indexOf(BL_SEL) + (+b.dataset.d); if(BL_ORDER[i]){ BL_SEL = BL_ORDER[i]; BL_SHEET = null; renderBacklog(); } return; }
+  if(act==='status'){ blMoveTo(key, b.dataset.st); return; }
+  if(act==='guide1'){ const { t, row } = blRowAt(key); blCopyGuide([blGet(t,row,'question')]); return; }
   if(act==='filters'){ BL_FILTERS_OPEN = !BL_FILTERS_OPEN; renderBacklog(); return; }
   if(act==='about'){ BL_SHEET = b.dataset.m; renderBacklog(); return; }
   if(act==='about-close'){ BL_SHEET = null; renderBacklog(); return; }
-  if(act==='new'){ BL_EDIT='new'; BL_MODE='new'; renderBacklog(); return; }
-  if(act==='cancel'){ BL_EDIT=null; BL_MODE='edit'; renderBacklog(); return; }
+  if(act==='new'){ BL_EDIT='new'; BL_MODE='new'; BL_NEW_ST = b.dataset.st || 'run'; renderBacklog(); return; }
+  if(act==='cancel'){ BL_EDIT=null; BL_MODE='edit'; if(!(BL_SEL && blRowAt(BL_SEL).row)) BL_SEL = null; renderBacklog(); return; }
   if(act==='edit'){ BL_EDIT=key; BL_MODE='edit'; renderBacklog(); return; }
   /* The backlog's way out: the questions on screen, handed to /interview-guide
      in the dialect of the agent you use. A persona conversation leaves
      questions; this is where they become a real session. */
-  if(act==='guide'){
-    const t = BL.open.table, agent = pjAgent();
-    const qs = blShown().map(({r})=> '- ' + (blGet(t,r,'question') || r.find(c=>c))).join('\n');
-    const cmd = agent==='codex' ? '$interview-guide' : (agent==='gemini' || agent==='other') ? tr('Follow .claude/skills/interview-guide/SKILL.md.') : '/interview-guide';
-    const txt = cmd + '\n\n' + tr('Build the discussion guide for our next real interviews from these open questions in Research backlog.md, most urgent first:') + '\n' + qs + promptLang();
-    const done = ()=> toast(tr('Prompt copied — paste it into your AI assistant ✓'));
-    if(navigator.clipboard && navigator.clipboard.writeText) navigator.clipboard.writeText(txt).then(done, ()=> fallbackCopy(txt, done)); else fallbackCopy(txt, done);
+  if(act==='guide'){   // the open questions on screen, most urgent first
+    blCopyGuide(blSorted(blFiltered(BL_ITEMS, true).filter(x=> x.st!=='answered')).map(x=> x.q));
     return;
   }
-  if(act==='sel'){ BL_SEL = key; BL_EDIT = null; BL_SHEET = null; renderBacklog(); return; }
-  if(act==='list'){ BL_LIST = b.dataset.list; BL_SEL = null; BL_EDIT = null; renderBacklog(); return; }
+  if(act==='sel'){ BL_SEL = key; BL_EDIT = null; BL_SHEET = null; BL_PICK = null; renderBacklog(); return; }
+  if(act==='list'){ BL_LIST = b.dataset.list; renderBacklog(); return; }
   if(act==='kindfilter'){ BL_KIND_FILTER = b.dataset.kind; renderBacklog(); return; }
   if(act==='sevfilter'){ BL_SEV_FILTER = BL_SEV_FILTER===b.dataset.sev ? 'all' : b.dataset.sev; renderBacklog(); return; }
   /* Clicking a priority IS the human decision — so it is always written in the
      locked form. Clicking the one already locked clears it, back to whatever
      the wording (or the next AI run) suggests. */
   if(act==='sev'){
+    BL_PICK = null;
     const { t, row } = blRowAt(key);
     const cur = blNormSev(blGet(t, row, 'priority'));
     const pick = b.dataset.sev;
@@ -813,6 +867,7 @@ grid.addEventListener('click', ev=>{
     return;
   }
   if(act==='kind'){
+    BL_PICK = null;
     const { t, row } = blRowAt(key);
     const pick = b.dataset.kind;
     const same = blNormKind(blGet(t,row,'kind'))===pick;
@@ -836,7 +891,7 @@ grid.addEventListener('click', ev=>{
     const moved = blRemap(row, t, open);
     blSet(open, moved, 'status', 'open');
     t.rows.splice(idx,1); open.rows.push(moved);
-    BL_SEL = null;
+    BL_SEL = 'open:'+(open.rows.length-1);
     blSave(blSerialize(BL), tr('Back on the open list ✓'));
     return;
   }
@@ -847,9 +902,9 @@ grid.addEventListener('click', ev=>{
       const row = blReadForm(card, t.header);
       if(!blGet(t,row,'question')){ toast(tr('A question needs… a question')); return; }
       if(!blGet(t,row,'date')) blSet(t,row,'date', blToday());
-      if(!blGet(t,row,'status')) blSet(t,row,'status','open');
+      if(!blGet(t,row,'status')) blSet(t,row,'status', BL_NEW_ST==='study' ? 'in study' : 'open');
       t.rows.push(row);
-      BL_LIST = 'open'; BL_SEL = 'open:'+(t.rows.length-1);   // land on what you just wrote
+      BL_SEL = 'open:'+(t.rows.length-1);   // land on what you just wrote
       blSave(blSerialize(BL), tr('Question added to the backlog ✓'));
       return;
     }
@@ -873,7 +928,13 @@ grid.addEventListener('click', ev=>{
 /* Esc closes the method sheet before anything else on this page reacts to it —
    unless a <dialog> is up, and then Esc belongs to the dialog. */
 document.addEventListener('keydown', ev=>{
-  if(BACKLOG_ACTIVE && BL_SHEET && ev.key==='Escape' && !modalOpen()){ ev.stopPropagation(); BL_SHEET = null; renderBacklog(); }
+  if(!BACKLOG_ACTIVE || ev.key!=='Escape' || modalOpen()) return;
+  if(BL_PICK) BL_PICK = null;
+  else if(BL_SHEET) BL_SHEET = null;
+  else if(BL_EDIT){ BL_EDIT = null; BL_MODE = 'edit'; if(!(BL_SEL && blRowAt(BL_SEL).row)) BL_SEL = null; }
+  else if(BL_SEL) BL_SEL = null;
+  else return;
+  ev.stopPropagation(); renderBacklog();
 }, true);
 
 /* ---- page lifecycle ---- */
@@ -890,12 +951,13 @@ async function backlogEnter(){
   renderTabs();   // this page owns the active state — clear any graph-tab highlight
   // re-read from disk on entry: another tab or a Claude session may have appended
   if(WS==='project' && DIRHANDLE){ try{ BACKLOG_RAW = await readRepoFile(BACKLOG_FILE); }catch(err){} }
-  BL_EDIT = null; BL_MODE = 'edit'; BL_SHEET = null;
+  BL_EDIT = null; BL_MODE = 'edit'; BL_SHEET = null; BL_PICK = null; BL_SEL = null;
   renderBacklog(); renderBacklogCount(); window.scrollTo(0,0);
 }
 function backlogExit(){
   if(!BACKLOG_ACTIVE) return;
-  BACKLOG_ACTIVE = false; BL_EDIT = null; BL_MODE = 'edit';
+  BACKLOG_ACTIVE = false; BL_EDIT = null; BL_MODE = 'edit'; BL_SEL = null; BL_PICK = null;
+  document.body.classList.remove('bl-panel-open');
   backlogBtn.classList.remove('active');
   updatePageHead();
 }

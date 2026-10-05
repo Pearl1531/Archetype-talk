@@ -91,6 +91,26 @@ minutes a new visitor spends in it.
   section and opens the next card right away, and Esc backs out. A quote
   typed without quote marks is wrapped in them, and a trailing ` — source`
   stays outside.
+- **Research backlog, Dovetail-style.** The page has two views behind a
+  Table / Board switch:
+  - *Table* groups the questions by priority (or by status or persona), each
+    group foldable, with Priority, Type, Persona, Status and Added columns.
+  - *Board* has three columns, To run → In a study → Answered. Dragging a card
+    moves it; dropping it on Answered opens the close form, so closing still
+    records what answered the question.
+
+  One toolbar holds Filter, Sort, Group and the search. A question opens in a
+  side panel:
+  - ‹ › moves between questions.
+  - Priority, Type and Status are one chip each, with a picker. A pick is
+    written to the file as your call.
+  - The persona's name links to their page.
+  - A "Recommended validation path" lists three methods.
+
+  The priority tiles and the long subtitle are gone: the explanation and the
+  "who set it" split now sit behind one ⓘ. On a phone the rows become cards,
+  the board scrolls sideways and the panel fills the screen. *In a study* is a
+  new `Status` value, `in study`, documented in the backlog skill.
 - **Columns zooms like a spreadsheet.** On the research map's Columns view the
   wheel no longer shrinks the whole table. The column heads and widths hold
   still; zooming changes only the rows, both their spacing and the dots in
