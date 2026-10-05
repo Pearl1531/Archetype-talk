@@ -77,7 +77,6 @@ function posterCards(items, cls){
      Personas/_template.md documents it. */
 const PP_LINK_RE = /\s*\(→\s*([^)]*)\)\s*$/;
 const PP_LINKABLE = { q: 'Relevant Quotes', r: 'Potential Pain Relievers' };
-let PP_RO = null;
 /* the top-level bullets of one ## section with their line numbers in the file —
    the same bullets, in the same order, as posterBullets() shows */
 function ppRaw(md, sec){
@@ -103,27 +102,17 @@ function ppSetLinks(md, lineNo, names){
 async function ppSaveLinks(e, kind, idx, names, msg){
   const w = await ensureWritable(e); if(!w) return;
   const item = ppRaw(w.md, PP_LINKABLE[kind])[idx]; if(!item) return;
-  const keep = posterView.scrollTop;
-  if(await saveEntityText(w, ppSetLinks(w.md, item.i, names))){
-    posterOpen(w.id); posterView.scrollTop = keep;
-    toast(msg, {label: tr('Undo'), fn: async()=>{ await undoLastSave(); if(document.body.classList.contains('poster-open')){ posterOpen(w.id); posterView.scrollTop = keep; } }});
-  }
+  if(await saveEntityText(w, ppSetLinks(w.md, item.i, names))) ppAfterSave(w.id, msg);
 }
-/* draw the connections over the three columns and wire drag-to-connect,
-   click-to-remove and the keyboard checklist */
-function ppWireLinks(e, pains, quotes, reliev){
-  const box = posterView.querySelector('.pp-extra'); if(!box) return;
+/* ---------- the wire layer, shared by both three-column sections ----------
+   Cards carry data-pp-node; `edges` are {a, b, kind:'auto'|'man', …}. Draws
+   the curves, removes a written ('man') edge on click, and turns a drag from
+   a .pp-port onto another card into onConnect(fromNode, toNode). */
+let PP_ROS = [];
+function ppWires(box, edges, onRemove, onConnect){
   const svg = document.createElementNS('http://www.w3.org/2000/svg','svg');
   svg.setAttribute('class','pp-wires'); svg.setAttribute('aria-hidden','true');
   box.prepend(svg);
-  const keyIdx = {}; pains.forEach((p,i)=> keyIdx[ppPainKey(p).toLowerCase()] = i);
-  const edges = [];
-  quotes.forEach((q,qi)=>{
-    const auto = new Set();
-    pains.forEach((p,pi)=>{ if(q.b.sid && p.sid && q.b.sid===p.sid){ auto.add(pi); edges.push({ a:`q${qi}`, b:`p${pi}`, kind:'auto' }); } });
-    q.to.forEach(n=>{ const pi = keyIdx[n.toLowerCase()]; if(pi!=null && !auto.has(pi)) edges.push({ a:`q${qi}`, b:`p${pi}`, kind:'man', side:'q', idx:qi, name:n }); });
-  });
-  reliev.forEach((r,ri)=> r.to.forEach(n=>{ const pi = keyIdx[n.toLowerCase()]; if(pi!=null) edges.push({ a:`p${pi}`, b:`r${ri}`, kind:'man', side:'r', idx:ri, name:n }); }));
   const node = id => box.querySelector(`[data-pp-node="${id}"]`);
   const draw = ()=>{
     const B = box.getBoundingClientRect();
@@ -134,23 +123,16 @@ function ppWireLinks(e, pains, quotes, reliev){
       const x1 = a.right - B.left, y1 = a.top + a.height/2 - B.top, x2 = z.left - B.left, y2 = z.top + z.height/2 - B.top;
       const c = Math.max(30, (x2-x1)/2);
       const d = `M${x1} ${y1} C${x1+c} ${y1} ${x2-c} ${y2} ${x2} ${y2}`;
-      return `<path class="pp-wire ${ed.kind}" d="${d}"/>${ed.kind==='man' ? `<path class="pp-wire-hit" data-edge="${k}" d="${d}"><title>${esc(tr('Click to remove this connection'))}</title></path>` : ''}`;
-    }).join('') + '<path class="pp-wire drag" id="ppDrag" d=""/>';
-    svg.querySelectorAll('[data-edge]').forEach(h=> h.onclick = ()=>{
-      const ed = edges[+h.dataset.edge];
-      const cur = (ed.side==='q' ? quotes : reliev)[ed.idx].to.filter(n=> n.toLowerCase()!==ed.name.toLowerCase());
-      ppSaveLinks(e, ed.side, ed.idx, cur, tr('Connection removed'));
-    });
+      return `<path class="pp-wire ${ed.kind}${ed.long?' long':''}" d="${d}"/>${ed.kind==='man' ? `<path class="pp-wire-hit" data-edge="${k}" d="${d}"><title>${esc(tr('Click to remove this connection'))}</title></path>` : ''}`;
+    }).join('') + '<path class="pp-wire drag" d=""/>';
+    svg.querySelectorAll('[data-edge]').forEach(h=> h.onclick = ()=> onRemove(edges[+h.dataset.edge]));
   };
   draw();
-  if(PP_RO) PP_RO.disconnect();             // one observer per render of the poster
-  PP_RO = new ResizeObserver(draw); PP_RO.observe(box);
-  posterView.onclick = ev=>{ if(!ev.target.closest('.pp-pick, [data-pp-pick]')) posterView.querySelector('.pp-pick')?.remove(); };
-  /* drag from a port onto a card of the neighbouring column */
+  const ro = new ResizeObserver(draw); ro.observe(box); PP_ROS.push(ro);
   box.querySelectorAll('.pp-port').forEach(port=> port.onpointerdown = ev=>{
     ev.preventDefault();
     const from = port.closest('[data-pp-node]').dataset.ppNode;
-    const drag = svg.querySelector('#ppDrag');
+    const drag = svg.querySelector('.pp-wire.drag');
     const B = box.getBoundingClientRect(), P = port.getBoundingClientRect();
     const x1 = P.left + P.width/2 - B.left, y1 = P.top + P.height/2 - B.top;
     box.classList.add('pp-linking');
@@ -160,37 +142,153 @@ function ppWireLinks(e, pains, quotes, reliev){
       document.removeEventListener('pointermove', move); document.removeEventListener('pointerup', up);
       box.classList.remove('pp-linking'); drag.setAttribute('d','');
       const hit = document.elementFromPoint(upv.clientX, upv.clientY);
-      const to = hit && hit.closest && hit.closest('[data-pp-node]'); if(!to) return;
-      const pair = [from, to.dataset.ppNode].sort().join(' ');   // p… sorts before q… and r…
-      const m = pair.match(/^p(\d+) ([qr])(\d+)$/); if(!m) return;   // only quote↔pain and pain↔reliever
-      const pi = +m[1], side = m[2], idx = +m[3], list = side==='q' ? quotes : reliev;
-      const name = ppPainKey(pains[pi]);
-      if(list[idx].to.some(n=> n.toLowerCase()===name.toLowerCase()) || (side==='q' && list[idx].b.sid && list[idx].b.sid===pains[pi].sid)) return;
-      ppSaveLinks(e, side, idx, [...list[idx].to, name], tr('Connected ✓ — written into the file'));
+      const to = hit && hit.closest && hit.closest('[data-pp-node]');
+      if(to && box.contains(to) && to.dataset.ppNode !== from) onConnect(from, to.dataset.ppNode);
     };
     document.addEventListener('pointermove', move); document.addEventListener('pointerup', up);
   });
-  /* the same thing without a mouse: a checklist of pains per quote / reliever */
+}
+/* a checklist popover on one card — the keyboard / touch way to the same links */
+function ppPickMenu(btn, title, rows, onToggle){
+  const old = posterView.querySelector('.pp-pick'); if(old){ old.remove(); if(old.dataset.for===btn.dataset.ppPick) return; }
+  const menu = document.createElement('div');
+  menu.className = 'pp-pick'; menu.dataset.for = btn.dataset.ppPick; menu.setAttribute('role','group'); menu.setAttribute('aria-label', title);
+  menu.innerHTML = `<b>${esc(title)}</b>` + (rows.length ? rows.map((r,i)=>
+    `<label class="${r.auto?'auto':''}"><input type="checkbox" data-row="${i}"${r.on?' checked':''}${r.auto?' disabled':''}> <span>${esc(r.label)}${r.note?` <small>${esc(r.note)}</small>`:''}</span></label>`).join('')
+    : `<small>${esc(tr('Nothing to connect in this section yet.'))}</small>`);
+  btn.closest('.pp-card').appendChild(menu);
+  menu.querySelectorAll('input[data-row]:not([disabled])').forEach(cb=> cb.onchange = ()=> onToggle(rows[+cb.dataset.row], cb.checked));
+  menu.querySelector('input:not([disabled])')?.focus();
+}
+/* re-render the poster where it was, then offer Undo for the save that just happened */
+function ppAfterSave(personaId, msg){
+  const keep = posterView.scrollTop;
+  posterOpen(personaId); posterView.scrollTop = keep;
+  toast(msg, {label: tr('Undo'), fn: async()=>{ await undoLastSave(); if(document.body.classList.contains('poster-open')){ posterOpen(personaId); posterView.scrollTop = keep; } }});
+}
+
+/* Additional information: quote → pain → reliever */
+function ppWireLinks(e, pains, quotes, reliev){
+  const box = posterView.querySelector('.pp-extra'); if(!box) return;
+  const keyIdx = {}; pains.forEach((p,i)=> keyIdx[ppPainKey(p).toLowerCase()] = i);
+  const edges = [];
+  quotes.forEach((q,qi)=>{
+    const auto = new Set();
+    pains.forEach((p,pi)=>{ if(q.b.sid && p.sid && q.b.sid===p.sid){ auto.add(pi); edges.push({ a:`q${qi}`, b:`p${pi}`, kind:'auto' }); } });
+    q.to.forEach(n=>{ const pi = keyIdx[n.toLowerCase()]; if(pi!=null && !auto.has(pi)) edges.push({ a:`q${qi}`, b:`p${pi}`, kind:'man', side:'q', idx:qi, name:n }); });
+  });
+  reliev.forEach((r,ri)=> r.to.forEach(n=>{ const pi = keyIdx[n.toLowerCase()]; if(pi!=null) edges.push({ a:`p${pi}`, b:`r${ri}`, kind:'man', side:'r', idx:ri, name:n }); }));
+  const listOf = side => side==='q' ? quotes : reliev;
+  ppWires(box, edges,
+    ed=> ppSaveLinks(e, ed.side, ed.idx, listOf(ed.side)[ed.idx].to.filter(n=> n.toLowerCase()!==ed.name.toLowerCase()), tr('Connection removed')),
+    (from, to)=>{
+      const m = [from, to].sort().join(' ').match(/^p(\d+) ([qr])(\d+)$/); if(!m) return;   // only quote↔pain and pain↔reliever
+      const pi = +m[1], side = m[2], idx = +m[3], item = listOf(side)[idx], name = ppPainKey(pains[pi]);
+      if(item.to.some(n=> n.toLowerCase()===name.toLowerCase()) || (side==='q' && item.b.sid && item.b.sid===pains[pi].sid)) return;
+      ppSaveLinks(e, side, idx, [...item.to, name], tr('Connected ✓ — written into the file'));
+    });
   box.querySelectorAll('[data-pp-pick]').forEach(btn=> btn.onclick = ev=>{
     ev.stopPropagation();
-    const [side, idx] = [btn.dataset.ppPick[0], +btn.dataset.ppPick.slice(1)];
-    const item = (side==='q' ? quotes : reliev)[idx];
-    const old = posterView.querySelector('.pp-pick'); if(old){ old.remove(); if(old.dataset.for===btn.dataset.ppPick) return; }
-    const menu = document.createElement('div');
-    menu.className = 'pp-pick'; menu.dataset.for = btn.dataset.ppPick; menu.setAttribute('role','group');
-    menu.setAttribute('aria-label', tr('Connect to pains'));
-    menu.innerHTML = `<b>${tr('Connect to pains')}</b>` + pains.map((p,pi)=>{
+    const side = btn.dataset.ppPick[0], idx = +btn.dataset.ppPick.slice(1), item = listOf(side)[idx];
+    ppPickMenu(btn, tr('Connect to pains'), pains.map(p=>{
       const name = ppPainKey(p), auto = side==='q' && item.b.sid && item.b.sid===p.sid;
-      const on = auto || item.to.some(n=> n.toLowerCase()===name.toLowerCase());
-      return `<label class="${auto?'auto':''}"><input type="checkbox" data-pain="${pi}"${on?' checked':''}${auto?' disabled':''}> <span>${esc(p.t)}${auto?` <small>${tr('same signal')}</small>`:''}</span></label>`;
-    }).join('');
-    btn.closest('.pp-card').appendChild(menu);
-    menu.querySelectorAll('input[data-pain]:not([disabled])').forEach(cb=> cb.onchange = ()=>{
-      const name = ppPainKey(pains[+cb.dataset.pain]);
-      const next = cb.checked ? [...item.to, name] : item.to.filter(n=> n.toLowerCase()!==name.toLowerCase());
-      ppSaveLinks(e, side, idx, next, tr(cb.checked ? 'Connected ✓ — written into the file' : 'Connection removed'));
+      return { name, label: p.t, auto, note: auto ? tr('same signal') : '', on: auto || item.to.some(n=> n.toLowerCase()===name.toLowerCase()) };
+    }), (row, on)=> ppSaveLinks(e, side, idx, on ? [...item.to, row.name] : item.to.filter(n=> n.toLowerCase()!==row.name.toLowerCase()),
+        tr(on ? 'Connected ✓ — written into the file' : 'Connection removed')));
+  });
+}
+
+/* Persona improvement: evidence (L2) → signal (L3) → correlation (L4).
+   These ARE the research links, so they are written where the graph keeps
+   them: evidence ↔ signal in the Signal's `evidences:` list, signal or
+   evidence ↔ correlation as a link inside that correlation's block in the
+   persona file. A link only in a signal's prose is drawn dashed — edit the
+   file to change it. */
+const ppRel = x => '../' + encodeURI(x.file).replace(/'/g, '%27');
+const ppBase = x => x.file.split('/').pop().replace(/\.md$/i, '');
+function ppSigEvidence(sig){
+  const fm = [].concat(sig.fm.evidences||[]).map(n=> String(n).trim()).filter(Boolean);
+  const fmIds = new Set(fm.map(n=> byBasename[n.toLowerCase()]).filter(Boolean));
+  const bodyIds = new Set();
+  for(const m of sig.body.matchAll(MD_LINK)){ const id = resolveRef(m[2]); if(id && ENTITIES[id] && ENTITIES[id].type==='Evidence' && !fmIds.has(id)) bodyIds.add(id); }
+  return { fm, fmIds, bodyIds };
+}
+async function ppSaveSigEvidence(personaId, sigId, evId, on){
+  const sig = ENTITIES[sigId], ev = ENTITIES[evId]; if(!sig || !ev) return;
+  const w = await ensureWritable(sig); if(!w) return;
+  const name = ppBase(ev);
+  const list = ppSigEvidence(w).fm.filter(n=> n.toLowerCase()!==name.toLowerCase());
+  if(on) list.push(name);
+  const val = list.length ? '[' + list.map(n=> "'" + n.replace(/'/g, "''") + "'").join(', ') + ']' : null;
+  if(await saveEntityText(w, setFmField(w.md, 'evidences', val)))
+    ppAfterSave(personaId, tr(on ? 'Connected ✓ — written into the signal file' : 'Connection removed'));
+}
+/* add or remove one [link] inside the persona's **title** correlation block */
+function ppCorrSetLink(md, title, target, on){
+  const lines = md.split('\n');
+  const h = lines.findIndex(l=> /^##\s*Correlations\s*$/i.test(l)); if(h < 0) return md;
+  let t = -1;
+  for(let i = h+1; i < lines.length && !/^#{1,2}\s/.test(lines[i]); i++){
+    const m = lines[i].match(/^\*\*(.+?)\*\*\s*$/); if(m && stripLinks(m[1])===title){ t = i; break; }
+  }
+  if(t < 0) return md;
+  let end = t+1; while(end < lines.length && lines[end].trim() && !/^\*\*.+\*\*\s*$/.test(lines[end]) && !/^#{1,2}\s/.test(lines[end])) end++;
+  if(on){
+    const link = `[${target.title}](${ppRel(target)})`;
+    const li = lines.slice(t+1, end).findIndex(l=> /^\s*\[/.test(l));
+    if(li >= 0) lines[t+1+li] = lines[t+1+li].replace(/\s*$/, '') + ' ' + link;
+    else lines.splice(t+1, 0, link);
+  } else {
+    for(let i = t+1; i < end; i++){
+      lines[i] = lines[i].replace(MD_LINK, (all, lab, href)=> resolveRef(href)===target.id ? '' : all).replace(/\s{2,}/g,' ').replace(/^\s+|\s+$/g,'');
+    }
+    for(let i = end-1; i > t; i--) if(!lines[i].trim()) { lines.splice(i, 1); }
+  }
+  return lines.join('\n');
+}
+async function ppSaveCorr(e, title, targetId, on){
+  const w = await ensureWritable(e); if(!w) return;
+  const md = ppCorrSetLink(w.md, title, ENTITIES[targetId], on);
+  if(md !== w.md && await saveEntityText(w, md)) ppAfterSave(w.id, tr(on ? 'Connected ✓ — written into the file' : 'Connection removed'));
+}
+function ppWireFlow(e, evid, sigs, corr){
+  const box = posterView.querySelector('.pp-improve'); if(!box) return;
+  const eIdx = {}; evid.forEach((x,i)=>{ if(x.sid) eIdx[x.sid] = i; });
+  const sIdx = {}; sigs.forEach((x,i)=> sIdx[x.id] = i);
+  const edges = [];
+  sigs.forEach((x,si)=>{
+    const r = ppSigEvidence(ENTITIES[x.id]);
+    r.fmIds.forEach(id=>{ if(eIdx[id]!=null) edges.push({ a:`e${eIdx[id]}`, b:`s${si}`, kind:'man', sig:x.id, ev:id }); });
+    r.bodyIds.forEach(id=>{ if(eIdx[id]!=null) edges.push({ a:`e${eIdx[id]}`, b:`s${si}`, kind:'auto' }); });
+  });
+  corr.forEach((c,ci)=> c.links.forEach(l=>{
+    if(l.id && sIdx[l.id]!=null) edges.push({ a:`s${sIdx[l.id]}`, b:`c${ci}`, kind:'man', corr:c.title, target:l.id });
+    else if(l.id && eIdx[l.id]!=null) edges.push({ a:`e${eIdx[l.id]}`, b:`c${ci}`, kind:'man', long:true, corr:c.title, target:l.id });
+  }));
+  ppWires(box, edges,
+    ed=> ed.corr ? ppSaveCorr(e, ed.corr, ed.target, false) : ppSaveSigEvidence(e.id, ed.sig, ed.ev, false),
+    (from, to)=>{
+      const [a, b] = [from, to].sort();   // c… < e… < s…
+      const ev = n => evid[+n.slice(1)].sid, sg = n => sigs[+n.slice(1)].id, co = n => corr[+n.slice(1)];
+      if(a[0]==='e' && b[0]==='s'){ if(ev(a)) ppSaveSigEvidence(e.id, sg(b), ev(a), true); }
+      else if(a[0]==='c'){
+        const target = b[0]==='s' ? sg(b) : ev(b);
+        if(target && !co(a).links.some(l=> l.id===target)) ppSaveCorr(e, co(a).title, target, true);
+      }
     });
-    menu.querySelector('input:not([disabled])')?.focus();
+  box.querySelectorAll('[data-pp-pick]').forEach(btn=> btn.onclick = ev=>{
+    ev.stopPropagation();
+    const kind = btn.dataset.ppPick[0], idx = +btn.dataset.ppPick.slice(1);
+    if(kind==='s'){
+      const r = ppSigEvidence(ENTITIES[sigs[idx].id]);
+      ppPickMenu(btn, tr('Backed by evidence'), evid.filter(x=> x.sid).map(x=>({ id: x.sid, label: x.src || x.t,
+        auto: r.bodyIds.has(x.sid), note: r.bodyIds.has(x.sid) ? tr('linked in the signal’s text') : '', on: r.fmIds.has(x.sid) || r.bodyIds.has(x.sid) })),
+        (row, on)=> ppSaveSigEvidence(e.id, sigs[idx].id, row.id, on));
+    } else {
+      const c = corr[idx], has = new Set(c.links.map(l=> l.id));
+      ppPickMenu(btn, tr('Stands on'), [...sigs.map(x=>({ id:x.id, label:'● '+x.t })), ...evid.filter(x=> x.sid).map(x=>({ id:x.sid, label:'○ '+(x.src || x.t) }))]
+        .map(r=> Object.assign(r, { on: has.has(r.id) })), (row, on)=> ppSaveCorr(e, c.title, row.id, on));
+    }
   });
 }
 
@@ -220,7 +318,7 @@ function posterOpen(id){
   });
   // always offered: saving goes through ensureWritable, which asks for the folder when it has to
   const port = side => `<span class="pp-port pp-port-${side}" title="${esc(tr('Drag onto a card to connect'))}"></span>`;
-  const pick = id => `<button type="button" class="pp-pick-btn" data-pp-pick="${id}" title="${esc(tr('Connect to pains'))}" aria-label="${esc(tr('Connect to pains'))}">⟷</button>`;
+  const pick = (id, label) => `<button type="button" class="pp-pick-btn" data-pp-pick="${id}" title="${esc(label || tr('Connect to pains'))}" aria-label="${esc(label || tr('Connect to pains'))}">⟷</button>`;
   /* sec = canonical ## heading → the label grows count + add/full-list actions,
      and an empty section renders as an honest gap instead of vanishing */
   const col=(label,icon,html,sec,count)=>{
@@ -257,10 +355,10 @@ function posterOpen(id){
     </section>
     ${(evid.length||sigs.length||corr.length)?`
     <div class="pp-divider"><span>${tr('Persona improvement')}</span></div>
-    <section class="pp-flow">
-      ${flowCol(tr('Level 2'),tr('Evidence — desk research'), evid.length?posterCards(evid):'')}
-      ${flowCol(tr('Level 3'),tr('Signal — interviews'), sigs.length?sigs.map(s=>`<div class="pp-card pp-linkcard" data-goto="${s.id}"><b>${esc(s.t)}</b>${esc(s.sub)}</div>`).join(''):'')}
-      ${flowCol(tr('Level 4'),tr('Correlation — Signal + Evidence'), corr.length?corr.map(c=>`<div class="pp-card pp-corr"><b>${esc(c.title)}</b>${esc(c.txt)}${c.links.length?`<div class="pp-refs">${c.links.map(l=>{ const x=l.id&&ENTITIES[l.id]; return x?`<a class="pp-ref" data-goto="${l.id}">${ICONS[x.type]||''}${esc(l.label)}</a>`:`<span class="pp-ref pp-ref-off" title="${esc(tr('File not found in this workspace'))}">${esc(l.label)}</span>`; }).join('')}</div>`:''}${c.opp.map(o=>`<div class="pp-opp">${tr('Opportunity:')} ${esc(o)}</div>`).join('')}</div>`).join(''):'')}
+    <section class="pp-flow pp-improve">
+      ${flowCol(tr('Level 2'),tr('Evidence — desk research'), evid.length?evid.map((b,i)=>`<div class="pp-card" data-pp-node="e${i}">${esc(b.t)}${b.sub?`<div class="pp-sub">${esc(b.sub)}</div>`:''}${posterSrc(b)}${b.sid?port('r'):''}</div>`).join(''):'')}
+      ${flowCol(tr('Level 3'),tr('Signal — interviews'), sigs.length?sigs.map((s,i)=>`<div class="pp-card pp-linkcard" data-pp-node="s${i}">${port('l')}<b data-goto="${s.id}">${esc(s.t)}</b>${esc(s.sub)}${pick('s'+i, tr('Backed by evidence'))}${port('r')}</div>`).join(''):'')}
+      ${flowCol(tr('Level 4'),tr('Correlation — Signal + Evidence'), corr.length?corr.map((c,ci)=>`<div class="pp-card pp-corr" data-pp-node="c${ci}">${port('l')}${pick('c'+ci, tr('Stands on'))}<b>${esc(c.title)}</b>${esc(c.txt)}${c.links.length?`<div class="pp-refs">${c.links.map(l=>{ const x=l.id&&ENTITIES[l.id]; return x?`<a class="pp-ref" data-goto="${l.id}">${ICONS[x.type]||''}${esc(l.label)}</a>`:`<span class="pp-ref pp-ref-off" title="${esc(tr('File not found in this workspace'))}">${esc(l.label)}</span>`; }).join('')}</div>`:''}${c.opp.map(o=>`<div class="pp-opp">${tr('Opportunity:')} ${esc(o)}</div>`).join('')}</div>`).join(''):'')}
     </section>`:''}
     <div class="pp-divider"><span>${tr('Additional information')}</span></div>
     <section class="pp-flow pp-extra">
@@ -280,7 +378,10 @@ function posterOpen(id){
   posterView.querySelectorAll('[data-pp-list]').forEach(b=> b.onclick=()=> ppListOpen(e.id, b.dataset.ppList));
   posterView.querySelectorAll('[data-pp-add]').forEach(b=> b.onclick=()=> ppListOpen(e.id, b.dataset.ppAdd, {add:true}));
   posterView.querySelectorAll('[data-goto]').forEach(el=> el.onclick=()=>{ close(); location.hash='#'+el.dataset.goto; });
+  PP_ROS.forEach(r=> r.disconnect()); PP_ROS = [];   // observers belong to one render
+  ppWireFlow(e, evid, sigs, corr);
   ppWireLinks(e, pains, quotes, reliev);
+  posterView.onclick = ev=>{ if(!ev.target.closest('.pp-pick, [data-pp-pick]')) posterView.querySelector('.pp-pick')?.remove(); };
 }
 
 /* append "- text" at the end of ## sec (creating the section if missing) */

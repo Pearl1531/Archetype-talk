@@ -62,6 +62,14 @@ minutes a new visitor spends in it.
   and any agent reads it as written. The convention is documented in
   `Personas/_template.md` and the ai-persona skill's template reference.
   **File schema:** this token is new and optional.
+- **The same connections in *Persona improvement*** (evidence → signal →
+  correlation). Here the lines are the research links themselves, so they are
+  written where the graph already keeps them, and no new syntax is needed:
+  - evidence ↔ signal goes in the Signal's `evidences:` list;
+  - signal or evidence ↔ correlation goes in as a link inside that
+    correlation's block in the persona file;
+  - a link that only appears in a signal's prose is drawn dashed and edited in
+    the file.
 - **Three views of the research map** — *Columns* (one column per type with
   its count on top), *Free* (an Obsidian-style layout where files settle by
   how they link, dot size by link count) and *Flow* (the Sankey, band

@@ -555,6 +555,11 @@ const PL = {
   'Map': 'Mapa',
   'Flow': 'Przepływ',
   // Overview + rail, Editorial (2026-10)
+  'Nothing to connect in this section yet.': 'W tej sekcji nie ma jeszcze czego łączyć.',
+  'Connected ✓ — written into the signal file': 'Połączone ✓ — zapisane w pliku sygnału',
+  'Backed by evidence': 'Poparte dowodami',
+  'Stands on': 'Opiera się na',
+  'linked in the signal’s text': 'link w treści sygnału',
   'Click to remove this connection': 'Kliknij, żeby usunąć to połączenie',
   'Drag onto a card to connect': 'Przeciągnij na kartę, żeby połączyć',
   'Connect to pains': 'Połącz z bólami',

@@ -190,3 +190,11 @@
   .pp-pick small { color: var(--text-dim); }
   .pp-pick input { margin-top: 2px; accent-color: var(--accent); }
   @media print { .pp-port, .pp-pick-btn, .pp-pick { display: none !important; } }
+  /* Persona improvement shares the wire layer; the wires run under the cards
+     there, because evidence → correlation skips the signal column */
+  .pp-improve { position: relative; column-gap: 72px; }
+  .pp-improve .pp-card { position: relative; z-index: 1; }
+  .pp-improve .pp-wires { z-index: 0; }
+  .pp-improve .pp-port, .pp-improve .pp-pick-btn, .pp-improve .pp-pick { z-index: 4; }
+  .pp-wire.long { stroke-opacity: .55; }
+  .pp-improve b[data-goto] { cursor: pointer; }
