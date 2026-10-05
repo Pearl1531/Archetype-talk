@@ -78,6 +78,13 @@ minutes a new visitor spends in it.
   also rises toward you and leans after the cursor, its stream lifts one beat
   per link behind it, and the wires bend along. With reduced motion the cards
   stay flat.
+- **Add and remove Persona improvement elements from the poster.** Each level
+  has *+ Add*: evidence becomes a bullet under `## Evidences`, a signal comes
+  in as a Pain that links it, and a correlation is a new block under
+  `## Correlations` that must stand on at least one signal or evidence. The bin
+  on a card removes it from the persona file only. The Evidence and Signal
+  files stay, and a detached signal loses every link to it. Each removal asks
+  you to type `delete` first, and the toast offers Undo.
 - **Three views of the research map** — *Columns* (one column per type with
   its count on top), *Free* (an Obsidian-style layout where files settle by
   how they link, dot size by link count) and *Flow* (the Sankey, band

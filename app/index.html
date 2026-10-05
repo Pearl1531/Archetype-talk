@@ -2049,6 +2049,31 @@
   .pp-wire.auto.hot { stroke-opacity: .85; }
   .pp-focus .pp-wire-hit:not(.hot) { pointer-events: none; }
   .pp-wire-hit:hover + .pp-wire, .pp-wire-hit:hover { stroke: color-mix(in srgb, var(--accent) 30%, transparent); }
+
+  /* adding / removing Persona improvement elements */
+  .pp-lv-row { display: flex; align-items: flex-start; justify-content: space-between; gap: 8px; }
+  .pp-lv-row .pp-act { flex: none; }
+  .pp-del { position: absolute; top: 6px; right: 10px; z-index: 4; width: 26px; height: 26px; border-radius: 8px;
+    display: grid; place-items: center; color: var(--text-dim); opacity: 0; transition: opacity .12s, color .12s, background .12s; }
+  .pp-card:has(.pp-pick-btn) .pp-del { right: 40px; }
+  .pp-card:hover .pp-del, .pp-del:focus-visible { opacity: 1; }
+  .pp-del:hover { background: color-mix(in srgb, var(--accent) 10%, transparent); color: var(--accent-text, var(--accent)); }
+  .pp-modal { width: 520px; }
+  .pp-modal p { margin: 0 0 var(--s-3); line-height: 1.5; color: var(--text-soft); }
+  .pp-modal blockquote { margin: 0 0 var(--s-3); padding: 8px 12px; border-left: 2px solid var(--accent);
+    background: var(--bg-elev-2); border-radius: 0 var(--r-md) var(--r-md) 0; color: var(--text); }
+  .pp-modal code { font-family: var(--font-mono); font-size: 14px; }
+  .pp-modal .set-input { width: 100%; }
+  .pp-del-word { font-family: var(--font-mono); text-transform: none; color: var(--accent-text, var(--accent)); }
+  @media print { .pp-del, .pp-lv-row .pp-act { display: none !important; } }
+  .pp-modal .pp-keep { font-size: var(--text-caption); color: var(--text-dim); }
+  .pp-modal .btn-danger:not([disabled]) { background: var(--accent); border-color: var(--accent); color: #fff; }
+  /* the hover tools float over the first line like a small toolbar, so they read over text */
+  .pp-improve .pp-del, .pp-improve .pp-pick-btn { background: var(--bg-elev); border: 1px solid var(--line);
+    box-shadow: 0 2px 6px -2px rgba(10,10,10,.12); }
+  .pp-improve .pp-pick-btn:hover { background: var(--bg-elev-2); }
+  .pp-improve .pp-del:hover { background: color-mix(in srgb, var(--accent) 10%, var(--bg-elev)); border-color: var(--accent); }
+  .pp-improve .pp-card:has(.pp-pick-btn) .pp-del { right: 42px; }
   /* ============ Research backlog page (.bl-*) ============
      A reading list, not a spreadsheet: the question is the headline, its
      provenance (date / persona / source-level) sits underneath as quiet chips.
@@ -7355,6 +7380,47 @@ const PL = {
   'same signal': 'ten sam sygnał',
   'Connected ✓ — written into the file': 'Połączone ✓ — zapisane w pliku',
   'Connection removed': 'Połączenie usunięte',
+  'Add to this persona — written into the file': 'Dodaj do tej persony — zapis w pliku',
+  'Correlation name': 'Nazwa korelacji',
+  'Name required.': 'Nazwa jest wymagana.',
+  'Remove from this persona': 'Usuń z tej persony',
+  'Delete': 'Usuń',
+  'Type {w} to confirm': 'Wpisz {w}, żeby potwierdzić',
+  'Saved under “## {sec}” in {file}.': 'Zapis pod „## {sec}” w {file}.',
+  'Add evidence': 'Dodaj dowód',
+  'Add signal': 'Dodaj sygnał',
+  'Add correlation': 'Dodaj korelację',
+  'Add to persona': 'Dodaj do persony',
+  'Evidence file': 'Plik dowodu',
+  'Signal file': 'Plik sygnału',
+  'Every Evidence file in this project is already on this persona — create a new one first.': 'Każdy plik dowodu z tego projektu jest już przy tej personie — najpierw utwórz nowy.',
+  'Every Signal file in this project is already on this persona — extract new findings first.': 'Każdy plik sygnału z tego projektu jest już przy tej personie — najpierw wyciągnij nowe obserwacje.',
+  'What it confirms about this persona': 'Co potwierdza w tej personie',
+  'Say what it confirms.': 'Napisz, co potwierdza.',
+  'The pain it shows, in your words': 'Ból, który pokazuje — twoimi słowami',
+  'A persona takes a signal in through a pain that links it.': 'Persona przyjmuje sygnał przez ból, który do niego linkuje.',
+  'Describe the pain.': 'Opisz ból.',
+  'What emerges when you put them together': 'Co wyłania się, gdy je zestawić',
+  'Opportunity (optional)': 'Szansa (opcjonalnie)',
+  'Add a signal or evidence first — a correlation stands on them.': 'Najpierw dodaj sygnał lub dowód — korelacja na nich stoi.',
+  'This persona already has a correlation with that name.': 'Ta persona ma już korelację o tej nazwie.',
+  'Tick at least one signal or evidence it stands on.': 'Zaznacz co najmniej jeden sygnał lub dowód, na którym stoi.',
+  'Evidence added ✓': 'Dowód dodany ✓',
+  'Signal added ✓': 'Sygnał dodany ✓',
+  'Correlation added ✓': 'Korelacja dodana ✓',
+  'Undo stays available right after.': 'Zaraz potem możesz cofnąć.',
+  'Remove evidence from persona': 'Usuń dowód z persony',
+  'This line is deleted from “## Evidences” in {file}:': 'Ta linia zostanie usunięta z „## Evidences” w {file}:',
+  'The Evidence file itself stays.': 'Sam plik dowodu zostaje.',
+  'Evidence removed': 'Dowód usunięty',
+  'Detach signal from persona': 'Odłącz sygnał od persony',
+  'Every link to “{t}” leaves {file} ({n}) — in pains, quotes, correlations. A pain or quote that only named this signal loses its source; words inside sentences stay.': 'Każdy link do „{t}” znika z {file} ({n}) — w bólach, cytatach, korelacjach. Ból lub cytat, który wskazywał tylko ten sygnał, traci źródło; słowa w zdaniach zostają.',
+  'The Signal file stays — it is interview data.': 'Plik sygnału zostaje — to dane z wywiadu.',
+  'Signal detached': 'Sygnał odłączony',
+  'Delete correlation': 'Usuń korelację',
+  'The whole “{t}” block is deleted from “## Correlations” in {file}.': 'Cały blok „{t}” zostanie usunięty z „## Correlations” w {file}.',
+  'The signals and evidence it stood on stay.': 'Sygnały i dowody, na których stała, zostają.',
+  'Correlation deleted': 'Korelacja usunięta',
   'Eased by:': 'Łagodzi to:',
   '+{n} set aside': '+{n} odłożona',
   'Based on': 'Na podstawie',
@@ -14470,14 +14536,16 @@ async function ppSaveSigEvidence(personaId, sigId, evId, on){
     ppAfterSave(personaId, tr(on ? 'Connected ✓ — written into the signal file' : 'Connection removed'));
 }
 /* add or remove one [link] inside the persona's **title** correlation block */
+function ppCorrStart(lines, title){
+  const h = lines.findIndex(l=> /^##\s*Correlations\s*$/i.test(l)); if(h < 0) return -1;
+  for(let i = h+1; i < lines.length && !/^#{1,2}\s/.test(lines[i]); i++){
+    const m = lines[i].match(/^\*\*(.+?)\*\*\s*$/); if(m && stripLinks(m[1])===title) return i;
+  }
+  return -1;
+}
 function ppCorrSetLink(md, title, target, on){
   const lines = md.split('\n');
-  const h = lines.findIndex(l=> /^##\s*Correlations\s*$/i.test(l)); if(h < 0) return md;
-  let t = -1;
-  for(let i = h+1; i < lines.length && !/^#{1,2}\s/.test(lines[i]); i++){
-    const m = lines[i].match(/^\*\*(.+?)\*\*\s*$/); if(m && stripLinks(m[1])===title){ t = i; break; }
-  }
-  if(t < 0) return md;
+  const t = ppCorrStart(lines, title); if(t < 0) return md;
   let end = t+1; while(end < lines.length && lines[end].trim() && !/^\*\*.+\*\*\s*$/.test(lines[end]) && !/^#{1,2}\s/.test(lines[end])) end++;
   if(on){
     const link = `[${target.title}](${ppRel(target)})`;
@@ -14522,6 +14590,8 @@ function ppWireFlow(e, evid, sigs, corr){
         if(target && !co(a).links.some(l=> l.id===target)) ppSaveCorr(e, co(a).title, target, true);
       }
     });
+  box.querySelectorAll('[data-pp-new]').forEach(b=> b.onclick = ()=> ppAddImprovement(e, b.dataset.ppNew, evid, sigs, corr));
+  box.querySelectorAll('[data-pp-del]').forEach(b=> b.onclick = ev=>{ ev.stopPropagation(); ppDeleteImprovement(e, b.dataset.ppDel, evid, sigs, corr); });
   box.querySelectorAll('[data-pp-pick]').forEach(btn=> btn.onclick = ev=>{
     ev.stopPropagation();
     const kind = btn.dataset.ppPick[0], idx = +btn.dataset.ppPick.slice(1);
@@ -14536,6 +14606,134 @@ function ppWireFlow(e, evid, sigs, corr){
         .map(r=> Object.assign(r, { on: has.has(r.id) })), (row, on)=> ppSaveCorr(e, c.title, row.id, on));
     }
   });
+}
+
+/* ---------- adding and removing Persona improvement elements ----------
+   Everything is written into the persona file, never elsewhere: evidence is a
+   bullet under ## Evidences, a signal comes in as a Pain that links it (L3
+   cards are the Signals the persona links), a correlation is a block under
+   ## Correlations. Removing works on the persona file only — the Evidence and
+   Signal files are research data and stay. A delete asks for the word
+   "delete", like Jira; Undo is in the toast afterwards. */
+function ppDialog({ title, body, ok, danger, check, run }){
+  let dlg = document.getElementById('ppModal');
+  if(!dlg){ dlg = document.createElement('dialog'); dlg.className = 'modal'; dlg.id = 'ppModal'; document.body.appendChild(dlg); }
+  dlg.setAttribute('aria-label', title);
+  dlg.innerHTML = `<form class="modal-card pp-modal">
+    <div class="modal-head"><h2>${esc(title)}</h2><button type="button" class="modal-x" data-x aria-label="${esc(tr('Close'))}">✕</button></div>
+    <div class="modal-body">${body}</div>
+    <div class="modal-foot"><span class="idea-valid"></span>
+      <button type="button" class="btn btn-ghost btn-sm" data-x>${tr('Cancel')}</button>
+      <button type="submit" class="btn btn-sm ${danger ? 'btn-danger' : 'btn-primary'}" disabled>${esc(ok)}</button></div></form>`;
+  const form = dlg.querySelector('form'), go = form.querySelector('[type=submit]'), msg = form.querySelector('.idea-valid');
+  const close = ()=> dlg.close();
+  form.querySelectorAll('[data-x]').forEach(b=> b.onclick = close);
+  dlg.onclick = ev=>{ if(ev.target === dlg) close(); };
+  dlg.onkeydown = ev=>{ if(ev.key === 'Escape') ev.stopPropagation(); };   // closes the dialog, not the poster behind it
+  let touched = false;
+  const validate = ()=>{ const err = check(form.elements); msg.textContent = touched && err ? err.trim() : ''; go.disabled = !!err; };
+  form.oninput = form.onchange = ()=>{ touched = true; validate(); };
+  form.onsubmit = async ev=>{ ev.preventDefault(); if(check(form.elements)) return; close(); await run(form.elements); };
+  dlg.showModal(); validate();
+  form.querySelector('.modal-body input, .modal-body textarea, .modal-body select')?.focus();
+}
+function ppConfirmDelete(title, what, run){
+  ppDialog({ title, ok: tr('Delete'), danger: true,
+    body: `<div class="pp-del-what">${what}</div>
+      <div class="idea-field"><label for="ppDelWord">${tr('Type {w} to confirm').replace('{w}', '<b class="pp-del-word">delete</b>')}</label>
+      <input id="ppDelWord" name="word" autocomplete="off" spellcheck="false" autocapitalize="off"></div>`,
+    check: f=> f.word.value.trim().toLowerCase()==='delete' ? '' : ' ', run });
+}
+async function ppSavePersona(e, fn, msg){
+  const w = await ensureWritable(e); if(!w) return;
+  const md = fn(w.md);
+  if(md !== w.md && await saveEntityText(w, md)) ppAfterSave(w.id, msg);
+}
+const ppSameWs = (e, type) => Object.values(ENTITIES).filter(x=> x.type===type && !!x.fm.demo===!!e.fm.demo).sort((a,b)=> a.title.localeCompare(b.title));
+const ppField = (label, inner) => `<div class="idea-field"><label>${label}</label>${inner}</div>`;
+const ppMdLink = x => `[${x.title}](${ppRel(x)})`;
+function ppAddImprovement(e, kind, evid, sigs, corr){
+  const where = sec => `<div class="pp-hint">${tr('Saved under “## {sec}” in {file}.').replace('{sec}', sec).replace('{file}', esc(e.file))}</div>`;
+  const pickFile = (type, have, label, empty) => {
+    const list = ppSameWs(e, type).filter(x=> !have.has(x.id));
+    return list.length ? ppField(label, `<select name="pick" class="set-input">${list.map(x=> `<option value="${esc(x.id)}">${esc(x.title)}</option>`).join('')}</select>`)
+      : `<div class="pp-empty">${empty}</div>`;
+  };
+  if(kind==='e') return ppDialog({ title: tr('Add evidence'), ok: tr('Add to persona'),
+    body: pickFile('Evidence', new Set(evid.map(b=> b.sid)), tr('Evidence file'), tr('Every Evidence file in this project is already on this persona — create a new one first.'))
+      + ppField(tr('What it confirms about this persona'), '<textarea name="txt" rows="3"></textarea>') + where('Evidences'),
+    check: f=> !f.pick ? ' ' : f.txt.value.trim() ? '' : tr('Say what it confirms.'),
+    run: f=> ppSavePersona(e, md=> ppAppend(md, 'Evidences', '- ' + ppMdLink(ENTITIES[f.pick.value]) + ' ' + ppOneLine(f.txt.value)), tr('Evidence added ✓')) });
+  if(kind==='s') return ppDialog({ title: tr('Add signal'), ok: tr('Add to persona'),
+    body: pickFile('Signal', new Set(sigs.map(x=> x.id)), tr('Signal file'), tr('Every Signal file in this project is already on this persona — extract new findings first.'))
+      + ppField(tr('The pain it shows, in your words'), '<textarea name="txt" rows="3"></textarea>')
+      + `<div class="pp-hint">${tr('A persona takes a signal in through a pain that links it.')} ${tr('Saved under “## {sec}” in {file}.').replace('{sec}', 'Pains').replace('{file}', esc(e.file))}</div>`,
+    check: f=> !f.pick ? ' ' : f.txt.value.trim() ? '' : tr('Describe the pain.'),
+    run: f=> ppSavePersona(e, md=> ppAppend(md, 'Pains', '- ' + ppMdLink(ENTITIES[f.pick.value]) + ' ' + ppOneLine(f.txt.value)), tr('Signal added ✓')) });
+  const src = [...sigs.map(x=> ({ id: x.id, label: x.t, t: tr('Signal') })), ...evid.filter(b=> b.sid).map(b=> ({ id: b.sid, label: b.src || b.t, t: tr('Evidence') }))];
+  ppDialog({ title: tr('Add correlation'), ok: tr('Add to persona'),
+    body: ppField(tr('Correlation name'), '<input name="title" autocomplete="off">')
+      + ppField(tr('What emerges when you put them together'), '<textarea name="txt" rows="3"></textarea>')
+      + ppField(tr('Opportunity (optional)'), '<input name="opp" autocomplete="off">')
+      + ppField(tr('Stands on'), src.length ? `<div class="idea-pick"><div class="idea-pick-list">${src.map(x=> `<label class="idea-opt"><input type="checkbox" name="on" value="${esc(x.id)}"> <span class="t">${esc(x.t)}</span> ${esc(x.label)}</label>`).join('')}</div></div>`
+        : `<div class="pp-empty">${tr('Add a signal or evidence first — a correlation stands on them.')}</div>`)
+      + where('Correlations'),
+    check: f=>{ const t = f.title.value.trim();
+      if(!t) return tr('Name required.');
+      if(corr.some(c=> c.title.toLowerCase()===t.toLowerCase())) return tr('This persona already has a correlation with that name.');
+      return [...document.querySelectorAll('#ppModal [name=on]:checked')].length ? '' : tr('Tick at least one signal or evidence it stands on.'); },
+    run: f=>{
+      const on = [...document.querySelectorAll('#ppModal [name=on]:checked')].map(c=> ENTITIES[c.value]).filter(Boolean);
+      const block = [`**${ppOneLine(f.title.value).replace(/\*/g, '')}**`, on.map(ppMdLink).join(' '), ppOneLine(f.txt.value), f.opp.value.trim() && `→ Opportunity: ${ppOneLine(f.opp.value)}`].filter(Boolean).join('\n');
+      return ppSavePersona(e, md=> ppAppend(md, 'Correlations', block, '\n\n'), tr('Correlation added ✓'));
+    } });
+}
+/* drop the idx-th bullet of ## sec with its indented sub-lines */
+function ppDropBullet(md, sec, idx){
+  const r = ppRaw(md, sec)[idx]; if(!r) return md;
+  const lines = md.split('\n'); let n = 1;
+  while(r.i + n < lines.length && /^\s+\S/.test(lines[r.i + n])) n++;
+  lines.splice(r.i, n);
+  return lines.join('\n');
+}
+/* drop one **title** block from ## Correlations, up to the next block or rule */
+function ppDropCorr(md, title){
+  const lines = md.split('\n'), t = ppCorrStart(lines, title); if(t < 0) return md;
+  let end = t + 1;
+  while(end < lines.length && !/^\*\*.+\*\*\s*$/.test(lines[end]) && !/^#{1,2}\s/.test(lines[end]) && !/^(-{3,}|\*{3,})\s*$/.test(lines[end])) end++;
+  while(end > t + 1 && !lines[end-1].trim() && /^\*\*/.test(lines[end] || '')) end--;   // keep the gap before the next block
+  lines.splice(t, end - t);
+  while(t > 0 && t < lines.length && !lines[t-1].trim() && !lines[t].trim()) lines.splice(t, 1);   // no double gap left behind
+  return lines.join('\n');
+}
+/* detach a signal: every link to it leaves the persona file. A source link
+   (leading a bullet, trailing a line, or a line of links) goes whole; one
+   inside a sentence keeps its words. Lines left empty go too. */
+function ppDetachSignal(md, sigId){
+  const out = [];
+  md.split('\n').forEach(l=>{
+    let x = l.replace(MD_LINK, (all, lab, href)=> resolveRef(href)===sigId ? `\u0000${lab}\u0001` : all);
+    if(x === l){ out.push(l); return; }
+    x = x.replace(/^(\s*(?:- )?)\u0000[^\u0001]*\u0001\s*/, '$1').replace(/\s*(?:[—–]\s*)?\u0000[^\u0001]*\u0001\s*$/, '').replace(/\u0000([^\u0001]*)\u0001/g, '$1');
+    if(x.trim() && !/^\s*-\s*$/.test(x)) out.push(x);
+  });
+  return out.join('\n');
+}
+const ppSignalLinkCount = (md, sigId) => [...md.matchAll(MD_LINK)].filter(m=> resolveRef(m[2])===sigId).length;
+function ppDeleteImprovement(e, node, evid, sigs, corr){
+  const k = node[0], i = +node.slice(1), file = `<code>${esc(e.file)}</code>`, keep = t => `<p class="pp-keep">${t} ${tr('Undo stays available right after.')}</p>`;
+  if(k==='e'){ const b = evid[i];
+    return ppConfirmDelete(tr('Remove evidence from persona'),
+      `<p>${tr('This line is deleted from “## Evidences” in {file}:').replace('{file}', file)}</p><blockquote>${esc(b.t)}</blockquote>${keep(tr('The Evidence file itself stays.'))}`,
+      ()=> ppSavePersona(e, md=> ppDropBullet(md, 'Evidences', i), tr('Evidence removed'))); }
+  if(k==='s'){ const x = sigs[i], n = ppSignalLinkCount(e.md, x.id);
+    return ppConfirmDelete(tr('Detach signal from persona'),
+      `<p>${tr('Every link to “{t}” leaves {file} ({n}) — in pains, quotes, correlations. A pain or quote that only named this signal loses its source; words inside sentences stay.').replace('{t}', esc(x.t)).replace('{file}', file).replace('{n}', n)}</p>${keep(tr('The Signal file stays — it is interview data.'))}`,
+      ()=> ppSavePersona(e, md=> ppDetachSignal(md, x.id), tr('Signal detached'))); }
+  const c = corr[i];
+  ppConfirmDelete(tr('Delete correlation'),
+    `<p>${tr('The whole “{t}” block is deleted from “## Correlations” in {file}.').replace('{t}', esc(c.title)).replace('{file}', file)}</p>${keep(tr('The signals and evidence it stood on stay.'))}`,
+    ()=> ppSavePersona(e, md=> ppDropCorr(md, c.title), tr('Correlation deleted')));
 }
 
 function posterOpen(id){
@@ -14573,7 +14771,8 @@ function posterOpen(id){
     const body = html || `<div class="pp-empty">${tr('Nothing in this section yet — an honest gap, nothing invented. Add the first entry or fill it from research.')}</div>`;
     return `<div class="pp-col"><div class="pp-label">${icon||''}<span>${label}</span>${acts}</div>${body}</div>`;
   };
-  const flowCol=(lv,name,cards)=> cards?`<div class="pp-col"><div class="pp-lv"><b>${lv}:</b> ${name}</div><span class="pp-dot"></span>${cards}</div>`:'';
+  const flowCol=(lv,name,cards,kind)=> `<div class="pp-col"><div class="pp-lv-row"><div class="pp-lv"><b>${lv}:</b> ${name}</div><button type="button" class="pp-act" data-pp-new="${kind}" title="${esc(tr('Add to this persona — written into the file'))}">＋ ${tr('Add')}</button></div><span class="pp-dot"></span>${cards||`<div class="pp-empty">${tr('Nothing here yet.')}</div>`}</div>`;
+  const del = id => `<button type="button" class="pp-del" data-pp-del="${id}" title="${esc(tr('Remove from this persona'))}" aria-label="${esc(tr('Remove from this persona'))}"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 7l16 0"/><path d="M10 11l0 6"/><path d="M14 11l0 6"/><path d="M5 7l1 12a2 2 0 0 0 2 2h8a2 2 0 0 0 2 -2l1 -12"/><path d="M9 7v-3a1 1 0 0 1 1 -1h4a1 1 0 0 1 1 1v3"/></svg></button>`;
 
   posterView.innerHTML = `
     <div class="pp-top">
@@ -14599,13 +14798,12 @@ function posterOpen(id){
       ${col(tr('Potential gains'), ICONS.IdeaForImprovement, gains.length?`<div class="pp-grid">${posterCards(gains,'pp-gain')}</div>`:'', 'Potential Gains', gains.length)}
       ${col(tr('Pains'), ICONS.Signal, pains.length?`<div class="pp-grid">${posterCards(pains,'pp-pain')}</div>`:'', 'Pains', pains.length)}
     </section>
-    ${(evid.length||sigs.length||corr.length)?`
     <div class="pp-divider"><span>${tr('Persona improvement')}</span></div>
     <section class="pp-flow pp-improve">
-      ${flowCol(tr('Level 2'),tr('Evidence — desk research'), evid.length?evid.map((b,i)=>`<div class="pp-card" data-pp-node="e${i}">${esc(b.t)}${b.sub?`<div class="pp-sub">${esc(b.sub)}</div>`:''}${posterSrc(b)}${b.sid?port('r'):''}</div>`).join(''):'')}
-      ${flowCol(tr('Level 3'),tr('Signal — interviews'), sigs.length?sigs.map((s,i)=>`<div class="pp-card pp-linkcard" data-pp-node="s${i}">${port('l')}<b data-goto="${s.id}">${esc(s.t)}</b>${esc(s.sub)}${pick('s'+i, tr('Backed by evidence'))}${port('r')}</div>`).join(''):'')}
-      ${flowCol(tr('Level 4'),tr('Correlation — Signal + Evidence'), corr.length?corr.map((c,ci)=>`<div class="pp-card pp-corr" data-pp-node="c${ci}">${port('l')}${pick('c'+ci, tr('Stands on'))}<b>${esc(c.title)}</b>${esc(c.txt)}${c.links.length?`<div class="pp-refs">${c.links.map(l=>{ const x=l.id&&ENTITIES[l.id]; return x?`<a class="pp-ref" data-goto="${l.id}">${ICONS[x.type]||''}${esc(l.label)}</a>`:`<span class="pp-ref pp-ref-off" title="${esc(tr('File not found in this workspace'))}">${esc(l.label)}</span>`; }).join('')}</div>`:''}${c.opp.map(o=>`<div class="pp-opp">${tr('Opportunity:')} ${esc(o)}</div>`).join('')}</div>`).join(''):'')}
-    </section>`:''}
+      ${flowCol(tr('Level 2'),tr('Evidence — desk research'), evid.length?evid.map((b,i)=>`<div class="pp-card" data-pp-node="e${i}">${esc(b.t)}${b.sub?`<div class="pp-sub">${esc(b.sub)}</div>`:''}${posterSrc(b)}${del('e'+i)}${b.sid?port('r'):''}</div>`).join(''):'', 'e')}
+      ${flowCol(tr('Level 3'),tr('Signal — interviews'), sigs.length?sigs.map((s,i)=>`<div class="pp-card pp-linkcard" data-pp-node="s${i}">${port('l')}<b data-goto="${s.id}">${esc(s.t)}</b>${esc(s.sub)}${pick('s'+i, tr('Backed by evidence'))}${del('s'+i)}${port('r')}</div>`).join(''):'', 's')}
+      ${flowCol(tr('Level 4'),tr('Correlation — Signal + Evidence'), corr.length?corr.map((c,ci)=>`<div class="pp-card pp-corr" data-pp-node="c${ci}">${port('l')}${pick('c'+ci, tr('Stands on'))}<b>${esc(c.title)}</b>${esc(c.txt)}${c.links.length?`<div class="pp-refs">${c.links.map(l=>{ const x=l.id&&ENTITIES[l.id]; return x?`<a class="pp-ref" data-goto="${l.id}">${ICONS[x.type]||''}${esc(l.label)}</a>`:`<span class="pp-ref pp-ref-off" title="${esc(tr('File not found in this workspace'))}">${esc(l.label)}</span>`; }).join('')}</div>`:''}${c.opp.map(o=>`<div class="pp-opp">${tr('Opportunity:')} ${esc(o)}</div>`).join('')}${del('c'+ci)}</div>`).join(''):'', 'c')}
+    </section>
     <div class="pp-divider"><span>${tr('Additional information')}</span></div>
     <section class="pp-flow pp-extra">
       ${col(tr('Relevant quotes'), ICONS.Transcript, quotes.length?quotes.map((q,i)=>`<div class="pp-card pp-qcard" data-pp-node="q${i}">“${esc(q.q)}”${q.qsrc?`<div class="pp-src">${esc(q.qsrc)}</div>`:''}${pick('q'+i)}${port('r')}</div>`).join(''):'', 'Relevant Quotes', quotes.length)}
@@ -14631,8 +14829,10 @@ function posterOpen(id){
 }
 
 /* append "- text" at the end of ## sec (creating the section if missing) */
-function ppAddBullet(md, sec, text){
-  const line = '- ' + text.replace(/\s*\n+\s*/g,' ').trim();
+const ppOneLine = t => t.replace(/\s*\n+\s*/g,' ').trim();
+const ppAddBullet = (md, sec, text) => ppAppend(md, sec, '- ' + ppOneLine(text));
+/* append a chunk at the end of ## sec; gap '\n\n' keeps a block apart */
+function ppAppend(md, sec, line, gap = '\n'){
   const re = new RegExp('^##\\s*' + sec.replace(/[.*+?^${}()|[\]\\]/g,'\\$&') + '\\s*$', 'im');
   const m = md.match(re);
   if(!m) return md.replace(/\s*$/,'') + '\n\n## ' + sec + '\n\n' + line + '\n';
@@ -14644,7 +14844,7 @@ function ppAddBullet(md, sec, text){
   let tail = '';
   const hr = seg.match(/\n(-{3,}|\*{3,})\s*$/);   // keep a trailing --- separator last
   if(hr){ tail = '\n\n' + hr[1]; seg = seg.slice(0, hr.index).replace(/\s*$/,''); }
-  return md.slice(0,start) + (seg||'\n') + '\n' + line + tail + '\n\n' + md.slice(end);
+  return md.slice(0,start) + (seg||'\n') + gap + line + tail + '\n\n' + md.slice(end);
 }
 
 /* the persona section layer: full list of one section + add-to-file form.
