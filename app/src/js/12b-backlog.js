@@ -769,14 +769,20 @@ function renderBacklog(){
   }
   /* Board: drag a card onto another column to change its status. The panel's
      Status picker does the same for keyboard and touch. */
+  const BL_DT = 'application/x-bl-card';   // our own type: columns accept a card, never a file
   grid.querySelectorAll('.bl-card[draggable]').forEach(c=>{
-    c.ondragstart = ev=>{ ev.dataTransfer.setData('text/plain', c.dataset.k); ev.dataTransfer.effectAllowed = 'move'; c.classList.add('dragging'); };
-    c.ondragend = ()=> c.classList.remove('dragging');
+    c.ondragstart = ev=>{
+      ev.dataTransfer.setData(BL_DT, c.dataset.k); ev.dataTransfer.effectAllowed = 'move';
+      const from = c.closest('.bl-col');
+      requestAnimationFrame(()=>{ c.classList.add('dragging'); grid.querySelector('.bl-board').classList.add('dragging'); if(from) from.classList.add('from'); });
+    };
+    c.ondragend = ()=>{ c.classList.remove('dragging'); grid.querySelectorAll('.bl-board, .bl-col').forEach(x=> x.classList.remove('dragging','from','over')); };
   });
   grid.querySelectorAll('.bl-col[data-drop]').forEach(col=>{
-    col.ondragover = ev=>{ ev.preventDefault(); col.classList.add('over'); };
+    const ours = ev => [...ev.dataTransfer.types].includes(BL_DT);
+    col.ondragover = ev=>{ if(!ours(ev)) return; ev.preventDefault(); ev.dataTransfer.dropEffect = 'move'; col.classList.add('over'); };
     col.ondragleave = ev=>{ if(!col.contains(ev.relatedTarget)) col.classList.remove('over'); };
-    col.ondrop = ev=>{ ev.preventDefault(); col.classList.remove('over'); const k = ev.dataTransfer.getData('text/plain'); if(k) blMoveTo(k, col.dataset.drop); };
+    col.ondrop = ev=>{ if(!ours(ev)) return; ev.preventDefault(); col.classList.remove('over'); const k = ev.dataTransfer.getData(BL_DT); if(k) blMoveTo(k, col.dataset.drop); };
   });
   const foc = grid.querySelector('.bl-editing textarea, .bl-editing input');
   if(foc) foc.focus();

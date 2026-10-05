@@ -268,11 +268,14 @@ document.getElementById('folderInput').addEventListener('change', e=> ingest(e.t
 document.getElementById('fileInput').addEventListener('change', e=> ingest(e.target.files));
 
 /* drag & drop */
+/* only a drag that carries files from the desktop means "import" — a card
+   dragged inside the page (the backlog board) must never raise the mask */
 const dropmask=document.getElementById('dropmask'); let dd=0;
-window.addEventListener('dragenter',e=>{ e.preventDefault(); dd++; dropmask.classList.add('on'); });
-window.addEventListener('dragover',e=> e.preventDefault());
-window.addEventListener('dragleave',e=>{ dd--; if(dd<=0){ dd=0; dropmask.classList.remove('on'); } });
-window.addEventListener('drop',e=>{ e.preventDefault(); dd=0; dropmask.classList.remove('on'); if(e.dataTransfer.files?.length) ingest(e.dataTransfer.files); });
+const dragsFiles = e => !!e.dataTransfer && [...e.dataTransfer.types].includes('Files');
+window.addEventListener('dragenter',e=>{ if(!dragsFiles(e)) return; e.preventDefault(); dd++; dropmask.classList.add('on'); });
+window.addEventListener('dragover',e=>{ if(dragsFiles(e)) e.preventDefault(); });
+window.addEventListener('dragleave',e=>{ if(!dragsFiles(e)) return; dd--; if(dd<=0){ dd=0; dropmask.classList.remove('on'); } });
+window.addEventListener('drop',e=>{ if(!dragsFiles(e)) return; e.preventDefault(); dd=0; dropmask.classList.remove('on'); if(e.dataTransfer.files?.length) ingest(e.dataTransfer.files); });
 
 /* ---------- find-in-transcript (offline, DOM text-node walk — no packages) ---------- */
 let FIND_HITS=[], FIND_CUR=-1;

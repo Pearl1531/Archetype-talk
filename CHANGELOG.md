@@ -111,6 +111,11 @@ minutes a new visitor spends in it.
   "who set it" split now sit behind one ⓘ. On a phone the rows become cards,
   the board scrolls sideways and the panel fills the screen. *In a study* is a
   new `Status` value, `in study`, documented in the backlog skill.
+- **Dragging a backlog card no longer looks like a file import.** The
+  "drop your .md files" mask now appears only when the drag carries files from
+  your computer. While a card is in the air, the other columns open up as
+  dashed targets, the one under the pointer lights up, and the card leaves a
+  faded slot behind.
 - **Columns zooms like a spreadsheet.** On the research map's Columns view the
   wheel no longer shrinks the whole table. The column heads and widths hold
   still; zooming changes only the rows, both their spacing and the dots in

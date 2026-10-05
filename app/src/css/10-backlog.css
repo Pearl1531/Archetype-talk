@@ -150,7 +150,12 @@
   .bl-board { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 16px; align-items: start; }
   .bl-col { display: flex; flex-direction: column; gap: 10px; padding: 12px; border-radius: 16px; background: var(--bg-rail, var(--bg-elev-2));
     border: 1.5px solid transparent; transition: border-color .12s, background .12s; }
-  .bl-col.over { border-color: var(--accent); border-style: dashed; }
+  /* dragging a card: the card it came from fades to a slot, the other columns
+     open up as targets, the one under the pointer lights */
+  .bl-board.dragging .bl-col:not(.from) { border-color: color-mix(in srgb, var(--text) 18%, transparent); border-style: dashed; }
+  .bl-col.over:not(.from) { border-color: var(--accent); border-style: dashed; background: color-mix(in srgb, var(--accent) 7%, var(--bg-rail, var(--bg-elev-2))); }
+  .bl-board.dragging .bl-col:not(.from) .bl-drop-hint { border-color: color-mix(in srgb, var(--text) 25%, transparent); color: var(--text-soft); }
+  .bl-card:active { cursor: grabbing; }
   .bl-col-head { height: 34px; display: flex; align-items: center; gap: 4px; }
   .bl-col-pill { height: 32px; padding: 0 12px 0 4px; border-radius: 999px; background: var(--bg-elev); border: 1px solid var(--line);
     display: inline-flex; align-items: center; gap: 6px; margin-right: auto; }
@@ -159,7 +164,7 @@
     box-shadow: 0 1px 2px rgba(10,10,10,.05); cursor: grab; }
   .bl-card:hover { border-color: var(--hover-border, var(--edge)); }
   .bl-card.sel { box-shadow: 0 0 0 2px var(--accent); }
-  .bl-card.dragging { opacity: .45; }
+  .bl-card.dragging { opacity: .35; border-style: dashed; box-shadow: none; }
   .bl-card-top { display: flex; align-items: center; justify-content: space-between; gap: 8px; flex-wrap: wrap; }
   .bl-card-q { border: 0; background: none; padding: 0; text-align: left; font: inherit; font-size: 15px; font-weight: 500; line-height: 1.42; color: var(--text);
     display: -webkit-box; -webkit-line-clamp: 3; -webkit-box-orient: vertical; overflow: hidden; cursor: pointer; }

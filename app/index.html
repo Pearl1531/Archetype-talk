@@ -2235,7 +2235,12 @@
   .bl-board { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 16px; align-items: start; }
   .bl-col { display: flex; flex-direction: column; gap: 10px; padding: 12px; border-radius: 16px; background: var(--bg-rail, var(--bg-elev-2));
     border: 1.5px solid transparent; transition: border-color .12s, background .12s; }
-  .bl-col.over { border-color: var(--accent); border-style: dashed; }
+  /* dragging a card: the card it came from fades to a slot, the other columns
+     open up as targets, the one under the pointer lights */
+  .bl-board.dragging .bl-col:not(.from) { border-color: color-mix(in srgb, var(--text) 18%, transparent); border-style: dashed; }
+  .bl-col.over:not(.from) { border-color: var(--accent); border-style: dashed; background: color-mix(in srgb, var(--accent) 7%, var(--bg-rail, var(--bg-elev-2))); }
+  .bl-board.dragging .bl-col:not(.from) .bl-drop-hint { border-color: color-mix(in srgb, var(--text) 25%, transparent); color: var(--text-soft); }
+  .bl-card:active { cursor: grabbing; }
   .bl-col-head { height: 34px; display: flex; align-items: center; gap: 4px; }
   .bl-col-pill { height: 32px; padding: 0 12px 0 4px; border-radius: 999px; background: var(--bg-elev); border: 1px solid var(--line);
     display: inline-flex; align-items: center; gap: 6px; margin-right: auto; }
@@ -2244,7 +2249,7 @@
     box-shadow: 0 1px 2px rgba(10,10,10,.05); cursor: grab; }
   .bl-card:hover { border-color: var(--hover-border, var(--edge)); }
   .bl-card.sel { box-shadow: 0 0 0 2px var(--accent); }
-  .bl-card.dragging { opacity: .45; }
+  .bl-card.dragging { opacity: .35; border-style: dashed; box-shadow: none; }
   .bl-card-top { display: flex; align-items: center; justify-content: space-between; gap: 8px; flex-wrap: wrap; }
   .bl-card-q { border: 0; background: none; padding: 0; text-align: left; font: inherit; font-size: 15px; font-weight: 500; line-height: 1.42; color: var(--text);
     display: -webkit-box; -webkit-line-clamp: 3; -webkit-box-orient: vertical; overflow: hidden; cursor: pointer; }
@@ -13696,14 +13701,20 @@ function renderBacklog(){
   }
   /* Board: drag a card onto another column to change its status. The panel's
      Status picker does the same for keyboard and touch. */
+  const BL_DT = 'application/x-bl-card';   // our own type: columns accept a card, never a file
   grid.querySelectorAll('.bl-card[draggable]').forEach(c=>{
-    c.ondragstart = ev=>{ ev.dataTransfer.setData('text/plain', c.dataset.k); ev.dataTransfer.effectAllowed = 'move'; c.classList.add('dragging'); };
-    c.ondragend = ()=> c.classList.remove('dragging');
+    c.ondragstart = ev=>{
+      ev.dataTransfer.setData(BL_DT, c.dataset.k); ev.dataTransfer.effectAllowed = 'move';
+      const from = c.closest('.bl-col');
+      requestAnimationFrame(()=>{ c.classList.add('dragging'); grid.querySelector('.bl-board').classList.add('dragging'); if(from) from.classList.add('from'); });
+    };
+    c.ondragend = ()=>{ c.classList.remove('dragging'); grid.querySelectorAll('.bl-board, .bl-col').forEach(x=> x.classList.remove('dragging','from','over')); };
   });
   grid.querySelectorAll('.bl-col[data-drop]').forEach(col=>{
-    col.ondragover = ev=>{ ev.preventDefault(); col.classList.add('over'); };
+    const ours = ev => [...ev.dataTransfer.types].includes(BL_DT);
+    col.ondragover = ev=>{ if(!ours(ev)) return; ev.preventDefault(); ev.dataTransfer.dropEffect = 'move'; col.classList.add('over'); };
     col.ondragleave = ev=>{ if(!col.contains(ev.relatedTarget)) col.classList.remove('over'); };
-    col.ondrop = ev=>{ ev.preventDefault(); col.classList.remove('over'); const k = ev.dataTransfer.getData('text/plain'); if(k) blMoveTo(k, col.dataset.drop); };
+    col.ondrop = ev=>{ if(!ours(ev)) return; ev.preventDefault(); col.classList.remove('over'); const k = ev.dataTransfer.getData(BL_DT); if(k) blMoveTo(k, col.dataset.drop); };
   });
   const foc = grid.querySelector('.bl-editing textarea, .bl-editing input');
   if(foc) foc.focus();
@@ -16233,11 +16244,14 @@ document.getElementById('folderInput').addEventListener('change', e=> ingest(e.t
 document.getElementById('fileInput').addEventListener('change', e=> ingest(e.target.files));
 
 /* drag & drop */
+/* only a drag that carries files from the desktop means "import" — a card
+   dragged inside the page (the backlog board) must never raise the mask */
 const dropmask=document.getElementById('dropmask'); let dd=0;
-window.addEventListener('dragenter',e=>{ e.preventDefault(); dd++; dropmask.classList.add('on'); });
-window.addEventListener('dragover',e=> e.preventDefault());
-window.addEventListener('dragleave',e=>{ dd--; if(dd<=0){ dd=0; dropmask.classList.remove('on'); } });
-window.addEventListener('drop',e=>{ e.preventDefault(); dd=0; dropmask.classList.remove('on'); if(e.dataTransfer.files?.length) ingest(e.dataTransfer.files); });
+const dragsFiles = e => !!e.dataTransfer && [...e.dataTransfer.types].includes('Files');
+window.addEventListener('dragenter',e=>{ if(!dragsFiles(e)) return; e.preventDefault(); dd++; dropmask.classList.add('on'); });
+window.addEventListener('dragover',e=>{ if(dragsFiles(e)) e.preventDefault(); });
+window.addEventListener('dragleave',e=>{ if(!dragsFiles(e)) return; dd--; if(dd<=0){ dd=0; dropmask.classList.remove('on'); } });
+window.addEventListener('drop',e=>{ if(!dragsFiles(e)) return; e.preventDefault(); dd=0; dropmask.classList.remove('on'); if(e.dataTransfer.files?.length) ingest(e.dataTransfer.files); });
 
 /* ---------- find-in-transcript (offline, DOM text-node walk — no packages) ---------- */
 let FIND_HITS=[], FIND_CUR=-1;
