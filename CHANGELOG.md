@@ -91,6 +91,11 @@ minutes a new visitor spends in it.
   section and opens the next card right away, and Esc backs out. A quote
   typed without quote marks is wrapped in them, and a trailing ` — source`
   stays outside.
+- **Columns zooms like a spreadsheet.** On the research map's Columns view the
+  wheel no longer shrinks the whole table. The column heads and widths hold
+  still; zooming changes only the rows, both their spacing and the dots in
+  them, around the row under the cursor. Panning moves the rows under the
+  heads.
 - **Three views of the research map** — *Columns* (one column per type with
   its count on top), *Free* (an Obsidian-style layout where files settle by
   how they link, dot size by link count) and *Flow* (the Sankey, band

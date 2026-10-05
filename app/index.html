@@ -12187,9 +12187,8 @@ function renderMindMap(){
         : tr('Graph diagram: {n} entities in {c} columns ({cols}), joined by {l} links. Every entity and every link here is also reachable as text — use the type tabs and the table view.'))
         .replace('{n}', nodes.length).replace('{c}', L.colTypes.length)
         .replace('{cols}', L.colTypes.map(ty=>`${tr(TYPES[ty].label)} ${nCount(ty)}`).join(', ')).replace('{l}', edges.length))}">
+      ${FREE ? '' : `<g id="mmCols">${L.colTypes.map((ty,i)=> i ? `<line class="mm-coldiv" x1="${L.PADX-20+i*L.COLW}" y1="0" x2="${L.PADX-20+i*L.COLW}" y2="99999"/>` : '').join('')}</g>`}
       <g id="mmWorld">
-        ${FREE ? '' : `<g id="mmHeads"><rect class="mm-headband" x="0" y="0" width="${L.W}" height="${L.PADY-40}"/>
-          ${L.colTypes.map((ty,i)=>`${i?`<line class="mm-coldiv" x1="${L.PADX-20+i*L.COLW}" y1="0" x2="${L.PADX-20+i*L.COLW}" y2="${L.H}"/>`:''}<text class="mm-colhead" data-ty="${ty}" x="${L.PADX-12+i*L.COLW}" y="${(L.PADY-40)/2+5}">${head(ty)}</text>`).join('')}</g>`}
         <g id="mmEdges">${edges.map(([a,b])=>`<path data-ea="${a}" data-eb="${b}"/>`).join('')}</g>
         <g id="mmNodes">${nodes.map(n=>{
           const r = faceR(n), P = n.type==='Persona';
@@ -12203,6 +12202,8 @@ function renderMindMap(){
             ${label}
           </g>`; }).join('')}</g>
       </g>
+      ${FREE ? '' : `<g id="mmHeads"><rect class="mm-headband" x="-9999" y="0" width="${L.W+19998}" height="${L.PADY-40}"/>
+        ${L.colTypes.map((ty,i)=>`<text class="mm-colhead" data-ty="${ty}" x="${L.PADX-12+i*L.COLW}" y="${(L.PADY-40)/2+5}">${head(ty)}</text>`).join('')}</g>`}
     </svg><div class="mm-tip" id="mmTip" style="display:none"></div>
     <aside class="mm-drawer" id="mmDrawer"></aside></div>`;
   mmWireBar();
@@ -12219,25 +12220,33 @@ function renderMindMap(){
     const t = nodeEls[n.id].querySelector('text');
     n.end = n.type==='Persona' ? 24 + t.getComputedTextLength() + 8 : CHIP - 12;
   });
+  /* Columns zooms like a spreadsheet, not a picture: the columns and their
+     heads hold still, cam.z only shrinks the rows — their spacing and the
+     dots/chips in them. Y() is where a row sits at the current z. */
+  const Y = n=> FREE ? n.y : L.PADY + (n.y - L.PADY)*cam.z;
   const edgePath = (a, b)=>{
     if(FREE) return `M${a.x} ${a.y} L${b.x} ${b.y}`;
     if(a.x > b.x) [a, b] = [b, a];
-    if(a.x === b.x){ const xr = a.x + a.end; return `M${xr} ${a.y} C${xr+26} ${a.y} ${xr+26} ${b.y} ${xr} ${b.y}`; }
-    const sx = a.x + a.end, ex = b.x - 12, k = Math.max(24, (ex-sx)/2);
-    return `M${sx} ${a.y} C${sx+k} ${a.y} ${ex-k} ${b.y} ${ex} ${b.y}`;
+    const z = cam.z, ay = Y(a), by = Y(b);
+    if(a.x === b.x){ const xr = a.x + a.end*z; return `M${xr} ${ay} C${xr+26*z} ${ay} ${xr+26*z} ${by} ${xr} ${by}`; }
+    const sx = a.x + a.end*z, ex = b.x - 12*z, k = Math.max(24*z, (ex-sx)/2);
+    return `M${sx} ${ay} C${sx+k} ${ay} ${ex-k} ${by} ${ex} ${by}`;
   };
   const place = ()=>{
-    nodes.forEach(n=> nodeEls[n.id].setAttribute('transform', `translate(${n.x},${n.y})`));
+    nodes.forEach(n=> nodeEls[n.id].setAttribute('transform', FREE ? `translate(${n.x},${n.y})` : `translate(${n.x},${Y(n)}) scale(${cam.z})`));
     lineEls.forEach(l=> l.setAttribute('d', edgePath(byId[l.dataset.ea], byId[l.dataset.eb])));
   };
-  place();
-  /* camera: translate+scale on the world group — zoom really scales the map
-     (Obsidian-style); labels fade away when far out */
-  const cam = { k:1, tx:0, ty:0 };
+  /* camera: translate+scale on the world group — in Free zoom really scales
+     the map (Obsidian-style); in Columns k is only the fit and z the row zoom.
+     Labels fade away when far out */
+  const cam = { k:1, tx:0, ty:0, z:1 };
+  const colsEl = svg.querySelector('#mmCols'), headsEl = svg.querySelector('#mmHeads');
   const applyCam = ()=>{
     world.setAttribute('transform', `translate(${cam.tx},${cam.ty}) scale(${cam.k})`);
-    svg.classList.toggle('mm-far', cam.k < 0.55);
+    [colsEl, headsEl].forEach(g=> g && g.setAttribute('transform', `translate(${cam.tx},0) scale(${cam.k})`));   // heads pan sideways, never up
+    svg.classList.toggle('mm-far', cam.k*cam.z < 0.55);
   };
+  place();
   /* one SVG unit = one screen pixel, so text keeps its real size; Columns fits
      the width and lets a long column run below the fold (pan to it), Free
      fits the whole cloud */
@@ -12296,7 +12305,7 @@ function renderMindMap(){
       const sx=ev.clientX, sy=ev.clientY; let moved=false;
       const move=e2=>{
         if(Math.abs(e2.clientX-sx)+Math.abs(e2.clientY-sy)>4) moved=true;
-        if(moved){ const w=toWorld(toSvg(e2)); n.x=w.x; n.y=w.y; place(); }
+        if(moved){ const w=toWorld(toSvg(e2)); n.x=w.x; n.y=FREE ? w.y : L.PADY + (w.y - L.PADY)/cam.z; place(); }
       };
       const up=()=>{
         el.removeEventListener('pointermove',move); el.removeEventListener('pointerup',up);
@@ -12312,15 +12321,21 @@ function renderMindMap(){
     if(ev.target.closest('.mm-node')) return;
     mmCloseDrawer();
     const s0=toSvg(ev), ox=cam.tx, oy=cam.ty;
-    const move=e2=>{ const p=toSvg(e2); cam.tx=ox+(p.x-s0.x); cam.ty=oy+(p.y-s0.y); applyCam(); };
+    const move=e2=>{ const p=toSvg(e2); cam.tx=ox+(p.x-s0.x); cam.ty=oy+(p.y-s0.y); if(!FREE) cam.ty=Math.min(0, cam.ty); applyCam(); };   // rows never sink below the heads
     const up=()=>{ svg.removeEventListener('pointermove',move); svg.removeEventListener('pointerup',up); };
     try{ svg.setPointerCapture(ev.pointerId); }catch(err){}
     svg.addEventListener('pointermove',move); svg.addEventListener('pointerup',up);
   });
   svg.addEventListener('wheel', ev=>{
     ev.preventDefault();
-    const p = toSvg(ev);
-    const k2 = Math.max(0.12, Math.min(5, cam.k * (ev.deltaY>0 ? 1/1.16 : 1.16)));
+    const p = toSvg(ev), step = ev.deltaY>0 ? 1/1.16 : 1.16;
+    if(!FREE){   // rows zoom around the cursor's row; the columns stay where they are
+      const z2 = Math.max(0.3, Math.min(1.15, cam.z * step));   // above ~1.15 a row outgrows its fixed-width column
+      const u = ((p.y - cam.ty)/cam.k - L.PADY)/cam.z;
+      cam.z = z2; cam.ty = Math.min(0, p.y - cam.k*(L.PADY + u*z2));
+      place(); applyCam(); return;
+    }
+    const k2 = Math.max(0.12, Math.min(5, cam.k * step));
     cam.tx = p.x - (p.x-cam.tx)*(k2/cam.k);
     cam.ty = p.y - (p.y-cam.ty)*(k2/cam.k);
     cam.k = k2;
