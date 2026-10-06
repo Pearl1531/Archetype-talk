@@ -571,7 +571,7 @@ function posterOpen(id){
         ${quote?`<blockquote class="pp-quote">“${esc(quote)}”</blockquote>`:''}
       </div>
       <figure class="pp-photo${photo?'':' pp-photo-avatar'}">
-        ${photo?`<img src="${esc(photo)}" alt="${esc(nm)}">`:avatarHtml(e,nm)}
+        ${photo?`<img src="${esc(photo)}" alt="${esc(nm)}">`:faceHtml(e, '', nm)}
       </figure>
       ${col(tr('Jobs to be done'), ICONS.Persona, jtbd.length?`<div class="pp-grid">${posterCards(jtbd)}</div>`:'', 'Jobs to be Done', jtbd.length)}
     </section>
@@ -594,15 +594,18 @@ function posterOpen(id){
     <div class="pp-foot"><button class="btn btn-outline" id="ppBack">← Back to document view</button></div>`;
   document.body.classList.add('poster-open');
   posterView.setAttribute('aria-hidden','false');
+  posterView.dataset.id = e.id;
   posterView.scrollTop=0;
-  const close=()=>{ document.body.classList.remove('poster-open'); posterView.setAttribute('aria-hidden','true'); posterView.innerHTML=''; };
+  navTrail([{ label: tr(e.meta.label), go: ()=> goTypeList(e.type) }, { label: nm, go: ()=>{ location.hash = e.id; } }, { label: tr('Poster') }], ()=>{ location.hash = e.id; });
+  // the poster is its own page (#poster:<id>): leaving it is a step back, and the route closes it
+  const close=()=> navBack(()=>{ location.hash = e.id; });
   document.getElementById('ppClose').onclick=close;
   // the browser's own print → "Save as PDF": no library, and the file is the page you see
   document.getElementById('ppPrint').onclick=()=> window.print();
   document.getElementById('ppBack').onclick=close;
   posterView.querySelectorAll('[data-pp-list]').forEach(b=> b.onclick=()=> ppListOpen(e.id, b.dataset.ppList));
   posterView.querySelectorAll('[data-pp-add]').forEach(b=> b.onclick=()=> ppListOpen(e.id, b.dataset.ppAdd, {add:true}));
-  posterView.querySelectorAll('[data-goto]').forEach(el=> el.onclick=()=>{ close(); location.hash='#'+el.dataset.goto; });
+  posterView.querySelectorAll('[data-goto]').forEach(el=> el.onclick=()=>{ location.hash='#'+el.dataset.goto; });
   PP_ROS.forEach(r=> r.disconnect()); PP_ROS = [];   // observers belong to one render
   ppWireFlow(e, evid, sigs, corr);
   ppWireLinks(e, pains, quotes, reliev);
@@ -663,16 +666,12 @@ function ppListOpen(id, sec, opts){
   const close=()=>div.remove();
   div.querySelector('.pp-layer-scrim').onclick=close;
   document.getElementById('ppLayerClose').onclick=close;
-  div.querySelectorAll('[data-goto]').forEach(el=> el.onclick=()=>{
-    document.body.classList.remove('poster-open'); posterView.setAttribute('aria-hidden','true'); posterView.innerHTML='';
-    location.hash='#'+el.dataset.goto;
-  });
+  div.querySelectorAll('[data-goto]').forEach(el=> el.onclick=()=>{ location.hash='#'+el.dataset.goto; });
   document.getElementById('ppGotoDoc').onclick=()=>{
-    document.body.classList.remove('poster-open'); posterView.setAttribute('aria-hidden','true'); posterView.innerHTML='';
+    location.hash = e.id;   // the route closes the poster; the document is already under it
     const slug='sec-'+sec.toLowerCase().replace(/[^a-z0-9]+/g,'-').replace(/(^-|-$)/g,'');
-    const el=document.getElementById(slug);
-    // a frame later: the overflow:hidden release cancels a same-frame smooth scroll
-    if(el) setTimeout(()=> el.scrollIntoView({behavior:'smooth', block:'start'}), 60);
+    // a frame later: the route re-renders the page first, and the overflow:hidden release cancels a same-frame smooth scroll
+    setTimeout(()=> document.getElementById(slug)?.scrollIntoView({behavior:'smooth', block:'start'}), 60);
   };
   document.getElementById('ppAddForm').onsubmit=async ev=>{
     ev.preventDefault();
@@ -692,7 +691,12 @@ document.addEventListener('keydown', ev=>{
     ev.stopImmediatePropagation();
     const layer=document.getElementById('ppLayer');
     if(layer){ layer.remove(); return; }   // first Esc closes the section layer only
-    document.body.classList.remove('poster-open');
-    posterView.setAttribute('aria-hidden','true'); posterView.innerHTML='';
+    const id = posterView.dataset.id;
+    navBack(()=>{ location.hash = id; });
   }
 });
+function posterClose(){
+  if(!document.body.classList.contains('poster-open')) return;
+  document.body.classList.remove('poster-open');
+  posterView.setAttribute('aria-hidden','true'); posterView.innerHTML='';
+}

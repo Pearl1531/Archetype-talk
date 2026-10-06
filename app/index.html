@@ -315,12 +315,37 @@
   .card .stance.st-mid { border-left-color: var(--line); }
 
   .persona-id { display: flex; align-items: center; gap: var(--s-3); margin-bottom: var(--s-3); }
-  .avatar {
-    width: 40px; height: 40px; border-radius: 50%; flex: none; position: relative; overflow: hidden;
-    background: var(--text-soft); color: var(--bg-elev-2);
-    display: grid; place-items: center; font-size: var(--text-body); font-weight: 600;
-  }
-  .avatar img { position: absolute; inset: 0; width: 100%; height: 100%; background: var(--bg); z-index: 1; }
+  /* ── .face — a persona's face, everywhere (faceHtml, 02-parse-state.js).
+     A circle; the place it sits in sets only its size, and the primary
+     persona's ember. A drawn avatar stands on the bottom edge, a photo fills
+     the circle face-high, no picture shows initials sized to the circle. */
+  .face { position: relative; flex: none; display: grid; place-items: center; overflow: hidden;
+    width: 40px; height: 40px; border-radius: 50%; background: #E4DED2; color: var(--text);
+    container-type: inline-size; font-weight: 800; line-height: 1; }
+  .face img { position: absolute; object-fit: cover; }
+  .face img + .face-ini { display: none; }   /* the picture loaded: no initials behind it */
+  .face.is-photo img { inset: 0; width: 100%; height: 100%; object-position: center 25%; }
+  .face.is-drawn img { left: 3%; bottom: 0; width: 94%; height: 94%; object-position: bottom; }
+  .face-ini { font-size: 38cqi; letter-spacing: -0.02em; }
+  .face.is-initials { background: var(--bg-elev-2); border: 1.5px dashed var(--edge); }
+
+  /* ── .has-card-link — a card (or table row) that opens one thing, clickable
+     anywhere: its one real link (.card-link, the name or the question) is
+     stretched over the whole host, and every other button or link inside
+     stays on top of it and keeps its own job (Ask, a tooltip). The link stays
+     the keyboard stop, so Tab and Enter behave as on any link. */
+  .has-card-link { position: relative; cursor: pointer; }
+  .has-card-link .card-link { color: inherit; text-decoration: none; }
+  .has-card-link .card-link::before { content: ""; position: absolute; inset: 0; z-index: 0; border-radius: inherit; }
+  .has-card-link :is(a, button):not(.card-link) { position: relative; z-index: 1; }
+
+  /* ── .lvl-meter — how solid a persona is, everywhere (levelMeter, 06) */
+  .lvl-meter { display: inline-flex; align-items: center; gap: 8px; white-space: nowrap; font-family: var(--font-ui); font-size: var(--text-body);
+    font-weight: 600; letter-spacing: 0; text-transform: none; color: var(--text); font-variant-numeric: tabular-nums; cursor: help; }
+  .dx-lvl { display: flex; gap: 3px; }
+  .dx-lvl i { width: 13px; height: 6px; border-radius: 2px; background: #E4DED2; }
+  .dx-lvl i.on { background: var(--text); }
+  .dx-lvl i.on.hot { background: var(--accent); }
   .arch-icon { width: 48px; height: 48px; border-radius: 50%; flex: none; background: var(--bg);
     display: grid; place-items: center; color: var(--text-soft); }
   .arch-icon svg { width: 30px; height: 30px; }
@@ -513,12 +538,30 @@
     cursor: pointer; text-align: left; transition: background .12s;
   }
   .hypo-promote:hover { background: #D4F0DE; }
-  .hypo-promote-cell { display: inline-block; width: auto; margin: 0 0 0 6px; padding: 2px 8px; font-size: 14px; }
   .idea-pick-row .muted, .idea-field .muted { color: var(--text-dim); font-weight: 400; text-transform: none; }
-  .row-acts { display: inline-flex; gap: 4px; margin-left: 6px; }
-  .row-acts button { border: 1px solid var(--line); background: var(--bg-elev); border-radius: var(--r-sm);
-    width: 26px; height: 24px; cursor: pointer; font-size: 14px; line-height: 1; }
-  .row-acts button:hover { border-color: var(--text-dim); }
+  /* ── table cells that fit their content (TABLE_COLS 'fit'): one line, never broken */
+  .tableview td.td-fit { white-space: nowrap; }
+  .tableview .tag { white-space: nowrap; }
+
+  /* ── .row-menu — a row's actions behind ⋯ (rowMenuHtml, 13): the browser's
+     popover, placed by popPlace; items are full-width rows, danger last */
+  .row-menu { display: inline-flex; vertical-align: middle; }
+  .row-menu-btn { position: relative; width: 32px; height: 32px; display: inline-grid; place-items: center; border: 0; border-radius: var(--r-sm);
+    background: none; color: var(--text-dim); cursor: pointer; }
+  .row-menu-btn:hover, .row-menu-btn:focus-visible { background: var(--hover-bg); color: var(--text); }
+  .row-menu-btn.hint::after { content: ""; position: absolute; top: 5px; right: 5px; width: 7px; height: 7px; border-radius: 50%;
+    background: var(--accent); box-shadow: 0 0 0 2px var(--bg-elev); }
+  .row-menu-pop { position: fixed; inset: auto; margin: 0; min-width: 200px; padding: 6px; border: 1px solid var(--line); border-radius: 12px;
+    background: var(--bg-elev); box-shadow: var(--shadow); color: var(--text); }
+  .row-menu-pop:popover-open { display: flex; flex-direction: column; }
+  .row-menu-pop button { display: flex; align-items: center; gap: 10px; width: 100%; height: 38px; padding: 0 10px; border: 0; border-radius: 8px;
+    background: none; font: inherit; font-size: var(--fs-md); color: var(--text); text-align: left; white-space: nowrap; cursor: pointer; }
+  .row-menu-pop button:hover, .row-menu-pop button:focus-visible { background: var(--hover-bg); }
+  .row-menu-pop button svg { flex: none; color: var(--text-dim); }
+  .row-menu-pop button.danger { color: var(--danger-text, #B42318); }
+  .row-menu-pop button.danger svg { color: currentColor; }
+  .row-menu-pop button.danger:first-child, .row-menu-pop button + button.danger { margin-top: 4px; position: relative; }
+  .row-menu-pop button + button.danger::before { content: ""; position: absolute; left: 6px; right: 6px; top: -3px; border-top: 1px solid var(--line-soft); }
   .author-chip { text-transform: none; letter-spacing: 0; }
 
   /* ---------- workspace switcher (top-left, Capacities-style) ---------- */
@@ -583,7 +626,7 @@
   .lvl-3 { color: var(--warn-text); border-color: color-mix(in srgb, var(--warn) 40%, transparent); }
   .lvl-4, .lvl-5 { color: var(--accent-text); border-color: color-mix(in srgb, var(--accent, #ff4d00) 45%, transparent); background: var(--accent-soft); }
   body.lin-all .p-apple .pa-kicker { white-space: nowrap; }
-  .pa-kicker .lvl { margin-left: auto; }
+  .pa-kicker .lvl-meter { margin-left: auto; }
 
   /* ============ Apple-style preview (rollout: All + Evidence) ============
      body.lin-side = the left panel, applied on EVERY gallery page while the
@@ -640,7 +683,6 @@
   body.lin-all .bars i.on { background: var(--text); }
   body.lin-all .stale-note { color: var(--text-dim); }
   body.lin-all .persona-id .name { color: var(--text); }
-  body.lin-all .avatar { box-shadow: none; background: var(--bg-elev-2); }
   body.lin-all .arch-icon { background: var(--bg-elev-2); color: var(--text-soft); box-shadow: none; }
   body.lin-side .ws-item-txt b { color: var(--text); }
   body.lin-side .ws-item-txt small, body.lin-side .ws-menu-head, body.lin-side .ws-item .n { color: var(--text-dim); }
@@ -670,9 +712,7 @@
     font-weight: 600; letter-spacing: -0.3px; color: var(--text); }
   body.lin-all .p-apple .pa-who { margin-top: 10px; font-size: 14px; color: var(--text-dim); }
   body.lin-all .p-apple .pa-avatar { margin-top: auto; display: flex; justify-content: center; padding-top: 18px; }
-  body.lin-all .p-apple .pa-avatar .avatar { width: 170px; height: 170px; border-radius: 50%;
-    background: var(--bg-elev-2); box-shadow: none; margin-bottom: -34px; }
-  body.lin-all .p-apple .pa-avatar .avatar img { border-radius: 50%; }
+  body.lin-all .p-apple .pa-avatar .face { width: 170px; height: 170px; margin-bottom: -34px; }
   body.lin-all .p-apple:hover { border-color: var(--hover-border); }
 
   /* ---- detail view ---- */
@@ -828,15 +868,12 @@
   .pe-actions .p-talk .pj-split-more { padding: 0 14px; border-left: 1px solid rgba(10,10,10,.2); }
   .pe-cmd { display: inline-flex; align-items: center; height: 52px; padding: 0 16px; border: 1.5px solid var(--text); border-radius: 14px; background: var(--bg-elev-2); max-width: 100%; }
   .pe-cmd code { font-family: var(--font-mono); font-size: var(--text-body); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-  .pe-portrait { width: 240px; height: 240px; border-radius: 50%; overflow: hidden; background: #E4DED2; display: flex; align-items: flex-end; justify-content: center; }
+  .pe-portrait { width: 240px; height: 240px; }   /* a .face (faceHtml) */
   .pe-portrait.prim { background: var(--accent); }
-  .pe-portrait img { width: 93%; height: 93%; object-fit: cover; object-position: bottom; }
-  .pe-portrait span { align-self: center; font-size: 96px; font-weight: 800; color: var(--text); }
   .pe-facts { margin-top: -24px; grid-template-columns: minmax(0, 2fr) repeat(3, minmax(0, 1fr)); }
   .pe-oneline { font-size: 18px; font-weight: 600; line-height: 1.35; color: var(--text); }
   .pe-fact { font-size: 19px; font-weight: 700; color: var(--text); }
-  .pe-lvl { display: flex; } .pe-lvl .dx-lvl i { width: 22px; height: 8px; }
-  .pe-lvl-t { font-weight: 600; font-size: var(--fs-md); color: var(--text); }
+  .pe-facts .lvl-meter { font-size: var(--fs-md); flex-wrap: wrap; white-space: normal; } .pe-facts .dx-lvl i { width: 22px; height: 8px; }
   .pe-ladder { display: flex; flex-direction: column; }
   .pe-ladder > span { padding: 6px 0; border-top: 1px solid rgba(255,255,255,.14); }
   .pe-ladder > span.on b { color: var(--accent); }
@@ -1428,7 +1465,7 @@
   .tableview tbody tr { cursor: pointer; }
   .tableview tbody tr:hover { background: var(--bg-elev-2); }
   .tableview .td-title { font-weight: 600; color: var(--text); display: flex; align-items: center; gap: 10px; }
-  .tableview .td-title .avatar { width: 26px; height: 26px; font-size: 14px; }
+  .tableview .td-title .face { width: 26px; height: 26px; }
   .tableview .muted { color: var(--text-dim); }
   .crumbs .spacer { flex: 1; }
   .editor {
@@ -1870,11 +1907,8 @@
     /* photo sits ON the canvas, Figma-style: soft fade at the edges, no frame */
     -webkit-mask-image: radial-gradient(85% 85% at 50% 42%, #000 62%, transparent 100%);
     mask-image: radial-gradient(85% 85% at 50% 42%, #000 62%, transparent 100%); }
-  .pp-photo-avatar .avatar { width: clamp(180px, 22vw, 320px); aspect-ratio: 1;
-    height: auto; border-radius: 50%; overflow: hidden; position: relative;
+  .pp-photo-avatar .face { width: clamp(180px, 22vw, 320px); height: auto; aspect-ratio: 1;
     background: var(--bg-elev); border: 1px solid var(--line); }
-  .pp-photo-avatar .avatar img, .pp-photo-avatar .avatar svg {
-    position: absolute; inset: 0; width: 100%; height: 100%; }
 
   .pp-label { display: flex; align-items: center; gap: 8px; margin-bottom: var(--s-3);
     font-family: var(--font-mono); font-size: 14px; text-transform: uppercase;
@@ -2201,9 +2235,7 @@
   a.bl-who { font-weight: 500; }
   a.bl-who:hover { color: var(--accent-text); }
   .bl-ext { font-size: 14px; color: var(--text-dim); }
-  .bl-face { width: 24px; height: 24px; flex: none; border-radius: 50%; overflow: hidden; display: inline-flex; justify-content: center; font-size: 14px; }
-  .bl-face img { width: 100%; height: 100%; object-fit: cover; }
-  .bl-face.dx-noimg { border-width: 1px; }
+  .bl-face { width: 24px; height: 24px; }   /* a .face (faceHtml) */
   .bl-date { font-family: var(--font-mono); font-size: 14px; color: var(--text-dim); white-space: nowrap; }
   .bl-icon { width: 34px; height: 34px; flex: none; border: 0; border-radius: 10px; background: none; color: var(--text-soft);
     display: inline-flex; align-items: center; justify-content: center; padding: 0; cursor: pointer; }
@@ -2359,9 +2391,7 @@
   .tr-meta i { font-style: normal; color: var(--text-mute, var(--text-dim)); }
   a.tr-who { display: inline-flex; align-items: center; gap: 8px; font-weight: 600; color: var(--text); text-decoration: none; }
   a.tr-who:hover { color: var(--accent-text); }
-  .tr-face { width: 26px; height: 26px; flex: none; border-radius: 50%; overflow: hidden; display: inline-flex; justify-content: center; font-size: 14px; }
-  .tr-face img { width: 100%; height: 100%; object-fit: cover; }
-  .tr-face.dx-noimg { border-width: 1px; }
+  .tr-face { width: 26px; height: 26px; }   /* a .face (faceHtml) */
   .tr-extract { margin-left: auto; display: inline-flex; align-items: center; gap: 7px; }
   .tr-extract svg, .tr-more svg { width: 16px; height: 16px; }
   .tr-stale { flex-basis: 100%; font-size: 14px; color: var(--text-dim); }
@@ -2819,17 +2849,16 @@
   .dx-btn-inv { border: 1.5px solid var(--bg-elev); color: var(--bg-elev); font-weight: 600; height: 46px; }
   .dx-btn-inv:hover { background: rgba(255,255,255,.08); }
 
-  /* ⓘ popovers: hover or keyboard focus opens them */
+  /* ⓘ popovers: hover or keyboard focus opens them — in the top layer
+     (popover="manual", placed by dxTipShow), so nothing that clips can cut them */
   .dx-tip { position: relative; display: inline-flex; }
   .dx-tip-btn { width: 26px; height: 26px; margin: -5px 0; border-radius: 50%; display: inline-flex; align-items: center; justify-content: center; color: var(--text-dim); cursor: help; }
   .dx-tip-btn:hover { color: var(--text); }
-  .dx-tip-pop { display: none; position: absolute; left: -8px; top: 30px; z-index: 30; width: 320px; padding: 14px 16px; border-radius: 12px;
+  .dx-tip-pop { position: fixed; inset: auto; margin: 0; border: 0; overflow: visible; width: 320px; max-width: calc(100vw - 24px); padding: 14px 16px; border-radius: 12px;
     background: #0A0A0A; color: #C9C5BC; font-size: var(--text-body); font-weight: 400; line-height: 1.45; letter-spacing: 0; text-transform: none;
     text-align: left; white-space: normal; box-shadow: 0 18px 40px -12px rgba(10,10,10,.45); }
   .dx-tip-pop b { display: block; margin-bottom: 4px; color: #FFFFFF; font-size: var(--fs-md); font-weight: 700; }
   .dx-tip-pop b ~ b, .dx-tip-pop :not(:first-child) b { display: inline; color: #FFFFFF; font-size: inherit; }
-  .dx-tip-r .dx-tip-pop { left: auto; right: -8px; }
-  .dx-tip:hover .dx-tip-pop, .dx-tip:focus-within .dx-tip-pop { display: block; }
 
   /* menus (Ask a persona, More) */
   .dx-menu-wrap { position: relative; }
@@ -2841,12 +2870,9 @@
     color: var(--text); text-decoration: none; font-size: var(--fs-md); text-align: left; white-space: nowrap; }
   .dx-menu a:hover, .dx-menu button:hover { background: var(--bg-elev-2); }
 
-  /* faces */
-  .dx-face, .dx-face-md, .dx-face-xs { display: flex; align-items: flex-end; justify-content: center; overflow: hidden; border-radius: 50%; background: #E4DED2; flex: none; }
-  .dx-face img, .dx-face-md img, .dx-face-xs img { width: 94%; height: 94%; object-fit: cover; object-position: bottom; }
-  .dx-noimg { align-items: center; background: var(--bg-elev-2); border: 2px dashed var(--edge); font-weight: 800; color: var(--text); }
-  .dx-face-md { width: 72px; height: 72px; font-size: 26px; }
-  .dx-face-xs { width: 28px; height: 28px; font-size: 13px; }
+  /* faces are .face (faceHtml, 03-cards-gallery.css) — only their sizes here */
+  .dx-face-md { width: 72px; height: 72px; }
+  .dx-face-xs { width: 28px; height: 28px; }
 
   /* hero */
   .dx-hero { display: grid; grid-template-columns: minmax(0, 1fr) 440px; gap: 32px; align-items: end; }
@@ -2858,7 +2884,7 @@
   .dx-actions { margin-top: 36px; display: flex; gap: 10px; align-items: center; flex-wrap: wrap; }
   .dx-cast { position: relative; height: 420px; }
   .dx-cast > a { position: absolute; display: block; border-radius: 50%; text-decoration: none; color: var(--text); }
-  .dx-cast .dx-face { width: 100%; height: 100%; font-size: 40px; }
+  .dx-cast .dx-face { width: 100%; height: 100%; }
   .dx-cast-0 { left: 0; top: 0; width: 280px; height: 280px; }
   .dx-cast-0 .dx-face { background: var(--accent); }
   .dx-cast-1 { left: 262px; top: 110px; width: 170px; height: 170px; box-shadow: 0 0 0 6px var(--bg); }
@@ -2873,7 +2899,7 @@
   .dx-of { color: var(--edge); }
   .dx-fs { font-size: var(--text-body); color: var(--text-dim); }
   .dx-fs.ok { color: #1F7A4D; font-weight: 600; }
-  .dx-link { color: var(--text); font-weight: 600; text-decoration: underline; text-underline-offset: 3px; }
+  .dx-facts .dx-btn { align-self: flex-start; margin-top: 2px; }   /* a button in a fact cell keeps its own width */
   .dx-split { display: flex; height: 8px; gap: 2px; margin-top: 4px; }
   .dx-split i { background: var(--text); border-radius: 2px 0 0 2px; min-width: 2px; }
   .dx-split i.ev { border-radius: 0 2px 2px 0; background: repeating-linear-gradient(135deg, var(--text) 0 2px, transparent 2px 5px); box-shadow: inset 0 0 0 1.5px var(--text); }
@@ -2888,11 +2914,6 @@
   .dx-pc-name { font-size: 36px; font-weight: 800; letter-spacing: -0.05em; line-height: 1; color: var(--text); text-decoration: none; }
   .dx-pc-desc { color: var(--text-soft); font-size: var(--fs-md); display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; min-height: 2.9em; }
   .dx-pc-foot { margin-top: auto; display: flex; align-items: center; justify-content: space-between; gap: 10px; }
-  .dx-pc-lvl { display: flex; align-items: center; gap: 8px; font-size: var(--text-body); font-weight: 600; font-variant-numeric: tabular-nums; }
-  .dx-lvl { display: flex; gap: 3px; }
-  .dx-lvl i { width: 13px; height: 6px; border-radius: 2px; background: #E4DED2; }
-  .dx-lvl i.on { background: var(--text); }
-  .dx-lvl i.on.hot { background: var(--accent); }
 
   /* research health */
   .dx-health { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); overflow: hidden; }
@@ -2925,18 +2946,26 @@
   .dx-who { color: var(--text-dim); }
   .dx-sw { display: inline-block; width: 9px; height: 9px; border-radius: 2px; margin-right: 6px; background: var(--text); }
   .dx-sw.ember { background: var(--accent); }
-  .dx-ses-card { padding: 24px 24px 18px; }
-  .dx-ses-plot { position: relative; height: 140px; }
-  .dx-ses-axis { position: absolute; left: 0; right: 0; bottom: 0; display: flex; justify-content: space-between; padding-top: 6px;
-    border-top: 1.5px solid var(--text); font-family: var(--font-mono); font-size: var(--text-caption); color: var(--text-dim); }
-  .dx-ses { position: absolute; bottom: 26px; width: 0; height: var(--h); text-decoration: none; }
-  .dx-ses-stem { position: absolute; left: -1px; bottom: 0; width: 2px; height: 100%; background: var(--text); }
-  .dx-ses-dot { position: absolute; left: -6px; top: -12px; width: 12px; height: 12px; border-radius: 50%; background: var(--text); }
-  .dx-ses.test .dx-ses-dot { border-radius: 3px; }
-  .dx-ses.ex .dx-ses-stem { background: none; border-left: 2px dotted var(--edge); }
-  .dx-ses.ex .dx-ses-dot { background: var(--bg-elev); border: 2px dashed var(--text); }
-  .dx-ses:first-child .dx-ses-dot { background: var(--accent); }
-  .dx-ses-lbl { position: absolute; left: 0; top: -32px; transform: translateX(-50%); font-size: var(--text-caption); font-weight: 600; color: var(--text); white-space: nowrap; }
+  /* fresh research — the Revolut-style line (dxFresh / dxFreshWire, 13) */
+  .dx-fr { padding: 24px 24px 18px; display: flex; flex-direction: column; gap: 14px; outline: none; }
+  .dx-fr:focus-visible { box-shadow: 0 0 0 2px var(--text); }
+  .dx-fr-head { display: grid; grid-template-columns: auto 1fr; column-gap: 10px; row-gap: 4px; align-items: baseline; min-height: 74px; }
+  .dx-fr-v { font-size: 44px; font-weight: 800; line-height: 1; letter-spacing: -0.04em; color: var(--text); font-variant-numeric: tabular-nums; }
+  .dx-fr-unit { font-size: var(--fs-md); font-weight: 600; color: var(--text-dim); }
+  .dx-fr-when { grid-column: 1 / -1; font-size: var(--text-body); font-weight: 700; color: var(--text); }
+  .dx-fr-what { grid-column: 1 / -1; font-size: var(--text-body); color: var(--text-soft); }
+  .dx-fr-plot { position: relative; height: 160px; cursor: crosshair; touch-action: pan-y; }
+  .dx-fr-plot svg { position: absolute; inset: 0; width: 100%; height: 100%; overflow: visible; }
+  .dx-fr-area { fill: url(#dxFrFill); }
+  .dx-fr-line { fill: none; stroke: var(--text); stroke-width: 2; stroke-linejoin: round; vector-effect: non-scaling-stroke; }
+  .dx-fr-dot { position: absolute; width: 10px; height: 10px; margin: -5px 0 0 -5px; border-radius: 50%; background: var(--text); box-shadow: 0 0 0 2px var(--bg-elev); }
+  .dx-fr-dot.down { background: var(--accent); }
+  .dx-fr-dot.mix { background: var(--bg-elev); box-shadow: inset 0 0 0 2.5px var(--accent), 0 0 0 2px var(--bg-elev); }
+  .dx-fr-dot.on { transform: scale(1.6); }
+  .dx-fr-cursor { position: absolute; top: 0; bottom: 0; width: 0; border-left: 1.5px dashed var(--edge); opacity: 0; pointer-events: none; }
+  .dx-fr.scrub .dx-fr-cursor { opacity: 1; }
+  .dx-fr-axis { display: flex; justify-content: space-between; padding-top: 8px; border-top: 1.5px solid var(--text);
+    font-family: var(--font-mono); font-size: var(--text-caption); color: var(--text-dim); }
 
   /* open questions */
   .dx-oq td { font-weight: 600; vertical-align: middle; }
@@ -2958,6 +2987,62 @@
     .dx-facts > div:nth-child(3) { border-left: 0; padding-left: 0; }
     .dx-ht:nth-child(3) { border-left: 0; }
     .dx-pair { grid-template-columns: minmax(0, 1fr); }
+  }
+
+  /* ── Motion, the Overview's own part ─────────────────────────────────────
+     The shared vocabulary — sections rising as they scroll in (.dx-rv /
+     .dx-st), numbers counting, bars drawing, the easing tokens — lives in
+     16-motion.css for every page, and so does the title rising word by word
+     out of its own mask (shared with the persona page). What is here is this
+     page's choreography: the cast landing and breathing, the band opening, the session stems, the persona-card tilt. */
+
+  @media (prefers-reduced-motion: no-preference) {
+    @keyframes dxFloat { 50% { transform: translateY(-7px); } }
+
+    /* arrivals — the hero choreographs itself, every later section rises as it scrolls in */
+    .dx-motion .dx-kicker { animation: dxUp .8s var(--ease-out) backwards .05s; }
+    .dx-motion .dx-actions { animation: dxUp .8s var(--ease-out) backwards .5s; }
+    .dx-motion .dx-cast > a { animation: dxCastIn 1s var(--ease-spring) backwards; animation-delay: calc(.3s + var(--i) * 120ms); }
+    .dx-motion .dx-band.dx-rv { clip-path: inset(0 7% round 20px); transition: clip-path 1.1s var(--ease-out) .1s; }
+    .dx-motion .dx-band.dx-rv.in { clip-path: inset(0 0 round 20px); }
+
+
+    /* the cast breathes, out of step, and drifts against the pointer by depth */
+    .dx-cast-0 { --i: 0; --d: 14; } .dx-cast-1 { --i: 1; --d: -10; } .dx-cast-2 { --i: 2; --d: 18; } .dx-cast-3 { --i: 3; --d: -16; }
+    .dx-cast > a { translate: calc(var(--hx, 0) * var(--d) * 1px) calc(var(--hy, 0) * var(--d) * 1px);
+      transition: translate .7s var(--ease-out), scale .5s var(--ease-spring); }
+    .dx-cast .dx-face { animation: dxFloat 7s ease-in-out infinite; animation-delay: calc(var(--i) * -1.75s); }
+    .dx-cast .dx-face img { transition: transform .7s var(--ease-out); }
+
+    .dx-btn { transition: background .25s, color .25s, border-color .25s, filter .25s, transform .45s var(--ease-spring), translate .35s var(--ease-out); }
+    .dx-btn:active { transform: scale(.96); }
+    .dx-btn-ember { position: relative; isolation: isolate; overflow: hidden; translate: var(--tx, 0) var(--ty, 0); }
+    .dx-btn-ember::after { content: ""; position: absolute; inset: 0; z-index: -1; pointer-events: none;
+      background: linear-gradient(105deg, transparent 30%, rgba(255,255,255,.5) 50%, transparent 70%);
+      transform: translateX(-130%); transition: transform .9s var(--ease-out); }
+
+    .dx-table tbody tr { transition: background .2s; }
+
+    /* the fresh-research line draws itself left to right, then its dots land */
+    .dx-motion .dx-rv .dx-fr-plot svg { clip-path: inset(0 100% 0 0); transition: clip-path 1.6s var(--ease-out) .3s; }
+    .dx-motion .dx-rv.in .dx-fr-plot svg { clip-path: inset(0 0 0 0); }
+    .dx-motion .dx-rv .dx-fr-dot { scale: 0; transition: scale .5s var(--ease-spring), transform .25s var(--ease-spring); transition-delay: calc(.6s + var(--i) * 45ms), 0s; }
+    .dx-motion .dx-rv.in .dx-fr-dot { scale: 1; }
+    .dx-fr-dot { transition: transform .25s var(--ease-spring); }
+    .dx-fr-cursor { transition: left .18s var(--ease-out), opacity .2s; }
+  }
+
+  /* hovers — pointer devices only */
+  @media (hover: hover) and (prefers-reduced-motion: no-preference) {
+    .dx-cast > a:hover { scale: 1.06; z-index: 2; }
+    .dx-cast > a:hover .dx-face img { transform: translateY(-3%) scale(1.05); }
+    .dx-band .dx-btn-ember:hover::after { transform: translateX(130%); }   /* the hero's buttons stay still */
+
+    /* a persona card's gesture is the lean component (data-lean, 16-motion.css);
+       only the primary card's keyline has to survive its hover shadow */
+    .dx-pc.prim[data-lean]:hover { box-shadow: inset 0 0 0 1.5px var(--text), var(--lean-shadow); }
+
+    .dx-table tbody tr:hover { background: var(--bg); }
   }
   /* ── First run — the welcome (.wc-*) ─────────────────────────────────────
      One card on a dark field, above everything else. Same tokens as the rest
@@ -3149,6 +3234,36 @@
   body.detail-open .topnav { left: 0; }
   body.projects-open .topnav, body.welcome-open .topnav, body.nav-open .topnav { display: none; }
 
+  /* The poster sits under the bar like any page (its Back and trail live
+     there); the bar lifts over it so the account menu still opens on top. */
+  body.poster-open .topnav { left: 0; z-index: 470; }
+  body.poster-open #posterView { top: var(--topbar-h); }
+
+  /* ← Back · Project / Section / Page — only on the pages below the rail
+     (15-topnav.js navTrail). The last crumb is where you are and gives way first. */
+  .topnav-trail { display: none; flex: 1; min-width: 0; align-items: center; gap: var(--s-3); }
+  body.detail-open .topnav-trail, body.poster-open .topnav-trail { display: flex; }
+  .nav-back {
+    flex: none; display: inline-flex; align-items: center; gap: 6px; height: 34px; padding: 0 12px 0 9px;
+    background: var(--bg-elev); border: 1px solid var(--line); border-radius: var(--r-md);
+    font-family: var(--font-ui); font-size: var(--fs-md); color: var(--text); cursor: pointer;
+    transition: border-color .12s, background .12s;
+  }
+  .nav-back:hover { border-color: var(--hover-border); background: var(--hover-bg); }
+  .topnav-trail ol { display: flex; align-items: center; min-width: 0; margin: 0; padding: 0; list-style: none; font-size: var(--fs-md); }
+  .topnav-trail li { display: flex; align-items: center; min-width: 0; white-space: nowrap; }
+  .topnav-trail li + li::before { content: '/'; color: var(--text-mute); padding: 0 2px; }
+  .nav-crumb { padding: 4px 6px; background: none; border: 0; border-radius: var(--r-sm);
+    font: inherit; color: var(--text-dim); cursor: pointer; }
+  .nav-crumb:hover { color: var(--text); background: var(--hover-bg); }
+  .nav-here { padding: 4px 6px; font-weight: 600; color: var(--text); overflow: hidden; text-overflow: ellipsis; }
+  @media (max-width: 600px) {
+    .nav-back span { display: none; }
+    .nav-back { padding: 0 9px; }
+    .topnav-trail li:first-child { display: none; }   /* the project; the section and page stay */
+    .topnav-trail li:nth-child(2)::before { content: none; }
+  }
+
   /* only what the bar actually covers moves down — never the rail */
   .main { padding-top: var(--topbar-h); }
   .detail { padding-top: var(--topbar-h); }
@@ -3203,6 +3318,96 @@
     .shell { padding-top: var(--topbar-h); }
     .main { padding-top: 0; }
   }
+  /* ── Motion — the shared vocabulary ─────────────────────────────────────
+     One way things move, on every page: a page's blocks rise as they scroll
+     into view (.dx-rv, a few at a time, 45ms apart), the items inside a
+     block follow one after another (.dx-st), numbers count up and bars draw
+     once their block is in view (dxCount, 12c-motion.js), and what sits under
+     the pointer lifts a little toward you. Transforms and opacity only.
+
+     The "before" states exist only under .dx-motion, which motionReveal sets
+     when a page is ENTERED (the router, a rail tab) and motion is allowed —
+     so with JS off, with reduced motion, or on a re-render in place (a save,
+     a highlight, typing in the filter) everything is simply there. Arrivals
+     use animations on `translate`; hovers use transitions on `translate` or
+     `transform` of other elements, so the two never fight over a property.
+     The Overview adds its own choreography on top (12-project-home.css). */
+  :root { --ease-out: cubic-bezier(.16, 1, .3, 1); --ease-spring: cubic-bezier(.34, 1.56, .64, 1); }
+  .dx-w, .dx-w > span { display: inline-block; max-width: 100%; }
+  .dx-w { overflow: hidden; vertical-align: top; padding-bottom: .14em; margin-bottom: -.14em; }
+
+  @media (prefers-reduced-motion: no-preference) {
+    @keyframes dxUp { from { opacity: 0; translate: 0 22px; } }
+    @keyframes dxRise { from { transform: translateY(108%); } }
+    @keyframes dxPop { from { transform: scale(0); } }
+    @keyframes dxCastIn { from { opacity: 0; scale: .55; } }
+    @keyframes moFade { from { opacity: 0; } }
+    @keyframes moPop { from { opacity: 0; scale: .96; translate: 0 10px; } }
+
+    /* arrivals */
+    .dx-motion .dx-rv:not(.in), .dx-motion .dx-rv:not(.in) .dx-st { opacity: 0; }
+    .dx-motion .dx-rv.in { animation: dxUp .85s var(--ease-out) backwards; animation-delay: calc(var(--b, 0) * 45ms); }
+    .dx-motion .dx-rv.in .dx-st { animation: dxUp .75s var(--ease-out) backwards; animation-delay: calc(.12s + var(--i, 0) * 60ms); }
+
+    /* bars draw left to right once their block is in view */
+    .dx-motion .dx-rv :is(.dx-track i, .dx-split i, .dx-lvl i) { transform: scaleX(0); transform-origin: left; transition: transform 1.1s var(--ease-out) .35s; }
+    .dx-motion .dx-rv .dx-lvl i { transition-duration: .5s; }
+    .dx-motion .dx-rv .dx-lvl i:nth-child(2) { transition-delay: .42s; }
+    .dx-motion .dx-rv .dx-lvl i:nth-child(3) { transition-delay: .49s; }
+    .dx-motion .dx-rv .dx-lvl i:nth-child(4) { transition-delay: .56s; }
+    .dx-motion .dx-rv .dx-lvl i:nth-child(5) { transition-delay: .63s; }
+    .dx-motion .dx-rv.in :is(.dx-track i, .dx-split i, .dx-lvl i) { transform: none; }
+
+    /* a page's name arrives word by word out of its own mask and its dot pops —
+       the Overview's title (.dx-motion, the grid) and a persona's name
+       (.mo-enter, set on the hero itself so a re-render in place never replays it) */
+    :is(.dx-motion, .mo-enter) .dx-w > span { animation: dxRise 1.05s var(--ease-out) backwards; animation-delay: calc(.12s + var(--i) * 90ms); }
+    :is(.dx-motion .dx-title, .mo-enter .pe-name) .dx-dot, .mo-enter #pageTitle::after { display: inline-block; animation: dxPop .7s var(--ease-spring) backwards; animation-delay: calc(.35s + var(--n, 1) * 90ms); }
+
+    /* the persona page's hero = the Overview's hero, one person: kicker, name,
+       the rest rising after it, and the portrait landing like the cast does */
+    .mo-enter .pe-kicker { animation: dxUp .8s var(--ease-out) backwards .05s; }
+    .mo-enter :is(.pe-role, .pe-arch) { animation: dxUp .8s var(--ease-out) backwards .38s; }
+    .mo-enter .pe-actions { animation: dxUp .8s var(--ease-out) backwards .5s; }
+    .mo-enter .pe-portrait { animation: dxCastIn 1s var(--ease-spring) backwards .3s; }
+
+    /* the Personas tab: its title rises like a persona's name (its dot is the
+       page head's ::after, popped by the rule above), the subtitle and the bars follow */
+    .mo-enter #pageSub { animation: dxUp .8s var(--ease-out) backwards .3s; }
+    .mo-enter ~ #newBar { animation: dxUp .8s var(--ease-out) backwards .42s; }
+    .mo-enter ~ #filterBar { animation: dxUp .8s var(--ease-out) backwards .5s; }
+
+    /* ── the lean — a persona card's gesture, ONE component: anything with
+       data-lean="<deg>" (Overview and Personas-tab cards, the persona
+       portrait) leans toward the pointer (--rx/--ry, 12c-motion.js), lifts,
+       lights where the cursor is (--mx/--my), and the face inside it turns
+       and takes the ink ring. A face that leans itself does the same at once. */
+    [data-lean] { --lean-shadow: 0 1px 2px rgba(10,10,10,.06), 0 28px 48px -26px rgba(10,10,10,.38);
+      position: relative; isolation: isolate; transform: perspective(900px) rotateX(var(--rx, 0deg)) rotateY(var(--ry, 0deg));
+      transition: transform .7s var(--ease-out), translate .5s var(--ease-out), box-shadow .5s var(--ease-out), border-color .15s; }
+    [data-lean]::after { content: ""; position: absolute; inset: 0; z-index: -1; border-radius: inherit; pointer-events: none; opacity: 0;
+      background: radial-gradient(260px circle at var(--mx, 50%) var(--my, 50%), rgba(255,77,0,.11), transparent 68%); transition: opacity .35s; }
+    .face[data-lean]::after { z-index: 2; background: radial-gradient(160px circle at var(--mx, 50%) var(--my, 50%), rgba(255,255,255,.3), transparent 66%); }
+    [data-lean] .face, .face[data-lean] { transition: transform .7s var(--ease-out), translate .5s var(--ease-out), scale .65s var(--ease-spring), rotate .65s var(--ease-spring), box-shadow .4s var(--ease-out); }
+
+    /* dialogs: the card rises into place over a fading scrim */
+    .modal[open] > * { animation: moPop .38s var(--ease-out); }
+    .modal[open]::backdrop { animation: moFade .3s ease-out; }
+
+    /* what can lift, lifts the same way */
+    .card, .bl-card, .tr-card, .pj-card { transition: translate .45s var(--ease-out), box-shadow .45s var(--ease-out), border-color .15s, background .15s; }
+  }
+
+  @media (hover: hover) and (prefers-reduced-motion: no-preference) {
+    body.lin-all .card:hover, .pj-card:hover { translate: 0 -3px; box-shadow: 0 1px 2px rgba(10,10,10,.05), 0 20px 36px -24px rgba(10,10,10,.32); }
+    body.lin-all [data-lean]:hover, [data-lean]:hover { translate: 0 -6px; transition-duration: .25s, .5s, .5s, .15s; box-shadow: var(--lean-shadow); }
+    [data-lean]:hover::after { opacity: 1; }
+    [data-lean]:hover .face { scale: 1.08; rotate: -5deg; box-shadow: 0 0 0 4px var(--bg-elev), 0 0 0 5.5px var(--text); }
+    .face[data-lean]:hover { scale: 1.03; rotate: -4deg; box-shadow: 0 0 0 6px var(--bg), 0 0 0 8px var(--text), 0 30px 50px -28px rgba(10,10,10,.4); }
+    :is([data-lean], .pe-actions) .dx-btn-line:hover { background: var(--text); color: var(--bg-elev); }   /* Ask / Poster fill with ink */
+    .bl-card:not(.dragging):not(.sel):hover { translate: 0 -2px; box-shadow: 0 1px 2px rgba(10,10,10,.05), 0 16px 28px -20px rgba(10,10,10,.3); }
+    .tr-card:not(.lit):hover { translate: 0 -2px; box-shadow: 0 14px 26px -20px rgba(10,10,10,.28); }
+  }
 </style>
 </head>
 <body class="lin-all lin-side">
@@ -3214,6 +3419,8 @@
      a copy of everything, and the way out. Keeping these three out of the left
      rail leaves that rail as pure navigation (and room for more of it). -->
 <div class="topnav" id="topNav">
+  <!-- Back + where you are, on the pages below the rail (an entity, its poster) — 15-topnav.js -->
+  <nav class="topnav-trail" id="navTrail" aria-label="Breadcrumb" data-i18n-aria="Breadcrumb"></nav>
   <button class="topnav-ava" id="avatarBtn" aria-haspopup="menu" aria-expanded="false" aria-label="Account menu" data-i18n-aria="Account menu"><span id="avatarInitials">A</span></button>
   <div class="topnav-menu" id="avatarMenu" role="menu" style="display:none">
     <div class="topnav-who">
@@ -3437,11 +3644,6 @@
 <div class="detail" id="detailView">
   <div class="detail-wrap">
     <div class="crumbs">
-      <button class="crumb" id="backBtn" data-i18n="Graph">Graph</button>
-      <span class="sep">/</span>
-      <button class="crumb" id="crumbType"></button>
-      <span class="sep">/</span>
-      <span class="here" id="crumbHere"></span>
       <span class="spacer"></span>
       <button class="btn btn-ghost btn-sm" id="mapHereBtn" title="See this entity in the context of its connections" data-i18n-title="See this entity in the context of its connections" data-i18n="◎ Map">◎ Map</button>
       <button class="btn btn-ghost btn-sm" id="deleteDraftBtn" style="display:none" title="Delete this local draft" data-i18n-title="Delete this local draft" data-i18n="Delete draft">Delete draft</button>
@@ -7016,6 +7218,27 @@ function picResolve(raw, file){
   return hit ? { src: hit } : null;
 }
 function picFor(e, field){ return e ? picResolve(e.fm && e.fm[field||'picture'], e.file) : null; }
+// a drawn avatar (SVG) stands on a portrait circle's bottom edge; a photo fills the circle
+function picIsPhoto(e, pic){
+  return !!(pic && pic.src) && !/^data:image\/svg/i.test(pic.src) && !/\.svg$/i.test(String(e.fm.picture||'').split('#')[0].trim());
+}
+/* A persona's face — the ONE renderer for every place a persona shows up:
+   the Overview (cards, hero cast, Ask menu), the persona page, the Personas
+   tab, tables, the poster, the backlog, a transcript. `cls` only sizes and
+   colours it; the component decides the rest (CSS: `.face`, 03-cards-gallery):
+   a drawn avatar stands on the circle's bottom edge (.is-drawn), a photo fills
+   it (.is-photo), no picture shows initials (.is-initials). The picture comes
+   first and hides the initials, so an image that fails to load falls back to
+   them. `attrs` adds attributes (data-lean on the persona page). No entity (a
+   backlog row naming someone not in the graph) → the initials of `name`. */
+function faceHtml(e, cls, name, attrs){
+  const pic = e ? picFor(e) : null, src = pic && pic.src;
+  const nm = name || (e ? e.title.split(/\s+[—–-]\s+/)[0].trim() : '?');
+  const kind = src ? (picIsPhoto(e, pic) ? 'is-photo' : 'is-drawn') : 'is-initials';
+  // an external picture the privacy setting blocks: say why the initials are showing
+  const why = pic && pic.blocked ? ` title="${esc(tr('Picture not shown — this file points at an image on {h}. Allow external images in Settings ▸ Privacy & network, or save the image into the repo and use a relative path.').replace('{h}', pic.host))}"` : '';
+  return `<span class="face ${kind}${cls ? ' '+cls : ''}"${why}${attrs ? ' '+attrs : ''}>${src ? `<img src="${esc(src)}" alt="" loading="lazy" onerror="this.remove()">` : ''}<span class="face-ini" aria-hidden="true">${esc(initialsFor(nm) || '?')}</span></span>`;
+}
 
 /* "Us" — our own product, the anchor competitors are measured against. Parsed
    from Product Context.md (root doc); powers the market-map anchor node and the
@@ -7604,6 +7827,8 @@ const PL = {
   'Highlight removed ✓': 'Zakreślenie usunięte ✓',
   'Tags updated ✓': 'Tagi zaktualizowane ✓',
   'Undone ✓': 'Cofnięte ✓',
+  'Breadcrumb': 'Ścieżka nawigacji',
+  'Project': 'Projekt',
   'Show it in the transcript': 'Pokaż w transkrypcji',
   'Context': 'Kontekst',
   'Guest': 'Gość',
@@ -7764,7 +7989,6 @@ const PL = {
   'Worked out from what the idea links to, not from votes: interviews and research together = strong, interviews only = medium, research only = weak.': 'Liczona z tego, do czego prowadzi pomysł, a nie z głosów: wywiady i badania razem = silna, same wywiady = średnia, same badania = słaba.',
   'set aside': 'odłożony',
   '{name}’s frustrations': 'Frustracje: {name}',
-  '{n} of 5': '{n} z 5',
   'Against': 'Przeciw',
   'For': 'Za',
   'All personas': 'Wszystkie persony',
@@ -7772,9 +7996,23 @@ const PL = {
   'Ask': 'Zapytaj',
   'Ask a persona': 'Zapytaj personę',
   'Asked in conversations, answered with “I don’t know”. Each one waits for a real interview.': 'Padły w rozmowach, odpowiedź brzmiała „nie wiem”. Każde czeka na prawdziwy wywiad.',
-  'Circle = interview, square = usability test, dashed = set aside by the researcher. Trend charts would need research that spans two months or more.': 'Kółko = wywiad, kwadrat = test użyteczności, przerywane = odłożone przez badacza. Wykresy trendu wymagają badań z co najmniej dwóch miesięcy.',
   'Every persona stands on a single person.': 'Każda persona opiera się na jednej osobie.',
   'Example data': 'Dane przykładowe',
+  'Fresh research': 'Świeże badania',
+  'Actions': 'Akcje',
+  'Topic': 'Temat',
+  'Promote to Idea': 'Awansuj na Pomysł',
+  'Ready to promote to an Idea': 'Gotowa do awansu na Pomysł',
+  'A live bet — L1 assumption, no evidence yet': 'Żywy zakład — założenie L1, jeszcze bez dowodów',
+  'Gained research and became an Idea — kept as the thinking trail': 'Zdobyła badania i stała się Pomysłem — zostaje jako ślad myślenia',
+  'Disproven or dropped — kept so the team remembers why': 'Obalona albo porzucona — zostaje, żeby zespół pamiętał dlaczego',
+  'What is still fresh': 'Co jest jeszcze świeże',
+  'How many of your sources are younger than three months, day by day. A new interview or new desk research lifts the line; three months later it goes out of date and the line steps down. Each dot is a day something changed — point at it to see what. Sessions the researcher set aside count nowhere.':
+    'Ile Twoich źródeł jest młodszych niż trzy miesiące — dzień po dniu. Nowy wywiad albo nowy desk research podnosi linię; po trzech miesiącach źródło się starzeje i linia schodzi w dół. Każda kropka to dzień, w którym coś się zmieniło — wskaż ją, by zobaczyć co. Sesje odłożone przez badacza nie liczą się nigdzie.',
+  'Fresh research over time — use the arrow keys to step through the changes': 'Świeże badania w czasie — strzałkami przechodzisz po kolejnych zmianach',
+  'Nothing goes out of date in the next 30 days': 'Przez najbliższe 30 dni nic się nie zestarzeje',
+  'Today': 'Dziś',
+  'today': 'dziś',
   'Example project': 'Projekt przykładowy',
   'Firsthand': 'Z pierwszej ręki',
   'Four readings': 'Cztery odczyty',
@@ -7791,13 +8029,11 @@ const PL = {
   'No research data yet — start with the founding brief.': 'Brak danych z badań — zacznij od briefu założycielskiego.',
   'None of them claims more precision than a handful of interviews can carry. Hover each ⓘ for what it means.': 'Żaden nie udaje większej precyzji, niż udźwignie garść wywiadów. Najedź na ⓘ, żeby zobaczyć, co znaczy.',
   'On the same feature, some participants stand against it and some for it. A split is a finding, not noise — take it to the next round, or ask your AI assistant to run /contradictions on it.': 'Przy tej samej funkcji część uczestników jest przeciw, a część za. Rozbieżność to wynik, nie szum — weź ją do następnej rundy albo poproś asystenta AI o /contradictions.',
-  'One mark per session': 'Jeden znacznik na sesję',
   'Plan the next round': 'Zaplanuj następną rundę',
   'Research health': 'Kondycja badań',
   'Search': 'Szukaj',
   'Search this workspace': 'Szukaj w tej przestrzeni',
   'See all': 'Zobacz wszystkie',
-  'Sessions': 'Sesje',
   'Solid = heard in your own sessions (signals). Striped = read in published research or data (evidence).': 'Pełne = usłyszane w Twoich sesjach (sygnały). W paski = przeczytane w publikacjach lub danych (dowody).',
   'Spotify listeners': 'Słuchacze Spotify',
   'The tick is the 3-month line. Past it, findings get flagged for a refresh round.': 'Kreska to granica 3 miesięcy. Po niej wyniki trafiają do rundy odświeżającej.',
@@ -8223,9 +8459,6 @@ const PL = {
   'Drag to resize — double-click to reset': 'Przeciągnij, żeby zmienić szerokość — dwuklik resetuje',
   'Excluded': 'Wyłączona',
   'Has {what} — make it a grounded Idea': 'Ma {what} — zrób z tego ugruntowany pomysł',
-  'promote': 'awansuj',
-  'Edit this hypothesis (form)': 'Edytuj tę hipotezę (formularz)',
-  'Delete this hypothesis': 'Usuń tę hipotezę',
   'No highlights yet': 'Jeszcze żadnych podświetleń',
   'The best line always jumps out. Keep it.': 'Najlepsze zdanie zawsze rzuca się w oczy. Zatrzymaj je.',
   'Open a transcript, drag across the words that matter, and a <b>🖍 Highlight</b> button appears. Give it a tag or two — <code>pain</code>, <code>pricing</code>, whatever fits. It saves straight into the file, so the whole team gets it on the next <code>git pull</code>, and the AI treats it as the part you wanted heard first.':
@@ -8566,7 +8799,8 @@ const PL = {
 
   /* ---- entity type labels ---- */
   'All': 'Wszystko',
-  'All entities': 'Wszystkie elementy',
+  'Search results': 'Wyniki wyszukiwania',
+  'Everything that matches your search, grouped by type. Clear it to go back to the Overview.': 'Wszystko, co pasuje do wyszukiwania, pogrupowane według typu. Wyczyść pole, by wrócić do Przeglądu.',
   'Personas': 'Persony',
   'Archetypes': 'Archetypy',
   'Signals': 'Sygnały',
@@ -8577,8 +8811,6 @@ const PL = {
   'Transcripts': 'Transkrypcje',
 
   /* ---- page subtitles ---- */
-  'Everything your team has learned. In one place. Open any card and follow it back to the person who said it.':
-    'Wszystko, czego dowiedział się zespół. W jednym miejscu. Otwórz dowolną kartę i wróć nią do osoby, która to powiedziała.',
   'Real people, remembered. Every persona is built from actual conversations — and only says what your research can back up.':
     'Zapamiętani ludzie. Każda persona powstaje z prawdziwych rozmów — i mówi tylko to, co potwierdzają twoje badania.',
   'The pattern behind the person. Archetypes capture the tension people share, so a conversation can speak for many — not just one anecdote.':
@@ -8921,7 +9153,7 @@ const pageSub = document.getElementById('pageSub');
 /* Page subtitles, Apple voice: short, warm, benefit-first — but every one still
    carries the load-bearing fact (what grounds it, how to read it). */
 const PAGE_DESC = {
-  All: 'Everything your team has learned. In one place. Open any card and follow it back to the person who said it.',
+  All: 'Everything that matches your search, grouped by type. Clear it to go back to the Overview.',
   Persona: 'Real people, remembered. Every persona is built from actual conversations — and only says what your research can back up.',
   Archetype: 'The pattern behind the person. Archetypes capture the tension people share, so a conversation can speak for many — not just one anecdote.',
   Signal: 'Heard firsthand. One observation per file, straight from a real session, quote and all. Everything else in the graph stands on these.',
@@ -8932,7 +9164,7 @@ const PAGE_DESC = {
   Transcript: 'Where every insight was born. The full conversations, word for word — one file, one person.'
 };
 function updatePageHead(){
-  pageTitle.textContent = activeType==='All' ? tr('All entities') : tr(TYPES[activeType].label);
+  pageTitle.textContent = activeType==='All' ? tr('Search results') : tr(TYPES[activeType].label);
   pageSub.textContent = tr(PAGE_DESC[activeType] || PAGE_DESC.All);
   pageSub.style.display = '';
   syncLinTheme();
@@ -8954,15 +9186,14 @@ function hideGalleryChrome(){   // bars are siblings of the grid; pages that rep
 function syncLinTheme(){
   document.body.classList.toggle('lin-mm', MINDMAP_ACTIVE);
 }
-const ALL_ICON = '<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 4l-8 4l8 4l8 -4l-8 -4"/><path d="M4 12l8 4l8 -4"/><path d="M4 16l8 4l8 -4"/></svg>';
 function renderTabs(){
   const list = wsEntities();
   const counts = {}; list.forEach(e=> counts[e.type]=(counts[e.type]||0)+1);
-  const total = list.length;
   // a full-screen page (Overview/Settings/Help/Mind Map) owns the active state —
   // don't also light up a graph tab, or two sections look selected at once
   const inView = DASHBOARD_ACTIVE || SETTINGS_ACTIVE || HELP_ACTIVE || MINDMAP_ACTIVE || BACKLOG_ACTIVE;
-  let html = `<button class="nav-item ${!inView && activeType==='All'?'active':''}" data-t="All">${ALL_ICON}${tr('All')}<span class="n">${total}</span></button>`;
+  // no "All" tab: the Overview is the overview; 'All' survives only as where the rail's search shows its results
+  let html = '';
   Object.entries(TYPES).forEach(([raw,ty])=>{
     const c = counts[raw] || 0;
     html += `<button class="nav-item ${!inView && activeType===raw?'active':''}" data-t="${raw}">${ICONS[raw]}${tr(ty.label)}<span class="n">${c}</span></button>`;
@@ -8972,7 +9203,7 @@ function renderTabs(){
     activeType=b.dataset.t;
     if(HELP_ACTIVE || SETTINGS_ACTIVE || MINDMAP_ACTIVE || DASHBOARD_ACTIVE || BACKLOG_ACTIVE){ helpExit(); settingsExit(); mindmapExit(); dashboardExit(); backlogExit(); if(location.hash) { suppressRoute = true; location.hash=''; } }
     renderTabs(); renderGrid(searchInput.value);
-    updatePageHead();
+    updatePageHead(); motionPage();
   });
 }
 
@@ -9600,6 +9831,15 @@ const LEVEL_TEXT = {
   4: ['Correlated', 'Heard in interviews and backed by desk research.'],
   5: ['Ready for decisions', 'Interviews, desk research and correlations — may carry product recommendations.'],
 };
+/* How solid a PERSONA is — the ONE look on every persona surface (Overview
+   card, Personas tab, persona page): five bars, the fifth in ember, and
+   "n/5"; `named` adds the level's name, `why` replaces the hover text
+   (which otherwise says what the level means). levelChip stays for claims. */
+function levelMeter(n, why, named){
+  const [name, mean] = LEVEL_TEXT[n];
+  const bars = Array.from({length: 5}, (_, i)=> `<i class="${i < n ? (i === 4 ? 'on hot' : 'on') : ''}"></i>`).join('');
+  return `<span class="lvl-meter" title="${esc(why || tr(name)+' — '+tr(mean))}"><span class="dx-lvl" aria-hidden="true">${bars}</span>${n}/5${named ? ' — '+esc(tr(name)) : ''}</span>`;
+}
 function levelChip(n, withName){
   const [name, why] = LEVEL_TEXT[n];
   return `<span class="lvl lvl-${n}" title="${esc('L'+n+' · '+tr(name)+' — '+tr(why))}">L${n}${withName?' · '+esc(tr(name)):''}</span>`;
@@ -9636,7 +9876,7 @@ function participantsChip(e){
 }
 const demoCell = e => e.fm.demo ? '<span class="demo-badge">Demo</span>' : '';
 const titleCell = e => {
-  const av = e.type==='Persona' ? avatarHtml(e, e.title) : (e.type==='Archetype' ? archIconHtml(e,'sm') : (e.type==='Competitor' ? compTileHtml(e,26) : ''));
+  const av = e.type==='Persona' ? faceHtml(e, '', e.title) : (e.type==='Archetype' ? archIconHtml(e,'sm') : (e.type==='Competitor' ? compTileHtml(e,26) : ''));
   return `<span class="td-title">${av}${esc(e.title)}</span>`;
 };
 /* table columns exist only for the types whose tabs actually offer a table
@@ -9649,14 +9889,17 @@ const TABLE_COLS = {
     ['Evidences', e=>{ const ev=Array.isArray(e.fm.evidences)?e.fm.evidences:(e.fm.evidences?[e.fm.evidences]:[]); return ev.length? ev.map(x=>`<span class="tag">${esc(x)}</span>`).join(' ') : '<span class="muted">—</span>'; }, 220], ['', demoCell, 90]
   ],
   Hypothesis: [
-    ['Hypothesis', titleCell, 200],
-    ['Feature', e=> e.fm.feature? `<span class="tag">${esc(e.fm.feature)}</span>` : '<span class="muted">—</span>', 130],
-    ['If', e=>esc(trim(stripLinks(afterLabel(e.body,'If')),70)), 180],
-    ['Will', e=>esc(trim(stripLinks(afterLabel(e.body,'Will')),70)), 180],
-    ['Author', authorChip, 130],
-    ['Status', e=>{ const g=ideaGrounding(e);
-      return hypoStatusChip(e) + (hypoStatus(e)==='open' && g.level>0 ? ` <button type="button" class="hypo-promote hypo-promote-cell" data-promote="${e.id}" title="${esc(tr('Has {what} — make it a grounded Idea').replace('{what}', g.detail))}">↑ ${tr('promote')}</button>` : ''); }, 180],
-    ['', e=>`${demoCell(e)}<span class="row-acts"><button type="button" data-hedit="${e.id}" title="${esc(tr('Edit this hypothesis (form)'))}">✎</button><button type="button" data-hdel="${e.id}" title="${esc(tr('Delete this hypothesis'))}">🗑</button></span>`, 140]
+    ['Hypothesis', titleCell, 440],   // If / Will live in the file (and its card) — as columns they were mostly empty
+    ['Topic', e=> e.fm.feature? `<span class="tag">${esc(e.fm.feature)}</span>` : '<span class="muted">—</span>', 130, 'fit'],
+    ['Author', authorChip, 130, 'fit'],
+    ['Status', hypoStatusChip, 110, 'fit'],
+    ['', e=>{   // everything you can DO with a row sits behind its ⋯ — the columns stay for content
+      const g = ideaGrounding(e), canPromote = hypoStatus(e)==='open' && g.level>0;
+      return demoCell(e) + rowMenuHtml('rm-'+e.id, [
+        canPromote && `<button type="button" role="menuitem" data-promote="${e.id}" title="${esc(tr('Has {what} — make it a grounded Idea').replace('{what}', g.detail))}">${FI('<line x1="12" y1="19" x2="12" y2="5"/><polyline points="5 12 12 5 19 12"/>')}${tr('Promote to Idea')}</button>`,
+        `<button type="button" role="menuitem" data-hedit="${e.id}">${FI('<path d="M12 20h9"/><path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5z"/>')}${tr('Edit')}</button>`,
+        `<button type="button" role="menuitem" class="danger" data-hdel="${e.id}">${FI('<polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6"/><path d="M10 11v6M14 11v6"/><path d="M9 6V4a1 1 0 0 1 1-1h4a1 1 0 0 1 1 1v2"/>')}${tr('Delete')}</button>`,
+      ], canPromote ? tr('Ready to promote to an Idea') : ''); }, 64, 'fit']
   ],
   Transcript: [
     ['Transcript', titleCell, 180],
@@ -9671,15 +9914,18 @@ const TABLE_COLS = {
    each TABLE_COLS entry) instead of being squeezed to fit — the .tableview
    wrapper scrolls horizontally when the sum outgrows the viewport. Every
    header edge is a drag handle; widths persist per tab, double-click resets. */
+/* stored per tab AND per set of columns: when the columns change, old widths
+   and a sort by a column that moved can't land on the wrong one */
+const colStoreKey = (kind, type)=> 'at-'+kind+'-'+type+':'+(TABLE_COLS[type]||[]).map(c=> c[0]).join('|');
 function colWidthsFor(type){
   const defs = (TABLE_COLS[type]||[]).map(c=> c[2]||160);
-  let saved={}; try{ saved = JSON.parse(store.get('at-colw-'+type)||'{}'); }catch(e){}
+  let saved={}; try{ saved = JSON.parse(store.get(colStoreKey('colw', type))||'{}'); }catch(e){}
   return defs.map((w,i)=> Math.max(60, parseInt(saved[i],10) || w));
 }
 function saveColWidth(type, i, w){
-  let m={}; try{ m = JSON.parse(store.get('at-colw-'+type)||'{}'); }catch(e){}
+  let m={}; try{ m = JSON.parse(store.get(colStoreKey('colw', type))||'{}'); }catch(e){}
   if(w===null) delete m[i]; else m[i] = Math.round(w);
-  store.set('at-colw-'+type, JSON.stringify(m));
+  store.set(colStoreKey('colw', type), JSON.stringify(m));
 }
 /* Notion-style column sorting: header click cycles asc → desc → off. Keys are
    type-aware — dd.mm.yyyy dates chronologically, numeric cells (votes, 🖍 3,
@@ -9696,14 +9942,12 @@ function tableSortKey(raw){
 }
 function nextSortDir(cur){ return cur===1 ? -1 : (cur===-1 ? null : 1); }
 function cellText(html){ const d=document.createElement('div'); d.innerHTML=String(html); return d.textContent.trim(); }
-function tableSortState(type){ try{ return JSON.parse(store.get('at-sort-'+type)||'null'); }catch(e){ return null; } }
+function tableSortState(type){ try{ return JSON.parse(store.get(colStoreKey('sort', type))||'null'); }catch(e){ return null; } }
 /* Column header icons (Feather, MIT) — shown under the Apple preview */
 const FI = inner => `<svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">${inner}</svg>`;
 const COL_ICONS = {
   'Hypothesis': ICONS.Hypothesis, 'Signal': ICONS.Signal, 'Competitor': ICONS.Competitor, 'Transcript': ICONS.Transcript,
-  'Feature': FI('<path d="M20.59 13.41l-7.17 7.17a2 2 0 0 1-2.83 0L2 12V2h10l8.59 8.59a2 2 0 0 1 0 2.83z"/><line x1="7" y1="7" x2="7.01" y2="7"/>'),
-  'If': FI('<path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/>'),
-  'Will': FI('<polyline points="23 6 13.5 15.5 8.5 10.5 1 18"/><polyline points="17 6 23 6 23 12"/>'),
+  'Topic': FI('<path d="M20.59 13.41l-7.17 7.17a2 2 0 0 1-2.83 0L2 12V2h10l8.59 8.59a2 2 0 0 1 0 2.83z"/><line x1="7" y1="7" x2="7.01" y2="7"/>'),
   'Author': ICONS.Persona,
   'Status': FI('<path d="M4 15s1-1 4-1 5 2 8 2 4-1 4-1V3s-1 1-4 1-5-2-8-2-4 1-4 1z"/><line x1="4" y1="22" x2="4" y2="15"/>'),
   'Quote / observation': FI('<path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/>'),
@@ -9738,10 +9982,11 @@ function renderTable(list){
           + `${hIco}${tr(c[0])}<span class="th-sort">${active ? (sort.dir===1?'↑':'↓') : ''}</span>`
           + `<span class="col-resize" data-ci="${i}" title="${esc(tr('Drag to resize — double-click to reset'))}"></span></th>`;
       }).join('') + '</tr></thead><tbody>';
-  rows.forEach(e=>{ html += `<tr data-goto="${e.id}">` + cols.map(c=>`<td>${c[1](e)}</td>`).join('') + '</tr>'; });
+  rows.forEach(e=>{ html += `<tr data-goto="${e.id}">` + cols.map(c=>`<td${c[3]==='fit' ? ' class="td-fit"' : ''}>${c[1](e)}</td>`).join('') + '</tr>'; });
   html += '</tbody></table>';
   grid.innerHTML = html;
-  grid.querySelectorAll('tr[data-goto]').forEach(tr=> tr.onclick = ()=>{ location.hash = '#'+tr.dataset.goto; });
+  // the row opens its entity — except from its ⋯ menu, whose clicks bubble through the row
+  grid.querySelectorAll('tr[data-goto]').forEach(tr=> tr.onclick = ev=>{ if(!ev.target.closest('.row-menu')) location.hash = '#'+tr.dataset.goto; });
   wireVotes(grid);
   grid.querySelectorAll('[data-promote]').forEach(b=> b.onclick = ev=>{ ev.stopPropagation(); promoteHypothesis(b.dataset.promote); });
   grid.querySelectorAll('[data-hedit]').forEach(b=> b.onclick = ev=>{ ev.stopPropagation(); editHypothesis(b.dataset.hedit); });
@@ -9751,11 +9996,22 @@ function renderTable(list){
     const ci = +th.dataset.sci;
     const cur = tableSortState(type);
     const dir = nextSortDir(cur && cur.ci===ci ? cur.dir : null);
-    store.set('at-sort-'+type, dir===null ? 'null' : JSON.stringify({ci, dir}));
+    store.set(colStoreKey('sort', type), dir===null ? 'null' : JSON.stringify({ci, dir}));
     renderTable(list);
   });
   const table = grid.querySelector('table');
   const colEls = [...table.querySelectorAll('col')];
+  /* "fit" columns (chips, status, the ⋯) take the width of their widest cell —
+     the column fits the content, not the other way round — until the user
+     drags one; a dragged width is theirs and stays. */
+  let saved = {}; try{ saved = JSON.parse(store.get(colStoreKey('colw', type))||'{}'); }catch(err){}
+  cols.forEach((c,i)=>{
+    if(c[3]!=='fit' || saved[i]) return;
+    const cells = [table.rows[0].cells[i], ...[...table.tBodies[0].rows].map(r=> r.cells[i])];
+    widths[i] = Math.max(60, Math.ceil(Math.max(...cells.map(td=> td.scrollWidth))));
+    colEls[i].style.width = widths[i]+'px';
+  });
+  table.style.width = widths.reduce((a,b)=>a+b,0)+'px';
   grid.querySelectorAll('.col-resize').forEach(h=>{
     h.addEventListener('click', ev=> ev.stopPropagation());
     h.addEventListener('dblclick', ev=>{ ev.stopPropagation(); saveColWidth(type, +h.dataset.ci, null); renderTable(list); });
@@ -10005,6 +10261,13 @@ function renderCompare(){
 }
 function renderGrid(filter=""){
   if(HELP_ACTIVE || SETTINGS_ACTIVE || MINDMAP_ACTIVE || DASHBOARD_ACTIVE) return; // these pages own the content area
+  /* 'All' is not a page any more — only the rail search's results. With no
+     query there is nothing to show but the Overview: go there in place of
+     this history entry (a pushed one would bounce Back straight here again). */
+  if(activeType==='All' && !filter.trim()){
+    if(!location.hash.slice(1) && !document.body.matches('.projects-open, .welcome-open')){ history.replaceState(history.state, '', '#dashboard'); route(); motionPage(); }
+    return;
+  }
   const list = filteredList(filter);
   const n = list.length;
   const V = effView();
@@ -10157,11 +10420,11 @@ function card(e){
     const qFull = (firstQuote(e.body)||'').replace(/^["“']|["”']$/g,'');
     let q=''; for(const s of qFull.split(/(?<=[.!?])\s+/)){ if(!q) q=s; else if((q+' '+s).length<=130) q+=' '+s; else break; }  // whole sentences
     if(q.length>150) q=trim(q,140);
-    el.classList.add('p-apple');
-    inner = `<div class="pa-kicker">${esc(tr(e.fm.category||''))} ${tr('persona')}${e.fm.demo?'<span class="pa-demo">Demo</span>':''}${levelChip(personaLevel(e))}</div>
+    el.classList.add('p-apple'); el.dataset.lean = '4';   // the persona card's gesture (16-motion.css)
+    inner = `<div class="pa-kicker">${esc(tr(e.fm.category||''))} ${tr('persona')}${e.fm.demo?'<span class="pa-demo">Demo</span>':''}${levelMeter(personaLevel(e))}</div>
       <h3 class="pa-quote">${esc(q)}</h3>
       <div class="pa-who">${esc(nm)}${role?` · ${esc(role)}`:''}</div>
-      <div class="pa-avatar">${avatarHtml(e, nm)}</div>`;
+      <div class="pa-avatar">${faceHtml(e, '', nm)}</div>`;
     } else if(e.type==='Archetype'){
     inner += `<div class="persona-id">${archIconHtml(e)}<div><div class="name">${esc(e.title)}</div></div></div>
       <div class="excerpt">${esc(trim(stripLinks(afterLabel(e.body,'Short description')),150))}</div>
@@ -10445,7 +10708,7 @@ function hypoStatus(e){ const s=String(e.fm.status||'open').trim().toLowerCase()
 function hypoStatusChip(e){
   const s = hypoStatus(e);
   const tip = { open:'A live bet — L1 assumption, no evidence yet', promoted:'Gained research and became an Idea — kept as the thinking trail', rejected:'Disproven or dropped — kept so the team remembers why' }[s];
-  return `<span class="hypo-status ${s}" title="${esc(tip)}">${s}</span>`;
+  return `<span class="hypo-status ${s}" title="${esc(tr(tip))}">${esc(LANG==='pl' ? { open:'otwarta', promoted:'awansowana', rejected:'odrzucona' }[s] : s)}</span>`;
 }
 function hypoSourceIds(e){
   const ids=[];
@@ -10504,8 +10767,10 @@ function hypoAuthor(){
 function authorChip(e){
   const a = String(e.fm.author||'').trim();
   if(!a) return '<span class="muted">—</span>';
-  const ai = /^ai\b/i.test(a);
-  return `<span class="tag author-chip" title="${esc(a)}">${ai?'🤖':'👤'} ${esc(trim(a.replace(/\s*<[^>]*>/,''),24))}</span>`;
+  // one short line — "Claude" or the person's name; the whole credit (who approved it) on hover
+  const ai = /^ai\b/i.test(a), model = (a.match(/^ai\s*\(([^)]+)\)/i) || [])[1];
+  const label = ai ? (model || 'AI') : a.replace(/\s*<[^>]*>/, '').split(/\s+[—–-]\s+/)[0];
+  return `<span class="tag author-chip" title="${esc(a)}">${ai?'🤖':'👤'} ${esc(trim(label, 24))}</span>`;
 }
 async function deleteHypothesis(id){
   let e = ENTITIES[id]; if(!e || e.type!=='Hypothesis') return;
@@ -10771,14 +11036,6 @@ function archIconHtml(e, size){
   const ic = ARCH_ICONS[String(e.fm.icon||'').trim()];
   return `<div class="${cls}">${ic || ICONS.Archetype}</div>`;
 }
-function avatarHtml(e, nm){
-  const r = picFor(e);
-  const img = r && r.src ? `<img src="${esc(r.src)}" alt="" loading="lazy" onerror="this.remove()">` : '';
-  // blocked external image: say why the initials are showing rather than leave
-  // it looking like a missing file (the switch itself lives in Settings)
-  const why = r && r.blocked ? ` title="Picture not shown — this file points at an image on ${esc(r.host)}. Allow external images in Settings ▸ Privacy &amp; network, or save the image into the repo and use a relative path."` : '';
-  return `<div class="avatar"${why}><span>${initialsFor(nm)}</span>${img}</div>`;
-}
 
 /* ---------- markdown detail with xref navigation ---------- */
 function esc(s){ return (s||'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c])); }
@@ -10997,9 +11254,7 @@ function openDetail(id){
   document.getElementById('editBtn').style.display = '';
   galleryView.style.display="none"; detailView.classList.add('active');
   syncLinTheme();
-  document.getElementById('crumbType').textContent = e.meta.label;
-  document.getElementById('crumbType').onclick = ()=>{ activeType=e.type; renderTabs(); renderGrid(searchInput.value); updatePageHead(); location.hash=''; };
-  document.getElementById('crumbHere').textContent = e.title;
+  navTrail([{ label: tr(e.meta.label), go: ()=> goTypeList(e.type) }, { label: e.title }], ()=> goTypeList(e.type));
   document.getElementById('dKicker').innerHTML =
     `<span class="type-badge">${ICONS[e.type]}${tr(e.meta.singular)}</span>${e.type==='Transcript'&&isExcluded(e)?`<span class="demo-badge exc-badge" title="${esc(tr('Out of sample stats, heard-from counts and AI analyses'))}">${tr('Excluded')}</span>`:''}${e.draft?`<span class="demo-badge draft-badge" title="${esc(tr('Local draft — lives in this browser until you connect the project folder'))}">${tr('Draft')}</span>`:''}${e.fm.demo?`<span class="demo-badge" title="${esc(tr('Illustrative example content, not real research'))}">${tr('Demo')}</span>`:''}`;
   const delBtn = document.getElementById('deleteDraftBtn');
@@ -11222,7 +11477,8 @@ function peStripTabled(md){
   return md.replace(/(\n---\s*){2,}/g, '\n---\n');
 }
 function closeDetail(){ detailView.classList.remove('active'); galleryView.style.display=""; window.scrollTo(0,0); }
-document.getElementById('backBtn').onclick=()=>{ location.hash=''; };
+// one level up from an entity: the list of its type, the way the rail opens it
+function goTypeList(type){ activeType=type; renderTabs(); renderGrid(searchInput.value); updatePageHead(); location.hash=''; }
 
 /* ---------- in-place editing (File System Access API — Chromium; user grants write access) ---------- */
 let EDITING = false, suppressRoute = false;
@@ -11860,7 +12116,6 @@ function personaEditorialHtml(e){
   const uniq = t => [...new Map(all.filter(x=> x.e.type===t).map(x=> [x.e.id, x])).values()];
   const heard = uniq('Signal'), read = uniq('Evidence'), archs = peLinks(section(e.body,'Archetypes')).filter(x=> x.e.type==='Archetype');
   const { n: people, off } = personaParticipants(e, true);
-  const pic = picFor(e);
   const ideas = peLinks(section(e.body,'Ideas for this persona')).filter(x=> x.e.type==='IdeaForImprovement');
   const pairs = graphPairs(wsEntities());
   const nb = id => { const s = new Set(); pairs.forEach(([a,b])=>{ if(a===id) s.add(b); else if(b===id) s.add(a); }); return s; };
@@ -11879,7 +12134,7 @@ function personaEditorialHtml(e){
           <button type="button" class="dx-btn dx-btn-line dx-btn-sm" id="pPosterBtn">${tr('Poster')} ↗</button>
         </div>
       </div>
-      <div class="pe-portrait${prim?' prim':''}">${pic && pic.src ? `<img src="${esc(pic.src)}" alt="">` : `<span>${esc((first[0]||'?').toUpperCase())}</span>`}</div>
+      ${faceHtml(e, 'pe-portrait'+(prim?' prim':''), first, 'data-lean="6"')}
     </section>`;
 
   /* four facts */
@@ -11890,7 +12145,7 @@ function personaEditorialHtml(e){
       <div><span class="dx-fl">${tr('Sources')}${dxTip(tr('Heard {h} · Read {r}').replace('{h}', heard.length).replace('{r}', read.length), esc(tr('Solid = heard in your own sessions (signals). Striped = read in published research or data (evidence).')))}</span>
         <b class="pe-fact">${heard.length + read.length}</b><span class="dx-split"><i style="flex:${heard.length} 1 0"></i><i class="ev" style="flex:${read.length} 1 0"></i></span></div>
       <div><span class="dx-fl">${tr('How solid')}${dxTip(tr('How solid is a persona?'), peLevelTip(lv), 'right')}</span>
-        <span class="pe-lvl">${dxBars(lv,5)}</span><span class="pe-lvl-t">${esc(tr('{n} of 5').replace('{n}', lv))} — ${esc(tr(LEVEL_TEXT[lv][0]))}</span></div>
+        ${levelMeter(lv, '', true)}</div>
     </section>`;
 
   /* frustrations — with the relievers the researcher connected to each (the poster's `(→ …)` links) */
@@ -11967,7 +12222,7 @@ function personaEditorialWire(root, e){
   wireTalkButton(root, e, peFirst(e));
   wireVotes(root);
   wirePeek(root);
-  const pb = root.querySelector('#pPosterBtn'); if(pb) pb.onclick = ()=> posterOpen(e.id);
+  const pb = root.querySelector('#pPosterBtn'); if(pb) pb.onclick = ()=>{ location.hash = 'poster:' + e.id; };
   root.querySelectorAll('a.xref[data-goto]').forEach(a=> a.onclick = ev=>{ ev.preventDefault(); location.hash = '#'+a.dataset.goto; });
   root.querySelectorAll('[data-pe-edit]').forEach(b=> b.onclick = ()=> editSection(e, b.dataset.peEdit));
 }
@@ -12240,7 +12495,7 @@ function trMetaHtml(e){
   const score = p => peLinks(p.body).filter(l=> l.e.id===e.id || sigIds.has(l.e.id)).length;
   const per = wsEntities().filter(p=> p.type==='Persona').map(p=> [p, score(p)]).filter(([,n])=> n).sort((a,b)=> b[1]-a[1])[0];
   const bits = [];
-  if(per) bits.push(`<a class="xref tr-who" data-goto="${per[0].id}">${dxPortrait(per[0], 'tr-face')}${esc(peFirst(per[0]))}</a>`);
+  if(per) bits.push(`<a class="xref tr-who" data-goto="${per[0].id}">${faceHtml(per[0], 'tr-face')}${esc(peFirst(per[0]))}</a>`);
   if(e.fm.date) bits.push(`<span>${esc(String(e.fm.date))}</span>`);
   if(e.fm.method) bits.push(`<span>${esc(String(e.fm.method))}</span>`);
   if(isExcluded(e)) return `<span class="tr-meta">${bits.join('<i aria-hidden="true">·</i>')}</span>`;   // out of AI analyses: nothing to extract
@@ -13479,6 +13734,7 @@ async function settingsEnter(){
   await loadSettingsData();
   if(PREFS.population) store.set('at-population', PREFS.population);
   renderSettings(); window.scrollTo(0,0);
+  motionPage();   // the page arrives after the await, so the router's call came too early
 }
 function settingsExit(){
   if(!SETTINGS_ACTIVE) return;
@@ -14015,7 +14271,7 @@ const blStChip = st => `<span class="bl-st st-${st}"><i aria-hidden="true"></i>$
 function blWho(name, link){
   if(!name) return `<span class="bl-who none">${tr('No persona')}</span>`;
   const id = blPersonaLink(name), e = id && ENTITIES[id];
-  const face = e ? dxPortrait(e, 'bl-face') : `<span class="bl-face dx-noimg">${esc(name[0].toUpperCase())}</span>`;
+  const face = faceHtml(e, 'bl-face', name);
   return link && id
     ? `<a class="bl-who" href="#${id}" title="${esc(tr('Open the persona'))}">${face}${esc(name)}<span class="bl-ext" aria-hidden="true">↗</span></a>`
     : `<span class="bl-who">${face}${esc(name)}</span>`;
@@ -14434,7 +14690,7 @@ document.addEventListener('keydown', ev=>{
 }, true);
 
 /* ---- page lifecycle ---- */
-async function backlogEnter(){
+async function backlogEnter(sel){   // sel: a row key ("open:2") to open in the panel — #backlog:open:2
   BACKLOG_ACTIVE = true;
   if(typeof settingsExit==='function') settingsExit();
   if(typeof helpExit==='function') helpExit();
@@ -14447,7 +14703,7 @@ async function backlogEnter(){
   renderTabs();   // this page owns the active state — clear any graph-tab highlight
   // re-read from disk on entry: another tab or a Claude session may have appended
   if(WS==='project' && DIRHANDLE){ try{ BACKLOG_RAW = await readRepoFile(BACKLOG_FILE); }catch(err){} }
-  BL_EDIT = null; BL_MODE = 'edit'; BL_SHEET = null; BL_PICK = null; BL_SEL = null;
+  BL_EDIT = null; BL_MODE = 'edit'; BL_SHEET = null; BL_PICK = null; BL_SEL = sel || null;   // blPanel drops a key with no row behind it
   renderBacklog(); renderBacklogCount(); window.scrollTo(0,0);
 }
 function backlogExit(){
@@ -14458,6 +14714,124 @@ function backlogExit(){
   updatePageHead();
 }
 backlogBtn.onclick = ()=>{ location.hash = '#backlog'; };
+/* ---------- Motion — arrivals for every page (styles: 16-motion.css) ----------
+   Loads before 13/14 on purpose: the boot route renders the Overview, and
+   dxMotion needs MO_STILL / motionReveal to exist by then.
+   A page is "entered" through the router (every hash change) or a rail tab;
+   motionPage then marks what should rise on THAT page. Re-renders in place —
+   a save, a highlight, typing in the filter — don't come through here, so they
+   never replay it. Reduced motion: nothing runs, nothing is hidden. The
+   Overview choreographs itself (dxMotion in 13) on top of motionReveal. */
+const MO_STILL = matchMedia('(prefers-reduced-motion: reduce)');
+let MO_IO = null;
+
+/* blocks rise as they scroll in — the ones that enter together 45ms apart
+   (--b); items inside a block follow it one by one (--i, capped so a long
+   list never makes anyone wait). Numbers in a block count up as it lands. */
+function motionReveal(scope, blocks, items){
+  if(MO_IO){ MO_IO.disconnect(); MO_IO = null; }
+  if(MO_STILL.matches || !scope || !('IntersectionObserver' in window)) return false;
+  scope.classList.add('dx-motion');
+  blocks.forEach(b=>{ b.classList.add('dx-rv'); b.classList.remove('in'); });   // shell blocks (the detail head) keep their class between pages
+  (items || []).forEach(el=>{ el.classList.add('dx-st'); el.style.setProperty('--i', Math.min([...el.parentNode.children].indexOf(el), 10)); });
+  MO_IO = new IntersectionObserver(es=>{
+    let k = 0;
+    es.forEach(en=>{
+      if(!en.isIntersecting) return;
+      const t = en.target;
+      t.style.setProperty('--b', Math.min(k++, 8));
+      t.classList.add('in'); MO_IO.unobserve(t);
+      t.querySelectorAll('.dx-big, .dx-mid, .pe-fact').forEach(dxCount);
+    });
+  }, { threshold: 0, rootMargin: '0px 0px -40px 0px' });   // a ratio threshold would never fire for a block taller than the screen
+  blocks.forEach(b=> MO_IO.observe(b));
+  return true;
+}
+
+/* a name rises word by word out of its own mask (CSS: .dx-w); the dot after
+   it pops once the last word is up (--n) */
+function motionWords(title){
+  const txt = title && title.firstChild;
+  if(!txt || txt.nodeType !== 3) return;
+  let k = 0;
+  const words = txt.textContent.split(/(\s+)/).map(w=> /^\s*$/.test(w) ? w : `<span class="dx-w"><span style="--i:${k++}">${esc(w)}</span></span>`).join('');
+  title.setAttribute('aria-label', title.textContent);
+  txt.replaceWith(document.createRange().createContextualFragment(words));
+  title.querySelector('.dx-dot')?.style.setProperty('--n', k);
+  title.style.setProperty('--n', k);   // a dot drawn by ::after (the page head's) reads it here
+}
+
+/* the lean (CSS: 16-motion.css) — any element with data-lean="<degrees>"
+   leans toward a mouse pointer over it (--rx/--ry) and its light follows the
+   cursor (--mx/--my). The persona card's gesture, used by the Overview and
+   Personas-tab cards and the persona portrait; one delegated listener, so a
+   list that re-renders at will needs no wiring. */
+let MO_LEAN = null;
+const motionStraighten = el=> el && ['--rx','--ry'].forEach(v=> el.style.removeProperty(v));
+document.addEventListener('pointermove', ev=>{
+  if(ev.pointerType !== 'mouse' || MO_STILL.matches) return;
+  const el = ev.target.closest ? ev.target.closest('[data-lean]') : null;
+  if(MO_LEAN !== el){ motionStraighten(MO_LEAN); MO_LEAN = el; }
+  if(!el) return;
+  const deg = +el.dataset.lean || 4, r = el.getBoundingClientRect(), x = (ev.clientX - r.left) / r.width, y = (ev.clientY - r.top) / r.height;
+  el.style.setProperty('--mx', (x*100).toFixed(1)+'%'); el.style.setProperty('--my', (y*100).toFixed(1)+'%');
+  el.style.setProperty('--ry', ((x-.5)*2*deg).toFixed(2)+'deg'); el.style.setProperty('--rx', ((.5-y)*1.5*deg).toFixed(2)+'deg');
+});
+document.addEventListener('pointerleave', ()=>{ motionStraighten(MO_LEAN); MO_LEAN = null; });
+
+/* a number counts up from zero (ease-out expo) — only the leading integer of
+   its first text node, so "6/6", "83%" and the unit beside it stay as written */
+function dxCount(el){
+  const t = el.firstChild; if(!t || t.nodeType !== 3) return;
+  const m = t.textContent.match(/^(\d+)([\s\S]*)$/); if(!m || +m[1] < 2) return;
+  const to = +m[1], rest = m[2], t0 = performance.now(), dur = 1100;
+  const step = now=>{
+    const p = Math.min(1, (now - t0) / dur), e = p === 1 ? 1 : 1 - Math.pow(2, -10 * p);
+    t.textContent = Math.round(to * e) + rest;
+    if(p < 1) requestAnimationFrame(step);
+  };
+  requestAnimationFrame(step);
+}
+
+/* what rises on each page: [scope, blocks, items] — the long reading (a
+   document's body past its first screen, a transcript's turns) is left alone */
+function motionPage(){
+  if(MO_STILL.matches || MINDMAP_ACTIVE || document.body.classList.contains('poster-open')) return;
+  const all = (root, sel)=> root ? [...root.querySelectorAll(sel)] : [];
+  if(DASHBOARD_ACTIVE){   // every section after the hero rises; the hero choreographs itself (12-project-home.css)
+    if(motionReveal(grid, [...grid.children].slice(1), all(grid, '.dx-pgrid > .dx-pc, .dx-health > .dx-ht, .dx-oq tbody tr'))) motionWords(grid.querySelector('.dx-title'));
+    return;
+  }
+  if(detailView.classList.contains('active')){
+    const card = detailView.querySelector('.detail-card');
+    card.classList.remove('dx-motion');
+    const blocks = all(card, ':scope > .detail-head, :scope > #docTools, #pHero > section:not(.pe-hero), #pBody > section, #pBody > .tr-main, #pBody > .tr-pane')
+      .concat(all(card, '#doc > *').slice(0, 12));
+    // a persona's tables arrive row by row, like the Overview's cards and questions
+    const items = all(card, '.tr-pane-body > *').slice(0, 10).concat(all(card, '.pe-facts > div, #pHero .dx-table tbody tr'));
+    if(!motionReveal(card, blocks, items)) return;
+    // the persona hero choreographs itself, as the Overview's does (16-motion.css)
+    const hero = card.querySelector('.pe-hero');
+    if(hero){ hero.classList.add('mo-enter'); motionWords(hero.querySelector('.pe-name')); }
+    return;
+  }
+  if(BACKLOG_ACTIVE){
+    motionReveal(grid, all(grid, '.bl-bar, .bl-table > *, .bl-board > .bl-col'), all(grid, '.bl-col .bl-card'));
+    return;
+  }
+  if(HELP_ACTIVE){ motionReveal(grid, all(grid, '.help-nav, .help-main > *:not(#helpList), #helpList > *')); return; }
+  if(SETTINGS_ACTIVE){ const sw = document.querySelector('.set-wrap'); motionReveal(sw, all(sw, ':scope > *')); return; }
+  motionReveal(grid, all(grid, ':scope > *'));   // the gallery of any type
+  // the Personas tab: its head arrives the way a persona's name does (16-motion.css)
+  const head = document.querySelector('.content > .page-head');
+  if(!head) return;
+  head.classList.remove('mo-enter');
+  if(activeType === 'Persona' && grid.classList.contains('dx-motion')){
+    void head.offsetWidth;   // restart the animation when the tab is entered again
+    head.classList.add('mo-enter');
+    motionWords(document.getElementById('pageTitle'));
+  }
+}
 /* ---------- Overview dashboard ----------
    A snapshot of what's actually in the graph right now — counts, freshness,
    research cadence and grounding health. Strictly read-only: it never creates
@@ -14739,18 +15113,47 @@ let DX_TIP = 0;
    :focus-within) — `body` is trusted HTML built here, never file content */
 function dxTip(title, body, side){
   const id = 'dxt' + (++DX_TIP);
-  return `<span class="dx-tip${side==='right'?' dx-tip-r':''}"><button type="button" class="dx-tip-btn" aria-label="${esc(title)}" aria-describedby="${id}">${DX_INFO}</button><span role="tooltip" id="${id}" class="dx-tip-pop"><b>${esc(title)}</b>${body}</span></span>`;
+  return `<span class="dx-tip${side==='right'?' dx-tip-r':''}"><button type="button" class="dx-tip-btn" aria-label="${esc(title)}" aria-describedby="${id}">${DX_INFO}</button><span role="tooltip" id="${id}" class="dx-tip-pop" popover="manual"><b>${esc(title)}</b>${body}</span></span>`;
 }
-function dxBars(n, of){
-  return `<span class="dx-lvl" aria-hidden="true">${Array.from({length:of},(_,i)=>`<i class="${i<n?(i===of-1?'on hot':'on'):''}"></i>`).join('')}</span>`;
+/* An ⓘ opens on hover or keyboard focus, in the browser's top layer (popover)
+   — so no card, table or pane that clips its overflow can cut it off. It sits
+   under its button (right-aligned for .dx-tip-r), flips above when the window
+   has no room below, never leaves the window, and closes on scroll. */
+/* puts an open popover under its button (right-aligned when `right`), above
+   it when the window has no room below, and never outside the window */
+function popPlace(pop, btn, right){
+  const b = btn.getBoundingClientRect(), p = pop.getBoundingClientRect(), m = 12;
+  const left = right ? b.right + 8 - p.width : b.left - 8;
+  const top = b.bottom + 8 + p.height > innerHeight - m ? b.top - 8 - p.height : b.bottom + 8;
+  pop.style.left = Math.max(m, Math.min(left, innerWidth - p.width - m)) + 'px';
+  pop.style.top = Math.max(m, top) + 'px';
 }
-function dxPortrait(e, cls){
-  const pic = picFor(e);
-  const first = e.title.split(/\s+[—–-]\s+/)[0].trim();
-  return pic && pic.src
-    ? `<span class="${cls}"><img src="${esc(pic.src)}" alt=""></span>`
-    : `<span class="${cls} dx-noimg">${esc((first[0]||'?').toUpperCase())}</span>`;
+function dxTipShow(tip, on){
+  const pop = tip && tip.querySelector('.dx-tip-pop'); if(!pop || !pop.showPopover) return;
+  if(!on){ if(pop.matches(':popover-open')) pop.hidePopover(); return; }
+  if(!pop.matches(':popover-open')) pop.showPopover();
+  popPlace(pop, tip.querySelector('.dx-tip-btn'), tip.classList.contains('dx-tip-r'));
 }
+/* The ⋯ row menu — a row's actions in one place at its end, so the columns
+   keep their room for content and a new action is one more item, not one more
+   column. The browser's own popover="auto": it opens on click, closes on a
+   click elsewhere, on Esc and on scroll; we only place it. `items` are menu
+   buttons (role="menuitem", falsy ones skipped); `hint` puts an ember dot on
+   the ⋯ and says why (e.g. a hypothesis ready to be promoted). */
+function rowMenuHtml(id, items, hint){
+  return `<span class="row-menu"><button type="button" class="row-menu-btn${hint ? ' hint' : ''}" popovertarget="${esc(id)}" aria-label="${esc(tr('Actions'))}" title="${esc(hint || tr('Actions'))}"><svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><circle cx="5" cy="12" r="1.8"/><circle cx="12" cy="12" r="1.8"/><circle cx="19" cy="12" r="1.8"/></svg></button><span class="row-menu-pop" id="${esc(id)}" popover="auto" role="menu">${items.filter(Boolean).join('')}</span></span>`;
+}
+document.addEventListener('toggle', ev=>{   // toggle doesn't bubble: caught on the way down
+  const pop = ev.target;
+  if(ev.newState !== 'open' || !pop.classList || !pop.classList.contains('row-menu-pop')) return;
+  const btn = document.querySelector(`[popovertarget="${CSS.escape(pop.id)}"]`); if(btn) popPlace(pop, btn, true);
+}, true);
+const dxTipOf = ev => ev.target.closest ? ev.target.closest('.dx-tip') : null;
+document.addEventListener('pointerover', ev=> dxTipShow(dxTipOf(ev), true));
+document.addEventListener('pointerout', ev=>{ const t = dxTipOf(ev); if(t && !t.contains(ev.relatedTarget)) dxTipShow(t, false); });
+document.addEventListener('focusin', ev=> dxTipShow(dxTipOf(ev), true));
+document.addEventListener('focusout', ev=> dxTipShow(dxTipOf(ev), false));
+addEventListener('scroll', ()=> document.querySelectorAll('.dx-tip-pop:popover-open, .row-menu-pop:popover-open').forEach(p=> p.hidePopover()), { capture: true, passive: true });
 function dxBacklogTop(){
   const raw = backlogRaw(); if(!raw) return [];
   const sec = parseBacklog(raw).open;
@@ -14759,32 +15162,91 @@ function dxBacklogTop(){
   const qi = h.findIndex(x=> /question|pytanie/.test(x)), pi = h.findIndex(x=> /persona/.test(x));
   return sec.table.rows.map(r=>({ q: r[qi>=0?qi:2]||'', who: (r[pi>=0?pi:1]||'').trim() }));
 }
-/* the sessions on one axis: days when research spans under two months, months after */
-function dxSessions(){
-  const ts = wsEntities().filter(e=> e.type==='Transcript').map(e=>({ e, d: parseAnyDate(e.fm.date) })).filter(x=> x.d).sort((a,b)=> a.d-b.d);
-  if(!ts.length) return '';
-  const day = 86400000, t0 = ts[0].d.getTime(), t1 = ts[ts.length-1].d.getTime();
-  const short = t1 - t0 < 62*day;
-  const a = short ? new Date(ts[0].d.getFullYear(), ts[0].d.getMonth(), 1).getTime() : t0 - 3*day;
-  const b = short ? Math.max(new Date(ts[0].d.getFullYear(), ts[0].d.getMonth()+1, 0).getTime(), t1) : t1 + 3*day;
-  const x = t => ((t - a) / Math.max(day, b - a) * 100).toFixed(1);
-  const lift = [70, 40, 58, 28, 48, 76, 36];
-  const marks = ts.map((s,i)=>{
-    const ex = isExcluded(s.e), test = /test/i.test(String(s.e.fm.method||'')) || /^TEST/i.test(s.e.title);
-    const who = s.e.title.replace(/^[A-Z]+-\d+\s*/,'').trim();
-    const h = lift[i % lift.length];
-    return `<a class="dx-ses${ex?' ex':''}${test?' test':''}" href="#${esc(s.e.id)}" style="left:${x(s.d.getTime())}%;--h:${h}px" title="${esc(s.e.title)} · ${dashFmtDate(s.d)}${ex?' · '+esc(tr('excluded from analysis')):''}">
-        <i class="dx-ses-stem"></i><i class="dx-ses-dot"></i>${!test && !ex && who ? `<span class="dx-ses-lbl">${esc(who)}</span>` : ''}</a>`;
-  }).join('');
-  const d0 = new Date(a), d1 = new Date(b);
-  const axis = short
-    ? `<span>1 ${dashMon(d0.getMonth())}</span><span>10</span><span>20</span><span>${d1.getDate()} ${dashMon(d1.getMonth())}</span>`
-    : `<span>${dashMon(d0.getMonth())} ${d0.getFullYear()}</span><span>${dashMon(d1.getMonth())} ${d1.getFullYear()}</span>`;
-  const span = short ? `${dashMon(ts[0].d.getMonth())} ${ts[0].d.getFullYear()}` : `${dashMon(ts[0].d.getMonth())} ${ts[0].d.getFullYear()} – ${dashMon(ts[ts.length-1].d.getMonth())} ${ts[ts.length-1].d.getFullYear()}`;
-  return `<div class="dx-col">
-      <div class="dx-h2row"><h2 class="dx-h2">${tr('Sessions')}</h2><span class="dx-h2note">${esc(span)}</span>${dxTip(tr('One mark per session'), esc(tr('Circle = interview, square = usability test, dashed = set aside by the researcher. Trend charts would need research that spans two months or more.')), 'right')}</div>
-      <div class="dx-card dx-ses-card"><div class="dx-ses-plot" role="img" aria-label="${esc(trn(ts.length,'{n} session','{n} sessions','{n} sesja','{n} sesje','{n} sesji'))}">${marks}<div class="dx-ses-axis">${axis}</div></div></div>
-    </div>`;
+/* Fresh research, Revolut-style: one line for how many sources are younger
+   than three months, day by day. A new transcript (date:) or new desk research
+   (Evidence retrieved:) lifts it; 92 days later the same source goes out of
+   date and the line steps down — so a project that stops listening slides
+   visibly. A dot marks each day something changed; hovering (or ←/→ on the
+   focused card) scrubs to it and says what happened, the way Revolut names a
+   price. Set-aside sessions and undated files count nowhere. */
+let DX_FRESH = null;
+const DX_DAY = 86400000;
+const dxDayOf = d => Math.round(Date.UTC(d.getFullYear(), d.getMonth(), d.getDate()) / DX_DAY);
+const dxDateOf = n => { const u = new Date(n * DX_DAY); return new Date(u.getUTCFullYear(), u.getUTCMonth(), u.getUTCDate()); };
+const dxDayLabel = n => { const d = dxDateOf(n); return `${d.getDate()} ${dashMon(d.getMonth())} ${d.getFullYear()}`; };
+function dxFresh(){
+  DX_FRESH = null;
+  const today = dxDayOf(new Date(graphNow())), WIN = 92;
+  const src = [];
+  wsEntities().forEach(e=>{
+    const d = e.type==='Transcript' && !isExcluded(e) ? parseAnyDate(e.fm.date) : e.type==='Evidence' ? parseAnyDate(e.fm.retrieved) : null;
+    if(d && dxDayOf(d) <= today) src.push({ k: e.type==='Transcript' ? 'tr' : 'ev', n: dxDayOf(d) });
+  });
+  if(!src.length) return '';
+  const days = new Map(), at = n => days.get(n) || days.set(n, { n, add: { tr: 0, ev: 0 }, out: { tr: 0, ev: 0 } }).get(n);
+  src.forEach(s=>{ at(s.n).add[s.k]++; if(s.n + WIN <= today) at(s.n + WIN).out[s.k]++; });
+  let v = 0;
+  const pts = [...days.values()].sort((a,b)=> a.n - b.n).map(p=> ({ ...p, v: v += p.add.tr + p.add.ev - p.out.tr - p.out.ev }));
+  const what = p => [
+    p.add.tr && trn(p.add.tr, '+{n} transcript', '+{n} transcripts', '+{n} transkrypcja', '+{n} transkrypcje', '+{n} transkrypcji'),
+    p.add.ev && trn(p.add.ev, '+{n} desk research source', '+{n} desk research sources', '+{n} źródło z desk research', '+{n} źródła z desk research', '+{n} źródeł z desk research'),
+    p.out.tr && trn(p.out.tr, '{n} transcript went out of date', '{n} transcripts went out of date', '{n} transkrypcja się zestarzała', '{n} transkrypcje się zestarzały', '{n} transkrypcji się zestarzało'),
+    p.out.ev && trn(p.out.ev, '{n} desk research source went out of date', '{n} desk research sources went out of date', '{n} źródło z desk research się zestarzało', '{n} źródła z desk research się zestarzały', '{n} źródeł z desk research się zestarzało'),
+  ].filter(Boolean).join(' · ');
+  const soon = src.filter(s=> s.n + WIN > today && s.n + WIN <= today + 30).length;
+  const a = pts[0].n - 3, b = Math.max(today, pts[pts.length-1].n), H = 160, top = 14, max = Math.max(...pts.map(p=> p.v), 1);
+  const X = n => (n - a) / Math.max(1, b - a) * 1000, Y = val => H - 4 - val / max * (H - 4 - top);
+  const line = [`M${X(a).toFixed(1)},${Y(0).toFixed(1)}`].concat(pts.map(p=> `L${X(p.n).toFixed(1)},${Y(p.v).toFixed(1)}`), `L${X(b).toFixed(1)},${Y(v).toFixed(1)}`).join('');
+  const area = line + `L${X(b).toFixed(1)},${H}L${X(a).toFixed(1)},${H}Z`;
+  DX_FRESH = {
+    now: v,
+    nowWhat: soon ? trn(soon, '{n} source goes out of date in the next 30 days', '{n} sources go out of date in the next 30 days', 'W ciągu 30 dni zestarzeje się {n} źródło', 'W ciągu 30 dni zestarzeją się {n} źródła', 'W ciągu 30 dni zestarzeje się {n} źródeł') : tr('Nothing goes out of date in the next 30 days'),
+    pts: pts.map(p=> ({ x: X(p.n) / 10, v: p.v, when: dxDayLabel(p.n), what: what(p) })),
+  };
+  const unit = n => trn(n, 'fresh source', 'fresh sources', 'świeże źródło', 'świeże źródła', 'świeżych źródeł');
+  const span = `${dxDayLabel(pts[0].n)} – ${tr('today')}`;
+  return `<section class="dx-sec">
+      <div class="dx-h2row"><h2 class="dx-h2">${tr('Fresh research')}</h2><span class="dx-h2note">${esc(span)}</span>${dxTip(tr('What is still fresh'), esc(tr('How many of your sources are younger than three months, day by day. A new interview or new desk research lifts the line; three months later it goes out of date and the line steps down. Each dot is a day something changed — point at it to see what. Sessions the researcher set aside count nowhere.')), 'right')}</div>
+      <div class="dx-card dx-fr" tabindex="0" aria-label="${esc(tr('Fresh research over time — use the arrow keys to step through the changes'))}">
+        <div class="dx-fr-head" aria-live="polite"><b class="dx-fr-v">${v}</b><span class="dx-fr-unit" data-one="${esc(unit(1))}" data-many="${esc(unit(2))}" data-lots="${esc(unit(5))}">${esc(unit(v))}</span>
+          <span class="dx-fr-when">${tr('Today')}</span><span class="dx-fr-what">${esc(DX_FRESH.nowWhat)}</span></div>
+        <div class="dx-fr-plot">
+          <svg viewBox="0 0 1000 ${H}" preserveAspectRatio="none" aria-hidden="true"><defs><linearGradient id="dxFrFill" x1="0" y1="0" x2="0" y2="1"><stop offset="0" style="stop-color:var(--accent);stop-opacity:.16"/><stop offset="1" style="stop-color:var(--accent);stop-opacity:0"/></linearGradient></defs>
+            <path class="dx-fr-area" d="${area}"/><path class="dx-fr-line" d="${line}"/></svg>
+          ${pts.map((p,i)=> `<i class="dx-fr-dot ${p.out.tr+p.out.ev ? (p.add.tr+p.add.ev ? 'mix' : 'down') : 'up'}" style="left:${(X(p.n)/10).toFixed(2)}%;top:${(Y(p.v)/H*100).toFixed(2)}%;--i:${i}"></i>`).join('')}
+          <i class="dx-fr-cursor" aria-hidden="true"></i>
+        </div>
+        <div class="dx-fr-axis"><span>${esc(dxDayLabel(a))}</span><span>${tr('today')}</span></div>
+      </div>
+    </section>`;
+}
+/* scrubbing: the nearest change to the pointer (or ←/→), back to today on leave */
+function dxFreshWire(){
+  const card = grid.querySelector('.dx-fr'); if(!card || !DX_FRESH) return;
+  const plot = card.querySelector('.dx-fr-plot'), cur = card.querySelector('.dx-fr-cursor'), dots = [...card.querySelectorAll('.dx-fr-dot')];
+  const $ = s => card.querySelector(s), unit = $('.dx-fr-unit');
+  let at = -1;
+  const show = k=>{
+    at = k; dots.forEach((d,j)=> d.classList.toggle('on', j===k)); card.classList.toggle('scrub', k >= 0);
+    const p = k >= 0 ? DX_FRESH.pts[k] : null, v = p ? p.v : DX_FRESH.now;
+    $('.dx-fr-v').textContent = v;
+    unit.textContent = v===1 ? unit.dataset.one : (LANG==='pl' && !(v%10>=2 && v%10<=4 && (v%100<12 || v%100>14))) ? unit.dataset.lots : unit.dataset.many;
+    $('.dx-fr-when').textContent = p ? p.when : tr('Today');
+    $('.dx-fr-what').textContent = p ? p.what : DX_FRESH.nowWhat;
+    if(p) cur.style.left = p.x + '%';
+  };
+  plot.onpointermove = ev=>{
+    const r = plot.getBoundingClientRect(), x = (ev.clientX - r.left) / r.width * 100;
+    let k = 0; DX_FRESH.pts.forEach((p,j)=>{ if(Math.abs(p.x - x) < Math.abs(DX_FRESH.pts[k].x - x)) k = j; });
+    if(k !== at) show(k);
+  };
+  plot.onpointerleave = ()=> show(-1);
+  card.onkeydown = ev=>{
+    const n = DX_FRESH.pts.length;
+    if(ev.key==='ArrowRight' || ev.key==='ArrowLeft'){ ev.preventDefault(); show(Math.max(0, Math.min(n-1, at < 0 ? n-1 : at + (ev.key==='ArrowRight' ? 1 : -1)))); }
+    if(ev.key==='Escape') show(-1);
+  };
+  card.onblur = ()=> show(-1);
 }
 
 function renderDashboard(){
@@ -14808,8 +15270,8 @@ function renderDashboard(){
   const asOf = demo ? tr('as of {d}').replace('{d}', DEMO_AS_OF.toLocaleDateString(LANG==='pl'?'pl-PL':'en-GB',{day:'numeric',month:'short',year:'numeric'})) : tr('right now');
 
   /* hero: the project is the headline, its people beside it */
-  const cast = personas.slice(0,4).map((e,i)=> `<a class="dx-cast-${i}" href="#${esc(e.id)}" aria-label="${esc(firstName(e))}">${dxPortrait(e, 'dx-face')}</a>`).join('');
-  const askMenu = personas.map(e=> `<a role="menuitem" href="#${esc(e.id)}">${dxPortrait(e,'dx-face-xs')}<span>${esc(firstName(e))}</span></a>`).join('');
+  const cast = personas.slice(0,4).map((e,i)=> `<a class="dx-cast-${i}" href="#${esc(e.id)}" aria-label="${esc(firstName(e))}">${faceHtml(e, 'dx-face')}</a>`).join('');
+  const askMenu = personas.map(e=> `<a role="menuitem" href="#${esc(e.id)}">${faceHtml(e,'dx-face-xs')}<span>${esc(firstName(e))}</span></a>`).join('');
   const hero = `<section class="dx-hero">
       <div class="dx-hero-main">
         <div class="dx-kicker"><b>${tr('Overview')}</b><span aria-hidden="true">·</span><span>${esc(asOf)}</span>${demo ? `<span class="dx-chip">${tr('Example data')}${dxTip(tr('This is the example project'), esc(tr('Illustrative research on Spotify listeners, not your users. The numbers are read as of the day its research closed, and it never mixes with your own projects.')))}</span>` : ''}</div>
@@ -14832,19 +15294,19 @@ function renderDashboard(){
       <div><span class="dx-fl">${tr('Fresh')}${dxTip(tr('Freshness'), esc(tr('Transcripts younger than 3 months. Past that line, findings get flagged for a re-check before a decision leans on them.')))}</span>
         <b class="dx-big">${s.transcripts ? `${s.fresh}<span class="dx-of">/${s.transcripts}</span>` : '—'}</b><span class="dx-fs ${freshPct===100?'ok':''}">${s.transcripts ? tr(freshPct===100 ? 'All current' : freshPct===0 ? 'Everything is out of date' : 'Mostly current') : esc(tr('none yet'))}</span></div>
       <div><span class="dx-fl">${tr('Open questions')}${dxTip(tr('Open questions'), esc(tr('Things a persona answered with “I don’t know”. They go to real interviews, never to the AI.')), 'right')}</span>
-        <b class="dx-big">${open.length}</b><a class="dx-fs dx-link" href="#backlog">${tr('See all')} →</a></div>
+        <b class="dx-big">${open.length}</b><a class="dx-btn dx-btn-line dx-btn-sm" href="#backlog">${tr('See all')} →</a></div>
     </section>`;
 
   /* personas: face, one line, how solid, ask */
   const pcards = personas.map(e=>{
     const lv = personaLevel(e), r = pgBy[e.id] || {sig:0, ev:0};
     const prim = /primary/i.test(e.fm.category||'');
-    return `<article class="dx-pc${prim?' prim':''}">
-        <div class="dx-pc-top">${dxPortrait(e, 'dx-face-md')}${prim ? `<span class="dx-tag">${tr('Primary')}</span>` : ''}</div>
-        <a class="dx-pc-name" href="#${esc(e.id)}">${esc(firstName(e))}<span class="dx-dot">.</span></a>
+    return `<article class="dx-pc has-card-link${prim?' prim':''}" data-lean="4">
+        <div class="dx-pc-top">${faceHtml(e, 'dx-face-md')}${prim ? `<span class="dx-tag">${tr('Primary')}</span>` : ''}</div>
+        <a class="dx-pc-name card-link" href="#${esc(e.id)}">${esc(firstName(e))}<span class="dx-dot">.</span></a>
         <p class="dx-pc-desc" title="${esc(e.fm.description||'')}">${esc(e.fm.description||'')}</p>
         <div class="dx-pc-foot">
-          <span class="dx-pc-lvl" title="${esc(tr('How solid: {l} of 5 · stands on {s} heard + {e} read').replace('{l}',lv).replace('{s}',r.sig).replace('{e}',r.ev))}">${dxBars(lv,5)}${lv}/5</span>
+          ${levelMeter(lv, tr('How solid: {l} of 5 · stands on {s} heard + {e} read').replace('{l}',lv).replace('{s}',r.sig).replace('{e}',r.ev))}
           <button type="button" class="dx-btn dx-btn-sm ${prim?'dx-btn-ember':'dx-btn-line'}" data-ask="${esc(e.id)}" title="${esc(tr('Copies the line that starts the conversation — paste it into {a}, opened in this project folder').replace('{a}', pjAgentLabel(pjAgent())))}">${TALK_ICO}${tr('Ask')}</button>
         </div>
       </article>`;
@@ -14888,14 +15350,14 @@ function renderDashboard(){
         ${sp.map(([f,v])=>`<tr><td class="dx-feat">${esc(f.charAt(0).toUpperCase()+f.slice(1))}</td><td>${v.neg.map(sigLink).join('<br>')}</td><td>${v.pos.map(sigLink).join('<br>')}</td></tr>`).join('')}
       </tbody></table></div>
     </div>` : '';
-  const sessions = dxSessions();
-  const pair = splits || sessions ? `<section class="dx-sec dx-pair${splits && sessions ? '' : ' one'}">${splits}${sessions}</section>` : '';
+  const pair = splits ? `<section class="dx-sec dx-pair one">${splits}</section>` : '';
+  const fresh = dxFresh();
 
   /* open questions: the first three, the rest one click away */
   const oq = open.length ? `<section class="dx-sec">
       <div class="dx-h2row"><h2 class="dx-h2">${tr('Open questions')}</h2>${dxTip(tr('What no persona can answer yet'), esc(tr('Asked in conversations, answered with “I don’t know”. Each one waits for a real interview.')))}<span class="dx-spacer"></span><a class="dx-btn dx-btn-line dx-btn-sm" href="#backlog">${esc(tr('All {n}').replace('{n}', open.length))} →</a></div>
       <div class="dx-card"><table class="dx-table dx-oq"><tbody>
-        ${open.slice(0,3).map(r=>`<tr><td>${esc(r.q)}</td><td class="dx-oq-who">${r.who && r.who!=='—' ? r.who.split(/\s*[,/]\s*/).map(w=>`<span class="dx-pill">${esc(w)}</span>`).join(' ') : `<span class="dx-pill">${tr('everyone')}</span>`}</td></tr>`).join('')}
+        ${open.slice(0,3).map((r,i)=>`<tr class="has-card-link"><td><a class="card-link" href="#backlog:open:${i}">${esc(r.q)}</a></td><td class="dx-oq-who">${r.who && r.who!=='—' ? r.who.split(/\s*[,/]\s*/).map(w=>`<span class="dx-pill">${esc(w)}</span>`).join(' ') : `<span class="dx-pill">${tr('everyone')}</span>`}</td></tr>`).join('')}
       </tbody></table></div>
     </section>` : '';
 
@@ -14922,7 +15384,7 @@ function renderDashboard(){
       </span>
     </section>`;
 
-  grid.innerHTML = hero + facts + personasSec + health + pair + oq + band;
+  grid.innerHTML = hero + facts + personasSec + health + fresh + pair + oq + band;
 
   /* wiring */
   const $ = sel => grid.querySelector(sel);
@@ -14949,6 +15411,31 @@ function renderDashboard(){
   on('dashDlBrief', ()=> dashDownload('research-brief.md', dashBriefText(s)));
   on('dashEnrichCopy', ()=> dashCopy(dashEnrichText(s), tr('Prompt copied — paste it into your AI assistant ✓'), 'desk-research-refresh-prompt.md'));
   on('dashColdStart', ()=> dashCopy('/cold-start'+promptLang(), tr('Command copied — paste it as your first message ✓'), 'cold-start-command.md'));
+  dxFreshWire();
+  dxMotion();
+}
+
+/* The Overview's pointer effects (styles: "Motion" at the end of
+   12-project-home.css), wired on every render: the hero cast drifts against
+   the pointer, the band's button leans toward it. The page's arrival is the
+   shared one — motionPage (12c-motion.js) runs it when the router enters the
+   page, so a language switch re-renders without replaying it. Persona cards
+   lean through data-lean (16-motion.css). */
+function dxMotion(){
+  if(MO_STILL.matches) return;
+  const fine = ev => ev.pointerType === 'mouse';
+  const follow = (el, fn, vars)=>{
+    el.onpointermove = ev=>{ if(!fine(ev)) return; const r = el.getBoundingClientRect(); fn((ev.clientX - r.left) / r.width, (ev.clientY - r.top) / r.height, r); };
+    el.onpointerleave = ()=> vars.forEach(v=> el.style.removeProperty(v));
+  };
+  // the hero cast drifts against the pointer, each face by its own depth (--d)
+  const hero = grid.querySelector('.dx-hero'), cast = grid.querySelector('.dx-cast');
+  if(hero && cast) follow(hero, (x, y)=>{ cast.style.setProperty('--hx', (x-.5).toFixed(3)); cast.style.setProperty('--hy', (y-.5).toFixed(3)); }, []);
+  if(hero && cast) hero.onpointerleave = ()=>{ cast.style.removeProperty('--hx'); cast.style.removeProperty('--hy'); };
+  // the band's main button leans a little toward the pointer (the hero's buttons stay still)
+  grid.querySelectorAll('.dx-band .dx-btn-ember').forEach(b=> follow(b, (x, y, r)=>{
+    b.style.setProperty('--tx', ((x-.5)*r.width*.16).toFixed(1)+'px'); b.style.setProperty('--ty', ((y-.5)*r.height*.3).toFixed(1)+'px');
+  }, ['--tx','--ty']));
 }
 
 function dashboardEnter(){
@@ -15546,7 +16033,7 @@ function posterOpen(id){
         ${quote?`<blockquote class="pp-quote">“${esc(quote)}”</blockquote>`:''}
       </div>
       <figure class="pp-photo${photo?'':' pp-photo-avatar'}">
-        ${photo?`<img src="${esc(photo)}" alt="${esc(nm)}">`:avatarHtml(e,nm)}
+        ${photo?`<img src="${esc(photo)}" alt="${esc(nm)}">`:faceHtml(e, '', nm)}
       </figure>
       ${col(tr('Jobs to be done'), ICONS.Persona, jtbd.length?`<div class="pp-grid">${posterCards(jtbd)}</div>`:'', 'Jobs to be Done', jtbd.length)}
     </section>
@@ -15569,15 +16056,18 @@ function posterOpen(id){
     <div class="pp-foot"><button class="btn btn-outline" id="ppBack">← Back to document view</button></div>`;
   document.body.classList.add('poster-open');
   posterView.setAttribute('aria-hidden','false');
+  posterView.dataset.id = e.id;
   posterView.scrollTop=0;
-  const close=()=>{ document.body.classList.remove('poster-open'); posterView.setAttribute('aria-hidden','true'); posterView.innerHTML=''; };
+  navTrail([{ label: tr(e.meta.label), go: ()=> goTypeList(e.type) }, { label: nm, go: ()=>{ location.hash = e.id; } }, { label: tr('Poster') }], ()=>{ location.hash = e.id; });
+  // the poster is its own page (#poster:<id>): leaving it is a step back, and the route closes it
+  const close=()=> navBack(()=>{ location.hash = e.id; });
   document.getElementById('ppClose').onclick=close;
   // the browser's own print → "Save as PDF": no library, and the file is the page you see
   document.getElementById('ppPrint').onclick=()=> window.print();
   document.getElementById('ppBack').onclick=close;
   posterView.querySelectorAll('[data-pp-list]').forEach(b=> b.onclick=()=> ppListOpen(e.id, b.dataset.ppList));
   posterView.querySelectorAll('[data-pp-add]').forEach(b=> b.onclick=()=> ppListOpen(e.id, b.dataset.ppAdd, {add:true}));
-  posterView.querySelectorAll('[data-goto]').forEach(el=> el.onclick=()=>{ close(); location.hash='#'+el.dataset.goto; });
+  posterView.querySelectorAll('[data-goto]').forEach(el=> el.onclick=()=>{ location.hash='#'+el.dataset.goto; });
   PP_ROS.forEach(r=> r.disconnect()); PP_ROS = [];   // observers belong to one render
   ppWireFlow(e, evid, sigs, corr);
   ppWireLinks(e, pains, quotes, reliev);
@@ -15638,16 +16128,12 @@ function ppListOpen(id, sec, opts){
   const close=()=>div.remove();
   div.querySelector('.pp-layer-scrim').onclick=close;
   document.getElementById('ppLayerClose').onclick=close;
-  div.querySelectorAll('[data-goto]').forEach(el=> el.onclick=()=>{
-    document.body.classList.remove('poster-open'); posterView.setAttribute('aria-hidden','true'); posterView.innerHTML='';
-    location.hash='#'+el.dataset.goto;
-  });
+  div.querySelectorAll('[data-goto]').forEach(el=> el.onclick=()=>{ location.hash='#'+el.dataset.goto; });
   document.getElementById('ppGotoDoc').onclick=()=>{
-    document.body.classList.remove('poster-open'); posterView.setAttribute('aria-hidden','true'); posterView.innerHTML='';
+    location.hash = e.id;   // the route closes the poster; the document is already under it
     const slug='sec-'+sec.toLowerCase().replace(/[^a-z0-9]+/g,'-').replace(/(^-|-$)/g,'');
-    const el=document.getElementById(slug);
-    // a frame later: the overflow:hidden release cancels a same-frame smooth scroll
-    if(el) setTimeout(()=> el.scrollIntoView({behavior:'smooth', block:'start'}), 60);
+    // a frame later: the route re-renders the page first, and the overflow:hidden release cancels a same-frame smooth scroll
+    setTimeout(()=> document.getElementById(slug)?.scrollIntoView({behavior:'smooth', block:'start'}), 60);
   };
   document.getElementById('ppAddForm').onsubmit=async ev=>{
     ev.preventDefault();
@@ -15667,10 +16153,15 @@ document.addEventListener('keydown', ev=>{
     ev.stopImmediatePropagation();
     const layer=document.getElementById('ppLayer');
     if(layer){ layer.remove(); return; }   // first Esc closes the section layer only
-    document.body.classList.remove('poster-open');
-    posterView.setAttribute('aria-hidden','true'); posterView.innerHTML='';
+    const id = posterView.dataset.id;
+    navBack(()=>{ location.hash = id; });
   }
 });
+function posterClose(){
+  if(!document.body.classList.contains('poster-open')) return;
+  document.body.classList.remove('poster-open');
+  posterView.setAttribute('aria-hidden','true'); posterView.innerHTML='';
+}
 /* ---------- Projects — the screen you land on ----------
    A research project IS a folder on this computer, so this screen is a list of
    folders you have connected, plus the three ways in: start a new one, import
@@ -16158,7 +16649,7 @@ function projectsLeave(to){
   projectsExit();
   const target = to || '';
   const cur = location.hash.replace(/^#/, '');
-  if(cur === target){ if(target === 'dashboard') dashboardEnter(); }
+  if(cur === target){ if(target === 'dashboard'){ dashboardEnter(); motionPage(); } }
   else { suppressRoute = false; location.hash = target; }   // hashchange → route() renders it
   if(typeof tourMaybeOpen === 'function') tourMaybeOpen();   // the first-run tour, held back while this screen was up
 }
@@ -16506,7 +16997,7 @@ function wcGo(hash){
   welcomeExit();
   projectsExit();
   const cur = location.hash.replace(/^#/, '');
-  if(cur === hash){ if(hash === 'dashboard') dashboardEnter(); }
+  if(cur === hash){ if(hash === 'dashboard'){ dashboardEnter(); motionPage(); } }
   else { suppressRoute = false; location.hash = hash; }
 }
 document.addEventListener('keydown', ev=>{
@@ -16547,13 +17038,27 @@ function route(){
   projectsExit();   // the Projects screen covers the app — any other route leaves it
   if(h==='dashboard'){ mindmapExit(); settingsExit(); helpExit(); backlogExit(); dashboardEnter(); return; }
   if(h==='settings'){ mindmapExit(); dashboardExit(); backlogExit(); settingsEnter(); return; }
-  if(h==='backlog'){ mindmapExit(); settingsExit(); helpExit(); dashboardExit(); backlogEnter(); return; }
+  if(h==='backlog' || h.startsWith('backlog:')){ mindmapExit(); settingsExit(); helpExit(); dashboardExit(); backlogEnter(h.slice(8) || null); return; }
   if(h==='mindmap' || h.startsWith('mindmap:')){ dashboardExit(); backlogExit(); mindmapEnter(h.split(':')[1] || null); return; }
   if(h==='help' || h.startsWith('help:')){ mindmapExit(); settingsExit(); dashboardExit(); backlogExit(); helpEnter(h.split(':')[1] || HELP_CAT); return; }
   helpExit(); settingsExit(); mindmapExit(); dashboardExit(); backlogExit();
-  if(h && ENTITIES[h]) openDetail(h); else { closeDetail(); renderGrid(searchInput.value); }
+  // the poster is a page of its own (#poster:<id>), so Back and the browser's back leave it
+  const poster = h.startsWith('poster:') && ENTITIES[h.slice(7)] ? h.slice(7) : null;
+  if(!poster) posterClose();
+  if(poster){ openDetail(poster); posterOpen(poster); }
+  else if(h && ENTITIES[h]) openDetail(h); else { closeDetail(); renderGrid(searchInput.value); }
 }
-window.addEventListener('hashchange', route);
+/* Every history entry this tab makes gets its step number (history.state.d):
+   0 for the page the app was opened on, +1 for each hash change after it.
+   An entry we come BACK to keeps its number. The top bar's Back (navBack) reads
+   it — above 0 it can walk the history, at 0 it would walk out of the app. */
+let NAV_D = -1;
+function navStamp(){
+  if(!history.state || history.state.d == null) history.replaceState({ d: NAV_D + 1 }, '');
+  NAV_D = history.state.d;
+}
+navStamp();
+window.addEventListener('hashchange', ()=>{ navStamp(); route(); motionPage(); });   // entering a page = its arrival (12c-motion.js)
 
 /* ---------- toast ---------- */
 let toastT;
@@ -17016,7 +17521,7 @@ window.addEventListener('keydown', e=>{
   if(modalOpen()) return;
   if(e.key==='/' && document.activeElement!==filterInput && !detailView.classList.contains('active')){ e.preventDefault(); filterInput.focus(); }
   if(e.key==='Escape' && detailView.classList.contains('active')){
-    if(EDITING){ document.getElementById('cancelEditBtn').click(); } else history.back();
+    if(EDITING){ document.getElementById('cancelEditBtn').click(); } else navBack(()=> goTypeList(ENTITIES[CURRENT].type));
   }
 });
 
@@ -17125,13 +17630,13 @@ filterInput.addEventListener('keydown', ev=>{
 });
 document.getElementById('filterClear').onclick = ()=>{ filterInput.value=''; searchInput.value=''; renderGrid(''); filterInput.focus(); };
 /* the rail's search is a door into that same filter, not a second search:
-   from any page it opens All files with the query already in the filter bar.
+   from any page it opens the search results (every type) with the query already in the filter bar.
    ⌘K / Ctrl+K puts the cursor in it from anywhere. */
 const sideSearch = document.getElementById('sideSearch');
 sideSearch.addEventListener('input', ()=>{
   const v = sideSearch.value;
   searchInput.value = v;
-  if(location.hash){   // leave whatever page is open the way a nav tab does, then show All files filtered
+  if(location.hash){   // leave whatever page is open the way a nav tab does, then show the results
     helpExit(); settingsExit(); mindmapExit(); dashboardExit(); backlogExit(); projectsExit(); closeDetail();
     activeType = 'All'; suppressRoute = true; location.hash = '';
     renderTabs(); renderGrid(v); updatePageHead(); return;
@@ -17373,7 +17878,7 @@ applyLangDom();
    nothing is written, so the moment real files land you're back in yours. */
 if(WS==='project' && !Object.values(ENTITIES).some(e=> (e.ws||'project')==='project')) WS='demo';
 renderWsMenu();
-renderTabs(); renderBacklogCount(); setView(VIEW); route();
+renderTabs(); renderBacklogCount(); setView(VIEW); route(); motionPage();
 /* Where you land: whatever you had open last. A folder the browser still opens
    by itself wins — those are your files, already on screen. If the last thing
    you opened was the Demo, that opens instead, because it is a card on the
@@ -17425,6 +17930,28 @@ function topnavOpen(on){
   avatarMenu.style.display = on ? 'flex' : 'none';
   avatarBtn.setAttribute('aria-expanded', on ? 'true' : 'false');
 }
+/* Back + trail, for the pages below the rail — an entity (openDetail) and its
+   poster (posterOpen). The rail can't say where you are there, so the bar does:
+   ← Back · Project › Section › Page, every crumb but the last a door.
+   Back walks the browser history while there is in-app history to walk
+   (`history.state.d`, stamped by the router), and goes one level up otherwise —
+   so a page opened from a link or a reload never backs out of the app.
+   CSS shows the trail only under body.detail-open / body.poster-open. */
+function navTrail(items, up){
+  const nav = document.getElementById('navTrail'); if(!nav) return;
+  const proj = { label: document.getElementById('wsLabel')?.textContent || tr('Project'), go: ()=>{ location.hash = 'dashboard'; } };
+  const all = [proj, ...items];
+  nav.innerHTML = `<button type="button" class="nav-back" title="${esc(tr('Back'))} (Esc)"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M19 12H5M12 19l-7-7 7-7"/></svg><span>${tr('Back')}</span></button>
+    <ol>${all.map((c,i)=> i < all.length-1
+      ? `<li><button type="button" class="nav-crumb" data-i="${i}">${esc(c.label)}</button></li>`
+      : `<li><span class="nav-here" aria-current="page" title="${esc(c.label)}">${esc(c.label)}</span></li>`).join('')}</ol>`;
+  nav.querySelector('.nav-back').onclick = ()=> navBack(up);
+  nav.querySelectorAll('.nav-crumb').forEach(b=> b.onclick = ()=> all[+b.dataset.i].go());
+}
+function navBack(up){
+  if((history.state && history.state.d) > 0) history.back(); else up();
+}
+
 /* The detail page is the one view that drops the left rail, and the bar is
    pinned to where that rail ends — so it has to know. Watching the class the
    view already toggles beats adding a call to the seven places that toggle it. */

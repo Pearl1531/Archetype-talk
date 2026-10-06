@@ -13,13 +13,27 @@ function route(){
   projectsExit();   // the Projects screen covers the app — any other route leaves it
   if(h==='dashboard'){ mindmapExit(); settingsExit(); helpExit(); backlogExit(); dashboardEnter(); return; }
   if(h==='settings'){ mindmapExit(); dashboardExit(); backlogExit(); settingsEnter(); return; }
-  if(h==='backlog'){ mindmapExit(); settingsExit(); helpExit(); dashboardExit(); backlogEnter(); return; }
+  if(h==='backlog' || h.startsWith('backlog:')){ mindmapExit(); settingsExit(); helpExit(); dashboardExit(); backlogEnter(h.slice(8) || null); return; }
   if(h==='mindmap' || h.startsWith('mindmap:')){ dashboardExit(); backlogExit(); mindmapEnter(h.split(':')[1] || null); return; }
   if(h==='help' || h.startsWith('help:')){ mindmapExit(); settingsExit(); dashboardExit(); backlogExit(); helpEnter(h.split(':')[1] || HELP_CAT); return; }
   helpExit(); settingsExit(); mindmapExit(); dashboardExit(); backlogExit();
-  if(h && ENTITIES[h]) openDetail(h); else { closeDetail(); renderGrid(searchInput.value); }
+  // the poster is a page of its own (#poster:<id>), so Back and the browser's back leave it
+  const poster = h.startsWith('poster:') && ENTITIES[h.slice(7)] ? h.slice(7) : null;
+  if(!poster) posterClose();
+  if(poster){ openDetail(poster); posterOpen(poster); }
+  else if(h && ENTITIES[h]) openDetail(h); else { closeDetail(); renderGrid(searchInput.value); }
 }
-window.addEventListener('hashchange', route);
+/* Every history entry this tab makes gets its step number (history.state.d):
+   0 for the page the app was opened on, +1 for each hash change after it.
+   An entry we come BACK to keeps its number. The top bar's Back (navBack) reads
+   it — above 0 it can walk the history, at 0 it would walk out of the app. */
+let NAV_D = -1;
+function navStamp(){
+  if(!history.state || history.state.d == null) history.replaceState({ d: NAV_D + 1 }, '');
+  NAV_D = history.state.d;
+}
+navStamp();
+window.addEventListener('hashchange', ()=>{ navStamp(); route(); motionPage(); });   // entering a page = its arrival (12c-motion.js)
 
 /* ---------- toast ---------- */
 let toastT;
@@ -482,7 +496,7 @@ window.addEventListener('keydown', e=>{
   if(modalOpen()) return;
   if(e.key==='/' && document.activeElement!==filterInput && !detailView.classList.contains('active')){ e.preventDefault(); filterInput.focus(); }
   if(e.key==='Escape' && detailView.classList.contains('active')){
-    if(EDITING){ document.getElementById('cancelEditBtn').click(); } else history.back();
+    if(EDITING){ document.getElementById('cancelEditBtn').click(); } else navBack(()=> goTypeList(ENTITIES[CURRENT].type));
   }
 });
 
@@ -591,13 +605,13 @@ filterInput.addEventListener('keydown', ev=>{
 });
 document.getElementById('filterClear').onclick = ()=>{ filterInput.value=''; searchInput.value=''; renderGrid(''); filterInput.focus(); };
 /* the rail's search is a door into that same filter, not a second search:
-   from any page it opens All files with the query already in the filter bar.
+   from any page it opens the search results (every type) with the query already in the filter bar.
    ⌘K / Ctrl+K puts the cursor in it from anywhere. */
 const sideSearch = document.getElementById('sideSearch');
 sideSearch.addEventListener('input', ()=>{
   const v = sideSearch.value;
   searchInput.value = v;
-  if(location.hash){   // leave whatever page is open the way a nav tab does, then show All files filtered
+  if(location.hash){   // leave whatever page is open the way a nav tab does, then show the results
     helpExit(); settingsExit(); mindmapExit(); dashboardExit(); backlogExit(); projectsExit(); closeDetail();
     activeType = 'All'; suppressRoute = true; location.hash = '';
     renderTabs(); renderGrid(v); updatePageHead(); return;
@@ -839,7 +853,7 @@ applyLangDom();
    nothing is written, so the moment real files land you're back in yours. */
 if(WS==='project' && !Object.values(ENTITIES).some(e=> (e.ws||'project')==='project')) WS='demo';
 renderWsMenu();
-renderTabs(); renderBacklogCount(); setView(VIEW); route();
+renderTabs(); renderBacklogCount(); setView(VIEW); route(); motionPage();
 /* Where you land: whatever you had open last. A folder the browser still opens
    by itself wins — those are your files, already on screen. If the last thing
    you opened was the Demo, that opens instead, because it is a card on the

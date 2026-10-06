@@ -53,7 +53,6 @@
   body.lin-all .bars i.on { background: var(--text); }
   body.lin-all .stale-note { color: var(--text-dim); }
   body.lin-all .persona-id .name { color: var(--text); }
-  body.lin-all .avatar { box-shadow: none; background: var(--bg-elev-2); }
   body.lin-all .arch-icon { background: var(--bg-elev-2); color: var(--text-soft); box-shadow: none; }
   body.lin-side .ws-item-txt b { color: var(--text); }
   body.lin-side .ws-item-txt small, body.lin-side .ws-menu-head, body.lin-side .ws-item .n { color: var(--text-dim); }
@@ -83,9 +82,7 @@
     font-weight: 600; letter-spacing: -0.3px; color: var(--text); }
   body.lin-all .p-apple .pa-who { margin-top: 10px; font-size: 14px; color: var(--text-dim); }
   body.lin-all .p-apple .pa-avatar { margin-top: auto; display: flex; justify-content: center; padding-top: 18px; }
-  body.lin-all .p-apple .pa-avatar .avatar { width: 170px; height: 170px; border-radius: 50%;
-    background: var(--bg-elev-2); box-shadow: none; margin-bottom: -34px; }
-  body.lin-all .p-apple .pa-avatar .avatar img { border-radius: 50%; }
+  body.lin-all .p-apple .pa-avatar .face { width: 170px; height: 170px; margin-bottom: -34px; }
   body.lin-all .p-apple:hover { border-color: var(--hover-border); }
 
   /* ---- detail view ---- */
@@ -241,15 +238,12 @@
   .pe-actions .p-talk .pj-split-more { padding: 0 14px; border-left: 1px solid rgba(10,10,10,.2); }
   .pe-cmd { display: inline-flex; align-items: center; height: 52px; padding: 0 16px; border: 1.5px solid var(--text); border-radius: 14px; background: var(--bg-elev-2); max-width: 100%; }
   .pe-cmd code { font-family: var(--font-mono); font-size: var(--text-body); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-  .pe-portrait { width: 240px; height: 240px; border-radius: 50%; overflow: hidden; background: #E4DED2; display: flex; align-items: flex-end; justify-content: center; }
+  .pe-portrait { width: 240px; height: 240px; }   /* a .face (faceHtml) */
   .pe-portrait.prim { background: var(--accent); }
-  .pe-portrait img { width: 93%; height: 93%; object-fit: cover; object-position: bottom; }
-  .pe-portrait span { align-self: center; font-size: 96px; font-weight: 800; color: var(--text); }
   .pe-facts { margin-top: -24px; grid-template-columns: minmax(0, 2fr) repeat(3, minmax(0, 1fr)); }
   .pe-oneline { font-size: 18px; font-weight: 600; line-height: 1.35; color: var(--text); }
   .pe-fact { font-size: 19px; font-weight: 700; color: var(--text); }
-  .pe-lvl { display: flex; } .pe-lvl .dx-lvl i { width: 22px; height: 8px; }
-  .pe-lvl-t { font-weight: 600; font-size: var(--fs-md); color: var(--text); }
+  .pe-facts .lvl-meter { font-size: var(--fs-md); flex-wrap: wrap; white-space: normal; } .pe-facts .dx-lvl i { width: 22px; height: 8px; }
   .pe-ladder { display: flex; flex-direction: column; }
   .pe-ladder > span { padding: 6px 0; border-top: 1px solid rgba(255,255,255,.14); }
   .pe-ladder > span.on b { color: var(--accent); }

@@ -8,7 +8,7 @@ A moderated group session: the user (with the UX researcher) talks to several pe
 
 ## Setup
 
-1. Run Step 0 (card cache) / Steps 1–4 **per persona, independently**. Each persona keeps her own tone profile, Levels, topic gates, and guardrails — nothing is shared or averaged.
+1. Run the setup in [session-setup.md](session-setup.md) — Step 0 (card cache) / Steps 1–4 — **per persona, independently**. Each persona keeps her own tone profile, Levels, topic gates, and guardrails — nothing is shared or averaged.
 2. Opening scene: one room, everyone in it — you and the UX researcher walk in, the personas are seated for the session, waiting. Same rules as the solo scene (canon props, no staged busywork), just shorter per persona: one detail each.
 
 ## Turn-taking rules

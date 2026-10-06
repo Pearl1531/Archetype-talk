@@ -54,6 +54,15 @@ const LEVEL_TEXT = {
   4: ['Correlated', 'Heard in interviews and backed by desk research.'],
   5: ['Ready for decisions', 'Interviews, desk research and correlations — may carry product recommendations.'],
 };
+/* How solid a PERSONA is — the ONE look on every persona surface (Overview
+   card, Personas tab, persona page): five bars, the fifth in ember, and
+   "n/5"; `named` adds the level's name, `why` replaces the hover text
+   (which otherwise says what the level means). levelChip stays for claims. */
+function levelMeter(n, why, named){
+  const [name, mean] = LEVEL_TEXT[n];
+  const bars = Array.from({length: 5}, (_, i)=> `<i class="${i < n ? (i === 4 ? 'on hot' : 'on') : ''}"></i>`).join('');
+  return `<span class="lvl-meter" title="${esc(why || tr(name)+' — '+tr(mean))}"><span class="dx-lvl" aria-hidden="true">${bars}</span>${n}/5${named ? ' — '+esc(tr(name)) : ''}</span>`;
+}
 function levelChip(n, withName){
   const [name, why] = LEVEL_TEXT[n];
   return `<span class="lvl lvl-${n}" title="${esc('L'+n+' · '+tr(name)+' — '+tr(why))}">L${n}${withName?' · '+esc(tr(name)):''}</span>`;
@@ -90,7 +99,7 @@ function participantsChip(e){
 }
 const demoCell = e => e.fm.demo ? '<span class="demo-badge">Demo</span>' : '';
 const titleCell = e => {
-  const av = e.type==='Persona' ? avatarHtml(e, e.title) : (e.type==='Archetype' ? archIconHtml(e,'sm') : (e.type==='Competitor' ? compTileHtml(e,26) : ''));
+  const av = e.type==='Persona' ? faceHtml(e, '', e.title) : (e.type==='Archetype' ? archIconHtml(e,'sm') : (e.type==='Competitor' ? compTileHtml(e,26) : ''));
   return `<span class="td-title">${av}${esc(e.title)}</span>`;
 };
 /* table columns exist only for the types whose tabs actually offer a table
@@ -103,14 +112,17 @@ const TABLE_COLS = {
     ['Evidences', e=>{ const ev=Array.isArray(e.fm.evidences)?e.fm.evidences:(e.fm.evidences?[e.fm.evidences]:[]); return ev.length? ev.map(x=>`<span class="tag">${esc(x)}</span>`).join(' ') : '<span class="muted">—</span>'; }, 220], ['', demoCell, 90]
   ],
   Hypothesis: [
-    ['Hypothesis', titleCell, 200],
-    ['Feature', e=> e.fm.feature? `<span class="tag">${esc(e.fm.feature)}</span>` : '<span class="muted">—</span>', 130],
-    ['If', e=>esc(trim(stripLinks(afterLabel(e.body,'If')),70)), 180],
-    ['Will', e=>esc(trim(stripLinks(afterLabel(e.body,'Will')),70)), 180],
-    ['Author', authorChip, 130],
-    ['Status', e=>{ const g=ideaGrounding(e);
-      return hypoStatusChip(e) + (hypoStatus(e)==='open' && g.level>0 ? ` <button type="button" class="hypo-promote hypo-promote-cell" data-promote="${e.id}" title="${esc(tr('Has {what} — make it a grounded Idea').replace('{what}', g.detail))}">↑ ${tr('promote')}</button>` : ''); }, 180],
-    ['', e=>`${demoCell(e)}<span class="row-acts"><button type="button" data-hedit="${e.id}" title="${esc(tr('Edit this hypothesis (form)'))}">✎</button><button type="button" data-hdel="${e.id}" title="${esc(tr('Delete this hypothesis'))}">🗑</button></span>`, 140]
+    ['Hypothesis', titleCell, 440],   // If / Will live in the file (and its card) — as columns they were mostly empty
+    ['Topic', e=> e.fm.feature? `<span class="tag">${esc(e.fm.feature)}</span>` : '<span class="muted">—</span>', 130, 'fit'],
+    ['Author', authorChip, 130, 'fit'],
+    ['Status', hypoStatusChip, 110, 'fit'],
+    ['', e=>{   // everything you can DO with a row sits behind its ⋯ — the columns stay for content
+      const g = ideaGrounding(e), canPromote = hypoStatus(e)==='open' && g.level>0;
+      return demoCell(e) + rowMenuHtml('rm-'+e.id, [
+        canPromote && `<button type="button" role="menuitem" data-promote="${e.id}" title="${esc(tr('Has {what} — make it a grounded Idea').replace('{what}', g.detail))}">${FI('<line x1="12" y1="19" x2="12" y2="5"/><polyline points="5 12 12 5 19 12"/>')}${tr('Promote to Idea')}</button>`,
+        `<button type="button" role="menuitem" data-hedit="${e.id}">${FI('<path d="M12 20h9"/><path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5z"/>')}${tr('Edit')}</button>`,
+        `<button type="button" role="menuitem" class="danger" data-hdel="${e.id}">${FI('<polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6"/><path d="M10 11v6M14 11v6"/><path d="M9 6V4a1 1 0 0 1 1-1h4a1 1 0 0 1 1 1v2"/>')}${tr('Delete')}</button>`,
+      ], canPromote ? tr('Ready to promote to an Idea') : ''); }, 64, 'fit']
   ],
   Transcript: [
     ['Transcript', titleCell, 180],
@@ -125,15 +137,18 @@ const TABLE_COLS = {
    each TABLE_COLS entry) instead of being squeezed to fit — the .tableview
    wrapper scrolls horizontally when the sum outgrows the viewport. Every
    header edge is a drag handle; widths persist per tab, double-click resets. */
+/* stored per tab AND per set of columns: when the columns change, old widths
+   and a sort by a column that moved can't land on the wrong one */
+const colStoreKey = (kind, type)=> 'at-'+kind+'-'+type+':'+(TABLE_COLS[type]||[]).map(c=> c[0]).join('|');
 function colWidthsFor(type){
   const defs = (TABLE_COLS[type]||[]).map(c=> c[2]||160);
-  let saved={}; try{ saved = JSON.parse(store.get('at-colw-'+type)||'{}'); }catch(e){}
+  let saved={}; try{ saved = JSON.parse(store.get(colStoreKey('colw', type))||'{}'); }catch(e){}
   return defs.map((w,i)=> Math.max(60, parseInt(saved[i],10) || w));
 }
 function saveColWidth(type, i, w){
-  let m={}; try{ m = JSON.parse(store.get('at-colw-'+type)||'{}'); }catch(e){}
+  let m={}; try{ m = JSON.parse(store.get(colStoreKey('colw', type))||'{}'); }catch(e){}
   if(w===null) delete m[i]; else m[i] = Math.round(w);
-  store.set('at-colw-'+type, JSON.stringify(m));
+  store.set(colStoreKey('colw', type), JSON.stringify(m));
 }
 /* Notion-style column sorting: header click cycles asc → desc → off. Keys are
    type-aware — dd.mm.yyyy dates chronologically, numeric cells (votes, 🖍 3,
@@ -150,14 +165,12 @@ function tableSortKey(raw){
 }
 function nextSortDir(cur){ return cur===1 ? -1 : (cur===-1 ? null : 1); }
 function cellText(html){ const d=document.createElement('div'); d.innerHTML=String(html); return d.textContent.trim(); }
-function tableSortState(type){ try{ return JSON.parse(store.get('at-sort-'+type)||'null'); }catch(e){ return null; } }
+function tableSortState(type){ try{ return JSON.parse(store.get(colStoreKey('sort', type))||'null'); }catch(e){ return null; } }
 /* Column header icons (Feather, MIT) — shown under the Apple preview */
 const FI = inner => `<svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">${inner}</svg>`;
 const COL_ICONS = {
   'Hypothesis': ICONS.Hypothesis, 'Signal': ICONS.Signal, 'Competitor': ICONS.Competitor, 'Transcript': ICONS.Transcript,
-  'Feature': FI('<path d="M20.59 13.41l-7.17 7.17a2 2 0 0 1-2.83 0L2 12V2h10l8.59 8.59a2 2 0 0 1 0 2.83z"/><line x1="7" y1="7" x2="7.01" y2="7"/>'),
-  'If': FI('<path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/>'),
-  'Will': FI('<polyline points="23 6 13.5 15.5 8.5 10.5 1 18"/><polyline points="17 6 23 6 23 12"/>'),
+  'Topic': FI('<path d="M20.59 13.41l-7.17 7.17a2 2 0 0 1-2.83 0L2 12V2h10l8.59 8.59a2 2 0 0 1 0 2.83z"/><line x1="7" y1="7" x2="7.01" y2="7"/>'),
   'Author': ICONS.Persona,
   'Status': FI('<path d="M4 15s1-1 4-1 5 2 8 2 4-1 4-1V3s-1 1-4 1-5-2-8-2-4 1-4 1z"/><line x1="4" y1="22" x2="4" y2="15"/>'),
   'Quote / observation': FI('<path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/>'),
@@ -192,10 +205,11 @@ function renderTable(list){
           + `${hIco}${tr(c[0])}<span class="th-sort">${active ? (sort.dir===1?'↑':'↓') : ''}</span>`
           + `<span class="col-resize" data-ci="${i}" title="${esc(tr('Drag to resize — double-click to reset'))}"></span></th>`;
       }).join('') + '</tr></thead><tbody>';
-  rows.forEach(e=>{ html += `<tr data-goto="${e.id}">` + cols.map(c=>`<td>${c[1](e)}</td>`).join('') + '</tr>'; });
+  rows.forEach(e=>{ html += `<tr data-goto="${e.id}">` + cols.map(c=>`<td${c[3]==='fit' ? ' class="td-fit"' : ''}>${c[1](e)}</td>`).join('') + '</tr>'; });
   html += '</tbody></table>';
   grid.innerHTML = html;
-  grid.querySelectorAll('tr[data-goto]').forEach(tr=> tr.onclick = ()=>{ location.hash = '#'+tr.dataset.goto; });
+  // the row opens its entity — except from its ⋯ menu, whose clicks bubble through the row
+  grid.querySelectorAll('tr[data-goto]').forEach(tr=> tr.onclick = ev=>{ if(!ev.target.closest('.row-menu')) location.hash = '#'+tr.dataset.goto; });
   wireVotes(grid);
   grid.querySelectorAll('[data-promote]').forEach(b=> b.onclick = ev=>{ ev.stopPropagation(); promoteHypothesis(b.dataset.promote); });
   grid.querySelectorAll('[data-hedit]').forEach(b=> b.onclick = ev=>{ ev.stopPropagation(); editHypothesis(b.dataset.hedit); });
@@ -205,11 +219,22 @@ function renderTable(list){
     const ci = +th.dataset.sci;
     const cur = tableSortState(type);
     const dir = nextSortDir(cur && cur.ci===ci ? cur.dir : null);
-    store.set('at-sort-'+type, dir===null ? 'null' : JSON.stringify({ci, dir}));
+    store.set(colStoreKey('sort', type), dir===null ? 'null' : JSON.stringify({ci, dir}));
     renderTable(list);
   });
   const table = grid.querySelector('table');
   const colEls = [...table.querySelectorAll('col')];
+  /* "fit" columns (chips, status, the ⋯) take the width of their widest cell —
+     the column fits the content, not the other way round — until the user
+     drags one; a dragged width is theirs and stays. */
+  let saved = {}; try{ saved = JSON.parse(store.get(colStoreKey('colw', type))||'{}'); }catch(err){}
+  cols.forEach((c,i)=>{
+    if(c[3]!=='fit' || saved[i]) return;
+    const cells = [table.rows[0].cells[i], ...[...table.tBodies[0].rows].map(r=> r.cells[i])];
+    widths[i] = Math.max(60, Math.ceil(Math.max(...cells.map(td=> td.scrollWidth))));
+    colEls[i].style.width = widths[i]+'px';
+  });
+  table.style.width = widths.reduce((a,b)=>a+b,0)+'px';
   grid.querySelectorAll('.col-resize').forEach(h=>{
     h.addEventListener('click', ev=> ev.stopPropagation());
     h.addEventListener('dblclick', ev=>{ ev.stopPropagation(); saveColWidth(type, +h.dataset.ci, null); renderTable(list); });

@@ -351,6 +351,7 @@ async function settingsEnter(){
   await loadSettingsData();
   if(PREFS.population) store.set('at-population', PREFS.population);
   renderSettings(); window.scrollTo(0,0);
+  motionPage();   // the page arrives after the await, so the router's call came too early
 }
 function settingsExit(){
   if(!SETTINGS_ACTIVE) return;

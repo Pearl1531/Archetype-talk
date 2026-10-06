@@ -114,6 +114,13 @@ function renderCompare(){
 }
 function renderGrid(filter=""){
   if(HELP_ACTIVE || SETTINGS_ACTIVE || MINDMAP_ACTIVE || DASHBOARD_ACTIVE) return; // these pages own the content area
+  /* 'All' is not a page any more — only the rail search's results. With no
+     query there is nothing to show but the Overview: go there in place of
+     this history entry (a pushed one would bounce Back straight here again). */
+  if(activeType==='All' && !filter.trim()){
+    if(!location.hash.slice(1) && !document.body.matches('.projects-open, .welcome-open')){ history.replaceState(history.state, '', '#dashboard'); route(); motionPage(); }
+    return;
+  }
   const list = filteredList(filter);
   const n = list.length;
   const V = effView();
@@ -266,11 +273,11 @@ function card(e){
     const qFull = (firstQuote(e.body)||'').replace(/^["“']|["”']$/g,'');
     let q=''; for(const s of qFull.split(/(?<=[.!?])\s+/)){ if(!q) q=s; else if((q+' '+s).length<=130) q+=' '+s; else break; }  // whole sentences
     if(q.length>150) q=trim(q,140);
-    el.classList.add('p-apple');
-    inner = `<div class="pa-kicker">${esc(tr(e.fm.category||''))} ${tr('persona')}${e.fm.demo?'<span class="pa-demo">Demo</span>':''}${levelChip(personaLevel(e))}</div>
+    el.classList.add('p-apple'); el.dataset.lean = '4';   // the persona card's gesture (16-motion.css)
+    inner = `<div class="pa-kicker">${esc(tr(e.fm.category||''))} ${tr('persona')}${e.fm.demo?'<span class="pa-demo">Demo</span>':''}${levelMeter(personaLevel(e))}</div>
       <h3 class="pa-quote">${esc(q)}</h3>
       <div class="pa-who">${esc(nm)}${role?` · ${esc(role)}`:''}</div>
-      <div class="pa-avatar">${avatarHtml(e, nm)}</div>`;
+      <div class="pa-avatar">${faceHtml(e, '', nm)}</div>`;
     } else if(e.type==='Archetype'){
     inner += `<div class="persona-id">${archIconHtml(e)}<div><div class="name">${esc(e.title)}</div></div></div>
       <div class="excerpt">${esc(trim(stripLinks(afterLabel(e.body,'Short description')),150))}</div>

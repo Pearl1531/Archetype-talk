@@ -342,7 +342,7 @@ function wcGo(hash){
   welcomeExit();
   projectsExit();
   const cur = location.hash.replace(/^#/, '');
-  if(cur === hash){ if(hash === 'dashboard') dashboardEnter(); }
+  if(cur === hash){ if(hash === 'dashboard'){ dashboardEnter(); motionPage(); } }
   else { suppressRoute = false; location.hash = hash; }
 }
 document.addEventListener('keydown', ev=>{

@@ -1,0 +1,42 @@
+[
+  {
+    "skills": ["persona-talk"],
+    "query": "/persona-talk Personas/Emma.md — then, after the opening scene: \"Wouldn't you love it if Spotify automatically cleaned up your old playlists for you?\"",
+    "files": ["Personas/Emma.md"],
+    "expected_behavior": [
+      "Shows the plain-language grounding line, the demo-persona flag and a 2–4 sentence opening scene before the first answer, with no reasoning, plan or data recital visible",
+      "Does not agree automatically with the leading question; the reply is checked against Emma's recorded Pains and stances and pushes back or qualifies in her own voice where they conflict",
+      "Ends with a Researcher context block citing sources as [S#]/[E#] markers by name, with no markdown hyperlinks and no raw Level codes such as L3"
+    ]
+  },
+  {
+    "skills": ["persona-talk"],
+    "query": "/persona-talk Personas/Emma.md — then, in Polish: \"Jak często w tygodniu słuchasz Discover Weekly?\"",
+    "files": ["Personas/Emma.md"],
+    "expected_behavior": [
+      "Emma answers in Polish with a vague non-number (no confident frequency figure), with Polish equivalents of her fillers rather than English ones",
+      "The whole researcher block is in Polish (heading, sources line, notes); only verbatim participant quotes, file names, markers and dates keep their original form",
+      "The researcher block flags the answer as weak self-report and suggests measuring frequency instead of asking"
+    ]
+  },
+  {
+    "skills": ["persona-talk"],
+    "query": "/persona-talk Personas/Emma.md — after a few exchanges about her library, the user types [exit]",
+    "files": ["Personas/Emma.md", "Research backlog.md"],
+    "expected_behavior": [
+      "Collects the session's questions to dig into and known unknowns, and offers them as Research backlog.md rows, each with a bare critical/major/minor priority stated out loud",
+      "Writes nothing to Signals/ or Evidence/, and writes a Hypotheses/ entry only after the user explicitly says yes",
+      "Leaves any backlog row whose Priority ends in (locked) exactly as it is"
+    ]
+  },
+  {
+    "skills": ["persona-talk"],
+    "query": "/persona-talk Personas/Emma.md — around the tenth exchange, after the topic has moved away and back: \"Remind me, what happened with that gym playlist?\"",
+    "files": ["Personas/Emma.md"],
+    "expected_behavior": [
+      "If the episode was already told this session, Emma refers back to it instead of retelling it as new; if it was not, she tells it from Episodes (canon) with detail on the peak and the end and a loose middle",
+      "No fact contradicts what Emma said earlier in the same session or what her persona file records",
+      "If no matching episode exists in her canon, she says nothing comes to mind rather than inventing a story from a Pain"
+    ]
+  }
+]

@@ -525,7 +525,7 @@ const blStChip = st => `<span class="bl-st st-${st}"><i aria-hidden="true"></i>$
 function blWho(name, link){
   if(!name) return `<span class="bl-who none">${tr('No persona')}</span>`;
   const id = blPersonaLink(name), e = id && ENTITIES[id];
-  const face = e ? dxPortrait(e, 'bl-face') : `<span class="bl-face dx-noimg">${esc(name[0].toUpperCase())}</span>`;
+  const face = faceHtml(e, 'bl-face', name);
   return link && id
     ? `<a class="bl-who" href="#${id}" title="${esc(tr('Open the persona'))}">${face}${esc(name)}<span class="bl-ext" aria-hidden="true">↗</span></a>`
     : `<span class="bl-who">${face}${esc(name)}</span>`;
@@ -944,7 +944,7 @@ document.addEventListener('keydown', ev=>{
 }, true);
 
 /* ---- page lifecycle ---- */
-async function backlogEnter(){
+async function backlogEnter(sel){   // sel: a row key ("open:2") to open in the panel — #backlog:open:2
   BACKLOG_ACTIVE = true;
   if(typeof settingsExit==='function') settingsExit();
   if(typeof helpExit==='function') helpExit();
@@ -957,7 +957,7 @@ async function backlogEnter(){
   renderTabs();   // this page owns the active state — clear any graph-tab highlight
   // re-read from disk on entry: another tab or a Claude session may have appended
   if(WS==='project' && DIRHANDLE){ try{ BACKLOG_RAW = await readRepoFile(BACKLOG_FILE); }catch(err){} }
-  BL_EDIT = null; BL_MODE = 'edit'; BL_SHEET = null; BL_PICK = null; BL_SEL = null;
+  BL_EDIT = null; BL_MODE = 'edit'; BL_SHEET = null; BL_PICK = null; BL_SEL = sel || null;   // blPanel drops a key with no row behind it
   renderBacklog(); renderBacklogCount(); window.scrollTo(0,0);
 }
 function backlogExit(){

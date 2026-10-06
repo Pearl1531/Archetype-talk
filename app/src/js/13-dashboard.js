@@ -279,18 +279,47 @@ let DX_TIP = 0;
    :focus-within) — `body` is trusted HTML built here, never file content */
 function dxTip(title, body, side){
   const id = 'dxt' + (++DX_TIP);
-  return `<span class="dx-tip${side==='right'?' dx-tip-r':''}"><button type="button" class="dx-tip-btn" aria-label="${esc(title)}" aria-describedby="${id}">${DX_INFO}</button><span role="tooltip" id="${id}" class="dx-tip-pop"><b>${esc(title)}</b>${body}</span></span>`;
+  return `<span class="dx-tip${side==='right'?' dx-tip-r':''}"><button type="button" class="dx-tip-btn" aria-label="${esc(title)}" aria-describedby="${id}">${DX_INFO}</button><span role="tooltip" id="${id}" class="dx-tip-pop" popover="manual"><b>${esc(title)}</b>${body}</span></span>`;
 }
-function dxBars(n, of){
-  return `<span class="dx-lvl" aria-hidden="true">${Array.from({length:of},(_,i)=>`<i class="${i<n?(i===of-1?'on hot':'on'):''}"></i>`).join('')}</span>`;
+/* An ⓘ opens on hover or keyboard focus, in the browser's top layer (popover)
+   — so no card, table or pane that clips its overflow can cut it off. It sits
+   under its button (right-aligned for .dx-tip-r), flips above when the window
+   has no room below, never leaves the window, and closes on scroll. */
+/* puts an open popover under its button (right-aligned when `right`), above
+   it when the window has no room below, and never outside the window */
+function popPlace(pop, btn, right){
+  const b = btn.getBoundingClientRect(), p = pop.getBoundingClientRect(), m = 12;
+  const left = right ? b.right + 8 - p.width : b.left - 8;
+  const top = b.bottom + 8 + p.height > innerHeight - m ? b.top - 8 - p.height : b.bottom + 8;
+  pop.style.left = Math.max(m, Math.min(left, innerWidth - p.width - m)) + 'px';
+  pop.style.top = Math.max(m, top) + 'px';
 }
-function dxPortrait(e, cls){
-  const pic = picFor(e);
-  const first = e.title.split(/\s+[—–-]\s+/)[0].trim();
-  return pic && pic.src
-    ? `<span class="${cls}"><img src="${esc(pic.src)}" alt=""></span>`
-    : `<span class="${cls} dx-noimg">${esc((first[0]||'?').toUpperCase())}</span>`;
+function dxTipShow(tip, on){
+  const pop = tip && tip.querySelector('.dx-tip-pop'); if(!pop || !pop.showPopover) return;
+  if(!on){ if(pop.matches(':popover-open')) pop.hidePopover(); return; }
+  if(!pop.matches(':popover-open')) pop.showPopover();
+  popPlace(pop, tip.querySelector('.dx-tip-btn'), tip.classList.contains('dx-tip-r'));
 }
+/* The ⋯ row menu — a row's actions in one place at its end, so the columns
+   keep their room for content and a new action is one more item, not one more
+   column. The browser's own popover="auto": it opens on click, closes on a
+   click elsewhere, on Esc and on scroll; we only place it. `items` are menu
+   buttons (role="menuitem", falsy ones skipped); `hint` puts an ember dot on
+   the ⋯ and says why (e.g. a hypothesis ready to be promoted). */
+function rowMenuHtml(id, items, hint){
+  return `<span class="row-menu"><button type="button" class="row-menu-btn${hint ? ' hint' : ''}" popovertarget="${esc(id)}" aria-label="${esc(tr('Actions'))}" title="${esc(hint || tr('Actions'))}"><svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><circle cx="5" cy="12" r="1.8"/><circle cx="12" cy="12" r="1.8"/><circle cx="19" cy="12" r="1.8"/></svg></button><span class="row-menu-pop" id="${esc(id)}" popover="auto" role="menu">${items.filter(Boolean).join('')}</span></span>`;
+}
+document.addEventListener('toggle', ev=>{   // toggle doesn't bubble: caught on the way down
+  const pop = ev.target;
+  if(ev.newState !== 'open' || !pop.classList || !pop.classList.contains('row-menu-pop')) return;
+  const btn = document.querySelector(`[popovertarget="${CSS.escape(pop.id)}"]`); if(btn) popPlace(pop, btn, true);
+}, true);
+const dxTipOf = ev => ev.target.closest ? ev.target.closest('.dx-tip') : null;
+document.addEventListener('pointerover', ev=> dxTipShow(dxTipOf(ev), true));
+document.addEventListener('pointerout', ev=>{ const t = dxTipOf(ev); if(t && !t.contains(ev.relatedTarget)) dxTipShow(t, false); });
+document.addEventListener('focusin', ev=> dxTipShow(dxTipOf(ev), true));
+document.addEventListener('focusout', ev=> dxTipShow(dxTipOf(ev), false));
+addEventListener('scroll', ()=> document.querySelectorAll('.dx-tip-pop:popover-open, .row-menu-pop:popover-open').forEach(p=> p.hidePopover()), { capture: true, passive: true });
 function dxBacklogTop(){
   const raw = backlogRaw(); if(!raw) return [];
   const sec = parseBacklog(raw).open;
@@ -299,32 +328,91 @@ function dxBacklogTop(){
   const qi = h.findIndex(x=> /question|pytanie/.test(x)), pi = h.findIndex(x=> /persona/.test(x));
   return sec.table.rows.map(r=>({ q: r[qi>=0?qi:2]||'', who: (r[pi>=0?pi:1]||'').trim() }));
 }
-/* the sessions on one axis: days when research spans under two months, months after */
-function dxSessions(){
-  const ts = wsEntities().filter(e=> e.type==='Transcript').map(e=>({ e, d: parseAnyDate(e.fm.date) })).filter(x=> x.d).sort((a,b)=> a.d-b.d);
-  if(!ts.length) return '';
-  const day = 86400000, t0 = ts[0].d.getTime(), t1 = ts[ts.length-1].d.getTime();
-  const short = t1 - t0 < 62*day;
-  const a = short ? new Date(ts[0].d.getFullYear(), ts[0].d.getMonth(), 1).getTime() : t0 - 3*day;
-  const b = short ? Math.max(new Date(ts[0].d.getFullYear(), ts[0].d.getMonth()+1, 0).getTime(), t1) : t1 + 3*day;
-  const x = t => ((t - a) / Math.max(day, b - a) * 100).toFixed(1);
-  const lift = [70, 40, 58, 28, 48, 76, 36];
-  const marks = ts.map((s,i)=>{
-    const ex = isExcluded(s.e), test = /test/i.test(String(s.e.fm.method||'')) || /^TEST/i.test(s.e.title);
-    const who = s.e.title.replace(/^[A-Z]+-\d+\s*/,'').trim();
-    const h = lift[i % lift.length];
-    return `<a class="dx-ses${ex?' ex':''}${test?' test':''}" href="#${esc(s.e.id)}" style="left:${x(s.d.getTime())}%;--h:${h}px" title="${esc(s.e.title)} · ${dashFmtDate(s.d)}${ex?' · '+esc(tr('excluded from analysis')):''}">
-        <i class="dx-ses-stem"></i><i class="dx-ses-dot"></i>${!test && !ex && who ? `<span class="dx-ses-lbl">${esc(who)}</span>` : ''}</a>`;
-  }).join('');
-  const d0 = new Date(a), d1 = new Date(b);
-  const axis = short
-    ? `<span>1 ${dashMon(d0.getMonth())}</span><span>10</span><span>20</span><span>${d1.getDate()} ${dashMon(d1.getMonth())}</span>`
-    : `<span>${dashMon(d0.getMonth())} ${d0.getFullYear()}</span><span>${dashMon(d1.getMonth())} ${d1.getFullYear()}</span>`;
-  const span = short ? `${dashMon(ts[0].d.getMonth())} ${ts[0].d.getFullYear()}` : `${dashMon(ts[0].d.getMonth())} ${ts[0].d.getFullYear()} – ${dashMon(ts[ts.length-1].d.getMonth())} ${ts[ts.length-1].d.getFullYear()}`;
-  return `<div class="dx-col">
-      <div class="dx-h2row"><h2 class="dx-h2">${tr('Sessions')}</h2><span class="dx-h2note">${esc(span)}</span>${dxTip(tr('One mark per session'), esc(tr('Circle = interview, square = usability test, dashed = set aside by the researcher. Trend charts would need research that spans two months or more.')), 'right')}</div>
-      <div class="dx-card dx-ses-card"><div class="dx-ses-plot" role="img" aria-label="${esc(trn(ts.length,'{n} session','{n} sessions','{n} sesja','{n} sesje','{n} sesji'))}">${marks}<div class="dx-ses-axis">${axis}</div></div></div>
-    </div>`;
+/* Fresh research, Revolut-style: one line for how many sources are younger
+   than three months, day by day. A new transcript (date:) or new desk research
+   (Evidence retrieved:) lifts it; 92 days later the same source goes out of
+   date and the line steps down — so a project that stops listening slides
+   visibly. A dot marks each day something changed; hovering (or ←/→ on the
+   focused card) scrubs to it and says what happened, the way Revolut names a
+   price. Set-aside sessions and undated files count nowhere. */
+let DX_FRESH = null;
+const DX_DAY = 86400000;
+const dxDayOf = d => Math.round(Date.UTC(d.getFullYear(), d.getMonth(), d.getDate()) / DX_DAY);
+const dxDateOf = n => { const u = new Date(n * DX_DAY); return new Date(u.getUTCFullYear(), u.getUTCMonth(), u.getUTCDate()); };
+const dxDayLabel = n => { const d = dxDateOf(n); return `${d.getDate()} ${dashMon(d.getMonth())} ${d.getFullYear()}`; };
+function dxFresh(){
+  DX_FRESH = null;
+  const today = dxDayOf(new Date(graphNow())), WIN = 92;
+  const src = [];
+  wsEntities().forEach(e=>{
+    const d = e.type==='Transcript' && !isExcluded(e) ? parseAnyDate(e.fm.date) : e.type==='Evidence' ? parseAnyDate(e.fm.retrieved) : null;
+    if(d && dxDayOf(d) <= today) src.push({ k: e.type==='Transcript' ? 'tr' : 'ev', n: dxDayOf(d) });
+  });
+  if(!src.length) return '';
+  const days = new Map(), at = n => days.get(n) || days.set(n, { n, add: { tr: 0, ev: 0 }, out: { tr: 0, ev: 0 } }).get(n);
+  src.forEach(s=>{ at(s.n).add[s.k]++; if(s.n + WIN <= today) at(s.n + WIN).out[s.k]++; });
+  let v = 0;
+  const pts = [...days.values()].sort((a,b)=> a.n - b.n).map(p=> ({ ...p, v: v += p.add.tr + p.add.ev - p.out.tr - p.out.ev }));
+  const what = p => [
+    p.add.tr && trn(p.add.tr, '+{n} transcript', '+{n} transcripts', '+{n} transkrypcja', '+{n} transkrypcje', '+{n} transkrypcji'),
+    p.add.ev && trn(p.add.ev, '+{n} desk research source', '+{n} desk research sources', '+{n} źródło z desk research', '+{n} źródła z desk research', '+{n} źródeł z desk research'),
+    p.out.tr && trn(p.out.tr, '{n} transcript went out of date', '{n} transcripts went out of date', '{n} transkrypcja się zestarzała', '{n} transkrypcje się zestarzały', '{n} transkrypcji się zestarzało'),
+    p.out.ev && trn(p.out.ev, '{n} desk research source went out of date', '{n} desk research sources went out of date', '{n} źródło z desk research się zestarzało', '{n} źródła z desk research się zestarzały', '{n} źródeł z desk research się zestarzało'),
+  ].filter(Boolean).join(' · ');
+  const soon = src.filter(s=> s.n + WIN > today && s.n + WIN <= today + 30).length;
+  const a = pts[0].n - 3, b = Math.max(today, pts[pts.length-1].n), H = 160, top = 14, max = Math.max(...pts.map(p=> p.v), 1);
+  const X = n => (n - a) / Math.max(1, b - a) * 1000, Y = val => H - 4 - val / max * (H - 4 - top);
+  const line = [`M${X(a).toFixed(1)},${Y(0).toFixed(1)}`].concat(pts.map(p=> `L${X(p.n).toFixed(1)},${Y(p.v).toFixed(1)}`), `L${X(b).toFixed(1)},${Y(v).toFixed(1)}`).join('');
+  const area = line + `L${X(b).toFixed(1)},${H}L${X(a).toFixed(1)},${H}Z`;
+  DX_FRESH = {
+    now: v,
+    nowWhat: soon ? trn(soon, '{n} source goes out of date in the next 30 days', '{n} sources go out of date in the next 30 days', 'W ciągu 30 dni zestarzeje się {n} źródło', 'W ciągu 30 dni zestarzeją się {n} źródła', 'W ciągu 30 dni zestarzeje się {n} źródeł') : tr('Nothing goes out of date in the next 30 days'),
+    pts: pts.map(p=> ({ x: X(p.n) / 10, v: p.v, when: dxDayLabel(p.n), what: what(p) })),
+  };
+  const unit = n => trn(n, 'fresh source', 'fresh sources', 'świeże źródło', 'świeże źródła', 'świeżych źródeł');
+  const span = `${dxDayLabel(pts[0].n)} – ${tr('today')}`;
+  return `<section class="dx-sec">
+      <div class="dx-h2row"><h2 class="dx-h2">${tr('Fresh research')}</h2><span class="dx-h2note">${esc(span)}</span>${dxTip(tr('What is still fresh'), esc(tr('How many of your sources are younger than three months, day by day. A new interview or new desk research lifts the line; three months later it goes out of date and the line steps down. Each dot is a day something changed — point at it to see what. Sessions the researcher set aside count nowhere.')), 'right')}</div>
+      <div class="dx-card dx-fr" tabindex="0" aria-label="${esc(tr('Fresh research over time — use the arrow keys to step through the changes'))}">
+        <div class="dx-fr-head" aria-live="polite"><b class="dx-fr-v">${v}</b><span class="dx-fr-unit" data-one="${esc(unit(1))}" data-many="${esc(unit(2))}" data-lots="${esc(unit(5))}">${esc(unit(v))}</span>
+          <span class="dx-fr-when">${tr('Today')}</span><span class="dx-fr-what">${esc(DX_FRESH.nowWhat)}</span></div>
+        <div class="dx-fr-plot">
+          <svg viewBox="0 0 1000 ${H}" preserveAspectRatio="none" aria-hidden="true"><defs><linearGradient id="dxFrFill" x1="0" y1="0" x2="0" y2="1"><stop offset="0" style="stop-color:var(--accent);stop-opacity:.16"/><stop offset="1" style="stop-color:var(--accent);stop-opacity:0"/></linearGradient></defs>
+            <path class="dx-fr-area" d="${area}"/><path class="dx-fr-line" d="${line}"/></svg>
+          ${pts.map((p,i)=> `<i class="dx-fr-dot ${p.out.tr+p.out.ev ? (p.add.tr+p.add.ev ? 'mix' : 'down') : 'up'}" style="left:${(X(p.n)/10).toFixed(2)}%;top:${(Y(p.v)/H*100).toFixed(2)}%;--i:${i}"></i>`).join('')}
+          <i class="dx-fr-cursor" aria-hidden="true"></i>
+        </div>
+        <div class="dx-fr-axis"><span>${esc(dxDayLabel(a))}</span><span>${tr('today')}</span></div>
+      </div>
+    </section>`;
+}
+/* scrubbing: the nearest change to the pointer (or ←/→), back to today on leave */
+function dxFreshWire(){
+  const card = grid.querySelector('.dx-fr'); if(!card || !DX_FRESH) return;
+  const plot = card.querySelector('.dx-fr-plot'), cur = card.querySelector('.dx-fr-cursor'), dots = [...card.querySelectorAll('.dx-fr-dot')];
+  const $ = s => card.querySelector(s), unit = $('.dx-fr-unit');
+  let at = -1;
+  const show = k=>{
+    at = k; dots.forEach((d,j)=> d.classList.toggle('on', j===k)); card.classList.toggle('scrub', k >= 0);
+    const p = k >= 0 ? DX_FRESH.pts[k] : null, v = p ? p.v : DX_FRESH.now;
+    $('.dx-fr-v').textContent = v;
+    unit.textContent = v===1 ? unit.dataset.one : (LANG==='pl' && !(v%10>=2 && v%10<=4 && (v%100<12 || v%100>14))) ? unit.dataset.lots : unit.dataset.many;
+    $('.dx-fr-when').textContent = p ? p.when : tr('Today');
+    $('.dx-fr-what').textContent = p ? p.what : DX_FRESH.nowWhat;
+    if(p) cur.style.left = p.x + '%';
+  };
+  plot.onpointermove = ev=>{
+    const r = plot.getBoundingClientRect(), x = (ev.clientX - r.left) / r.width * 100;
+    let k = 0; DX_FRESH.pts.forEach((p,j)=>{ if(Math.abs(p.x - x) < Math.abs(DX_FRESH.pts[k].x - x)) k = j; });
+    if(k !== at) show(k);
+  };
+  plot.onpointerleave = ()=> show(-1);
+  card.onkeydown = ev=>{
+    const n = DX_FRESH.pts.length;
+    if(ev.key==='ArrowRight' || ev.key==='ArrowLeft'){ ev.preventDefault(); show(Math.max(0, Math.min(n-1, at < 0 ? n-1 : at + (ev.key==='ArrowRight' ? 1 : -1)))); }
+    if(ev.key==='Escape') show(-1);
+  };
+  card.onblur = ()=> show(-1);
 }
 
 function renderDashboard(){
@@ -348,8 +436,8 @@ function renderDashboard(){
   const asOf = demo ? tr('as of {d}').replace('{d}', DEMO_AS_OF.toLocaleDateString(LANG==='pl'?'pl-PL':'en-GB',{day:'numeric',month:'short',year:'numeric'})) : tr('right now');
 
   /* hero: the project is the headline, its people beside it */
-  const cast = personas.slice(0,4).map((e,i)=> `<a class="dx-cast-${i}" href="#${esc(e.id)}" aria-label="${esc(firstName(e))}">${dxPortrait(e, 'dx-face')}</a>`).join('');
-  const askMenu = personas.map(e=> `<a role="menuitem" href="#${esc(e.id)}">${dxPortrait(e,'dx-face-xs')}<span>${esc(firstName(e))}</span></a>`).join('');
+  const cast = personas.slice(0,4).map((e,i)=> `<a class="dx-cast-${i}" href="#${esc(e.id)}" aria-label="${esc(firstName(e))}">${faceHtml(e, 'dx-face')}</a>`).join('');
+  const askMenu = personas.map(e=> `<a role="menuitem" href="#${esc(e.id)}">${faceHtml(e,'dx-face-xs')}<span>${esc(firstName(e))}</span></a>`).join('');
   const hero = `<section class="dx-hero">
       <div class="dx-hero-main">
         <div class="dx-kicker"><b>${tr('Overview')}</b><span aria-hidden="true">·</span><span>${esc(asOf)}</span>${demo ? `<span class="dx-chip">${tr('Example data')}${dxTip(tr('This is the example project'), esc(tr('Illustrative research on Spotify listeners, not your users. The numbers are read as of the day its research closed, and it never mixes with your own projects.')))}</span>` : ''}</div>
@@ -372,19 +460,19 @@ function renderDashboard(){
       <div><span class="dx-fl">${tr('Fresh')}${dxTip(tr('Freshness'), esc(tr('Transcripts younger than 3 months. Past that line, findings get flagged for a re-check before a decision leans on them.')))}</span>
         <b class="dx-big">${s.transcripts ? `${s.fresh}<span class="dx-of">/${s.transcripts}</span>` : '—'}</b><span class="dx-fs ${freshPct===100?'ok':''}">${s.transcripts ? tr(freshPct===100 ? 'All current' : freshPct===0 ? 'Everything is out of date' : 'Mostly current') : esc(tr('none yet'))}</span></div>
       <div><span class="dx-fl">${tr('Open questions')}${dxTip(tr('Open questions'), esc(tr('Things a persona answered with “I don’t know”. They go to real interviews, never to the AI.')), 'right')}</span>
-        <b class="dx-big">${open.length}</b><a class="dx-fs dx-link" href="#backlog">${tr('See all')} →</a></div>
+        <b class="dx-big">${open.length}</b><a class="dx-btn dx-btn-line dx-btn-sm" href="#backlog">${tr('See all')} →</a></div>
     </section>`;
 
   /* personas: face, one line, how solid, ask */
   const pcards = personas.map(e=>{
     const lv = personaLevel(e), r = pgBy[e.id] || {sig:0, ev:0};
     const prim = /primary/i.test(e.fm.category||'');
-    return `<article class="dx-pc${prim?' prim':''}">
-        <div class="dx-pc-top">${dxPortrait(e, 'dx-face-md')}${prim ? `<span class="dx-tag">${tr('Primary')}</span>` : ''}</div>
-        <a class="dx-pc-name" href="#${esc(e.id)}">${esc(firstName(e))}<span class="dx-dot">.</span></a>
+    return `<article class="dx-pc has-card-link${prim?' prim':''}" data-lean="4">
+        <div class="dx-pc-top">${faceHtml(e, 'dx-face-md')}${prim ? `<span class="dx-tag">${tr('Primary')}</span>` : ''}</div>
+        <a class="dx-pc-name card-link" href="#${esc(e.id)}">${esc(firstName(e))}<span class="dx-dot">.</span></a>
         <p class="dx-pc-desc" title="${esc(e.fm.description||'')}">${esc(e.fm.description||'')}</p>
         <div class="dx-pc-foot">
-          <span class="dx-pc-lvl" title="${esc(tr('How solid: {l} of 5 · stands on {s} heard + {e} read').replace('{l}',lv).replace('{s}',r.sig).replace('{e}',r.ev))}">${dxBars(lv,5)}${lv}/5</span>
+          ${levelMeter(lv, tr('How solid: {l} of 5 · stands on {s} heard + {e} read').replace('{l}',lv).replace('{s}',r.sig).replace('{e}',r.ev))}
           <button type="button" class="dx-btn dx-btn-sm ${prim?'dx-btn-ember':'dx-btn-line'}" data-ask="${esc(e.id)}" title="${esc(tr('Copies the line that starts the conversation — paste it into {a}, opened in this project folder').replace('{a}', pjAgentLabel(pjAgent())))}">${TALK_ICO}${tr('Ask')}</button>
         </div>
       </article>`;
@@ -428,14 +516,14 @@ function renderDashboard(){
         ${sp.map(([f,v])=>`<tr><td class="dx-feat">${esc(f.charAt(0).toUpperCase()+f.slice(1))}</td><td>${v.neg.map(sigLink).join('<br>')}</td><td>${v.pos.map(sigLink).join('<br>')}</td></tr>`).join('')}
       </tbody></table></div>
     </div>` : '';
-  const sessions = dxSessions();
-  const pair = splits || sessions ? `<section class="dx-sec dx-pair${splits && sessions ? '' : ' one'}">${splits}${sessions}</section>` : '';
+  const pair = splits ? `<section class="dx-sec dx-pair one">${splits}</section>` : '';
+  const fresh = dxFresh();
 
   /* open questions: the first three, the rest one click away */
   const oq = open.length ? `<section class="dx-sec">
       <div class="dx-h2row"><h2 class="dx-h2">${tr('Open questions')}</h2>${dxTip(tr('What no persona can answer yet'), esc(tr('Asked in conversations, answered with “I don’t know”. Each one waits for a real interview.')))}<span class="dx-spacer"></span><a class="dx-btn dx-btn-line dx-btn-sm" href="#backlog">${esc(tr('All {n}').replace('{n}', open.length))} →</a></div>
       <div class="dx-card"><table class="dx-table dx-oq"><tbody>
-        ${open.slice(0,3).map(r=>`<tr><td>${esc(r.q)}</td><td class="dx-oq-who">${r.who && r.who!=='—' ? r.who.split(/\s*[,/]\s*/).map(w=>`<span class="dx-pill">${esc(w)}</span>`).join(' ') : `<span class="dx-pill">${tr('everyone')}</span>`}</td></tr>`).join('')}
+        ${open.slice(0,3).map((r,i)=>`<tr class="has-card-link"><td><a class="card-link" href="#backlog:open:${i}">${esc(r.q)}</a></td><td class="dx-oq-who">${r.who && r.who!=='—' ? r.who.split(/\s*[,/]\s*/).map(w=>`<span class="dx-pill">${esc(w)}</span>`).join(' ') : `<span class="dx-pill">${tr('everyone')}</span>`}</td></tr>`).join('')}
       </tbody></table></div>
     </section>` : '';
 
@@ -462,7 +550,7 @@ function renderDashboard(){
       </span>
     </section>`;
 
-  grid.innerHTML = hero + facts + personasSec + health + pair + oq + band;
+  grid.innerHTML = hero + facts + personasSec + health + fresh + pair + oq + band;
 
   /* wiring */
   const $ = sel => grid.querySelector(sel);
@@ -489,6 +577,31 @@ function renderDashboard(){
   on('dashDlBrief', ()=> dashDownload('research-brief.md', dashBriefText(s)));
   on('dashEnrichCopy', ()=> dashCopy(dashEnrichText(s), tr('Prompt copied — paste it into your AI assistant ✓'), 'desk-research-refresh-prompt.md'));
   on('dashColdStart', ()=> dashCopy('/cold-start'+promptLang(), tr('Command copied — paste it as your first message ✓'), 'cold-start-command.md'));
+  dxFreshWire();
+  dxMotion();
+}
+
+/* The Overview's pointer effects (styles: "Motion" at the end of
+   12-project-home.css), wired on every render: the hero cast drifts against
+   the pointer, the band's button leans toward it. The page's arrival is the
+   shared one — motionPage (12c-motion.js) runs it when the router enters the
+   page, so a language switch re-renders without replaying it. Persona cards
+   lean through data-lean (16-motion.css). */
+function dxMotion(){
+  if(MO_STILL.matches) return;
+  const fine = ev => ev.pointerType === 'mouse';
+  const follow = (el, fn, vars)=>{
+    el.onpointermove = ev=>{ if(!fine(ev)) return; const r = el.getBoundingClientRect(); fn((ev.clientX - r.left) / r.width, (ev.clientY - r.top) / r.height, r); };
+    el.onpointerleave = ()=> vars.forEach(v=> el.style.removeProperty(v));
+  };
+  // the hero cast drifts against the pointer, each face by its own depth (--d)
+  const hero = grid.querySelector('.dx-hero'), cast = grid.querySelector('.dx-cast');
+  if(hero && cast) follow(hero, (x, y)=>{ cast.style.setProperty('--hx', (x-.5).toFixed(3)); cast.style.setProperty('--hy', (y-.5).toFixed(3)); }, []);
+  if(hero && cast) hero.onpointerleave = ()=>{ cast.style.removeProperty('--hx'); cast.style.removeProperty('--hy'); };
+  // the band's main button leans a little toward the pointer (the hero's buttons stay still)
+  grid.querySelectorAll('.dx-band .dx-btn-ember').forEach(b=> follow(b, (x, y, r)=>{
+    b.style.setProperty('--tx', ((x-.5)*r.width*.16).toFixed(1)+'px'); b.style.setProperty('--ty', ((y-.5)*r.height*.3).toFixed(1)+'px');
+  }, ['--tx','--ty']));
 }
 
 function dashboardEnter(){

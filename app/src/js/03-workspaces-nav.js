@@ -132,7 +132,7 @@ const pageSub = document.getElementById('pageSub');
 /* Page subtitles, Apple voice: short, warm, benefit-first — but every one still
    carries the load-bearing fact (what grounds it, how to read it). */
 const PAGE_DESC = {
-  All: 'Everything your team has learned. In one place. Open any card and follow it back to the person who said it.',
+  All: 'Everything that matches your search, grouped by type. Clear it to go back to the Overview.',
   Persona: 'Real people, remembered. Every persona is built from actual conversations — and only says what your research can back up.',
   Archetype: 'The pattern behind the person. Archetypes capture the tension people share, so a conversation can speak for many — not just one anecdote.',
   Signal: 'Heard firsthand. One observation per file, straight from a real session, quote and all. Everything else in the graph stands on these.',
@@ -143,7 +143,7 @@ const PAGE_DESC = {
   Transcript: 'Where every insight was born. The full conversations, word for word — one file, one person.'
 };
 function updatePageHead(){
-  pageTitle.textContent = activeType==='All' ? tr('All entities') : tr(TYPES[activeType].label);
+  pageTitle.textContent = activeType==='All' ? tr('Search results') : tr(TYPES[activeType].label);
   pageSub.textContent = tr(PAGE_DESC[activeType] || PAGE_DESC.All);
   pageSub.style.display = '';
   syncLinTheme();
@@ -165,15 +165,14 @@ function hideGalleryChrome(){   // bars are siblings of the grid; pages that rep
 function syncLinTheme(){
   document.body.classList.toggle('lin-mm', MINDMAP_ACTIVE);
 }
-const ALL_ICON = '<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 4l-8 4l8 4l8 -4l-8 -4"/><path d="M4 12l8 4l8 -4"/><path d="M4 16l8 4l8 -4"/></svg>';
 function renderTabs(){
   const list = wsEntities();
   const counts = {}; list.forEach(e=> counts[e.type]=(counts[e.type]||0)+1);
-  const total = list.length;
   // a full-screen page (Overview/Settings/Help/Mind Map) owns the active state —
   // don't also light up a graph tab, or two sections look selected at once
   const inView = DASHBOARD_ACTIVE || SETTINGS_ACTIVE || HELP_ACTIVE || MINDMAP_ACTIVE || BACKLOG_ACTIVE;
-  let html = `<button class="nav-item ${!inView && activeType==='All'?'active':''}" data-t="All">${ALL_ICON}${tr('All')}<span class="n">${total}</span></button>`;
+  // no "All" tab: the Overview is the overview; 'All' survives only as where the rail's search shows its results
+  let html = '';
   Object.entries(TYPES).forEach(([raw,ty])=>{
     const c = counts[raw] || 0;
     html += `<button class="nav-item ${!inView && activeType===raw?'active':''}" data-t="${raw}">${ICONS[raw]}${tr(ty.label)}<span class="n">${c}</span></button>`;
@@ -183,7 +182,7 @@ function renderTabs(){
     activeType=b.dataset.t;
     if(HELP_ACTIVE || SETTINGS_ACTIVE || MINDMAP_ACTIVE || DASHBOARD_ACTIVE || BACKLOG_ACTIVE){ helpExit(); settingsExit(); mindmapExit(); dashboardExit(); backlogExit(); if(location.hash) { suppressRoute = true; location.hash=''; } }
     renderTabs(); renderGrid(searchInput.value);
-    updatePageHead();
+    updatePageHead(); motionPage();
   });
 }
 

@@ -36,6 +36,28 @@ function topnavOpen(on){
   avatarMenu.style.display = on ? 'flex' : 'none';
   avatarBtn.setAttribute('aria-expanded', on ? 'true' : 'false');
 }
+/* Back + trail, for the pages below the rail — an entity (openDetail) and its
+   poster (posterOpen). The rail can't say where you are there, so the bar does:
+   ← Back · Project › Section › Page, every crumb but the last a door.
+   Back walks the browser history while there is in-app history to walk
+   (`history.state.d`, stamped by the router), and goes one level up otherwise —
+   so a page opened from a link or a reload never backs out of the app.
+   CSS shows the trail only under body.detail-open / body.poster-open. */
+function navTrail(items, up){
+  const nav = document.getElementById('navTrail'); if(!nav) return;
+  const proj = { label: document.getElementById('wsLabel')?.textContent || tr('Project'), go: ()=>{ location.hash = 'dashboard'; } };
+  const all = [proj, ...items];
+  nav.innerHTML = `<button type="button" class="nav-back" title="${esc(tr('Back'))} (Esc)"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M19 12H5M12 19l-7-7 7-7"/></svg><span>${tr('Back')}</span></button>
+    <ol>${all.map((c,i)=> i < all.length-1
+      ? `<li><button type="button" class="nav-crumb" data-i="${i}">${esc(c.label)}</button></li>`
+      : `<li><span class="nav-here" aria-current="page" title="${esc(c.label)}">${esc(c.label)}</span></li>`).join('')}</ol>`;
+  nav.querySelector('.nav-back').onclick = ()=> navBack(up);
+  nav.querySelectorAll('.nav-crumb').forEach(b=> b.onclick = ()=> all[+b.dataset.i].go());
+}
+function navBack(up){
+  if((history.state && history.state.d) > 0) history.back(); else up();
+}
+
 /* The detail page is the one view that drops the left rail, and the bar is
    pinned to where that rail ends — so it has to know. Watching the class the
    view already toggles beats adding a call to the seven places that toggle it. */

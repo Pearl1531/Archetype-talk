@@ -82,12 +82,37 @@
   .card .stance.st-mid { border-left-color: var(--line); }
 
   .persona-id { display: flex; align-items: center; gap: var(--s-3); margin-bottom: var(--s-3); }
-  .avatar {
-    width: 40px; height: 40px; border-radius: 50%; flex: none; position: relative; overflow: hidden;
-    background: var(--text-soft); color: var(--bg-elev-2);
-    display: grid; place-items: center; font-size: var(--text-body); font-weight: 600;
-  }
-  .avatar img { position: absolute; inset: 0; width: 100%; height: 100%; background: var(--bg); z-index: 1; }
+  /* ── .face — a persona's face, everywhere (faceHtml, 02-parse-state.js).
+     A circle; the place it sits in sets only its size, and the primary
+     persona's ember. A drawn avatar stands on the bottom edge, a photo fills
+     the circle face-high, no picture shows initials sized to the circle. */
+  .face { position: relative; flex: none; display: grid; place-items: center; overflow: hidden;
+    width: 40px; height: 40px; border-radius: 50%; background: #E4DED2; color: var(--text);
+    container-type: inline-size; font-weight: 800; line-height: 1; }
+  .face img { position: absolute; object-fit: cover; }
+  .face img + .face-ini { display: none; }   /* the picture loaded: no initials behind it */
+  .face.is-photo img { inset: 0; width: 100%; height: 100%; object-position: center 25%; }
+  .face.is-drawn img { left: 3%; bottom: 0; width: 94%; height: 94%; object-position: bottom; }
+  .face-ini { font-size: 38cqi; letter-spacing: -0.02em; }
+  .face.is-initials { background: var(--bg-elev-2); border: 1.5px dashed var(--edge); }
+
+  /* ── .has-card-link — a card (or table row) that opens one thing, clickable
+     anywhere: its one real link (.card-link, the name or the question) is
+     stretched over the whole host, and every other button or link inside
+     stays on top of it and keeps its own job (Ask, a tooltip). The link stays
+     the keyboard stop, so Tab and Enter behave as on any link. */
+  .has-card-link { position: relative; cursor: pointer; }
+  .has-card-link .card-link { color: inherit; text-decoration: none; }
+  .has-card-link .card-link::before { content: ""; position: absolute; inset: 0; z-index: 0; border-radius: inherit; }
+  .has-card-link :is(a, button):not(.card-link) { position: relative; z-index: 1; }
+
+  /* ── .lvl-meter — how solid a persona is, everywhere (levelMeter, 06) */
+  .lvl-meter { display: inline-flex; align-items: center; gap: 8px; white-space: nowrap; font-family: var(--font-ui); font-size: var(--text-body);
+    font-weight: 600; letter-spacing: 0; text-transform: none; color: var(--text); font-variant-numeric: tabular-nums; cursor: help; }
+  .dx-lvl { display: flex; gap: 3px; }
+  .dx-lvl i { width: 13px; height: 6px; border-radius: 2px; background: #E4DED2; }
+  .dx-lvl i.on { background: var(--text); }
+  .dx-lvl i.on.hot { background: var(--accent); }
   .arch-icon { width: 48px; height: 48px; border-radius: 50%; flex: none; background: var(--bg);
     display: grid; place-items: center; color: var(--text-soft); }
   .arch-icon svg { width: 30px; height: 30px; }
@@ -280,12 +305,30 @@
     cursor: pointer; text-align: left; transition: background .12s;
   }
   .hypo-promote:hover { background: #D4F0DE; }
-  .hypo-promote-cell { display: inline-block; width: auto; margin: 0 0 0 6px; padding: 2px 8px; font-size: 14px; }
   .idea-pick-row .muted, .idea-field .muted { color: var(--text-dim); font-weight: 400; text-transform: none; }
-  .row-acts { display: inline-flex; gap: 4px; margin-left: 6px; }
-  .row-acts button { border: 1px solid var(--line); background: var(--bg-elev); border-radius: var(--r-sm);
-    width: 26px; height: 24px; cursor: pointer; font-size: 14px; line-height: 1; }
-  .row-acts button:hover { border-color: var(--text-dim); }
+  /* ── table cells that fit their content (TABLE_COLS 'fit'): one line, never broken */
+  .tableview td.td-fit { white-space: nowrap; }
+  .tableview .tag { white-space: nowrap; }
+
+  /* ── .row-menu — a row's actions behind ⋯ (rowMenuHtml, 13): the browser's
+     popover, placed by popPlace; items are full-width rows, danger last */
+  .row-menu { display: inline-flex; vertical-align: middle; }
+  .row-menu-btn { position: relative; width: 32px; height: 32px; display: inline-grid; place-items: center; border: 0; border-radius: var(--r-sm);
+    background: none; color: var(--text-dim); cursor: pointer; }
+  .row-menu-btn:hover, .row-menu-btn:focus-visible { background: var(--hover-bg); color: var(--text); }
+  .row-menu-btn.hint::after { content: ""; position: absolute; top: 5px; right: 5px; width: 7px; height: 7px; border-radius: 50%;
+    background: var(--accent); box-shadow: 0 0 0 2px var(--bg-elev); }
+  .row-menu-pop { position: fixed; inset: auto; margin: 0; min-width: 200px; padding: 6px; border: 1px solid var(--line); border-radius: 12px;
+    background: var(--bg-elev); box-shadow: var(--shadow); color: var(--text); }
+  .row-menu-pop:popover-open { display: flex; flex-direction: column; }
+  .row-menu-pop button { display: flex; align-items: center; gap: 10px; width: 100%; height: 38px; padding: 0 10px; border: 0; border-radius: 8px;
+    background: none; font: inherit; font-size: var(--fs-md); color: var(--text); text-align: left; white-space: nowrap; cursor: pointer; }
+  .row-menu-pop button:hover, .row-menu-pop button:focus-visible { background: var(--hover-bg); }
+  .row-menu-pop button svg { flex: none; color: var(--text-dim); }
+  .row-menu-pop button.danger { color: var(--danger-text, #B42318); }
+  .row-menu-pop button.danger svg { color: currentColor; }
+  .row-menu-pop button.danger:first-child, .row-menu-pop button + button.danger { margin-top: 4px; position: relative; }
+  .row-menu-pop button + button.danger::before { content: ""; position: absolute; left: 6px; right: 6px; top: -3px; border-top: 1px solid var(--line-soft); }
   .author-chip { text-transform: none; letter-spacing: 0; }
 
   /* ---------- workspace switcher (top-left, Capacities-style) ---------- */
@@ -350,5 +393,5 @@
   .lvl-3 { color: var(--warn-text); border-color: color-mix(in srgb, var(--warn) 40%, transparent); }
   .lvl-4, .lvl-5 { color: var(--accent-text); border-color: color-mix(in srgb, var(--accent, #ff4d00) 45%, transparent); background: var(--accent-soft); }
   body.lin-all .p-apple .pa-kicker { white-space: nowrap; }
-  .pa-kicker .lvl { margin-left: auto; }
+  .pa-kicker .lvl-meter { margin-left: auto; }
 

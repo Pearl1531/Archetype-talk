@@ -120,7 +120,7 @@ function hypoStatus(e){ const s=String(e.fm.status||'open').trim().toLowerCase()
 function hypoStatusChip(e){
   const s = hypoStatus(e);
   const tip = { open:'A live bet — L1 assumption, no evidence yet', promoted:'Gained research and became an Idea — kept as the thinking trail', rejected:'Disproven or dropped — kept so the team remembers why' }[s];
-  return `<span class="hypo-status ${s}" title="${esc(tip)}">${s}</span>`;
+  return `<span class="hypo-status ${s}" title="${esc(tr(tip))}">${esc(LANG==='pl' ? { open:'otwarta', promoted:'awansowana', rejected:'odrzucona' }[s] : s)}</span>`;
 }
 function hypoSourceIds(e){
   const ids=[];
@@ -179,8 +179,10 @@ function hypoAuthor(){
 function authorChip(e){
   const a = String(e.fm.author||'').trim();
   if(!a) return '<span class="muted">—</span>';
-  const ai = /^ai\b/i.test(a);
-  return `<span class="tag author-chip" title="${esc(a)}">${ai?'🤖':'👤'} ${esc(trim(a.replace(/\s*<[^>]*>/,''),24))}</span>`;
+  // one short line — "Claude" or the person's name; the whole credit (who approved it) on hover
+  const ai = /^ai\b/i.test(a), model = (a.match(/^ai\s*\(([^)]+)\)/i) || [])[1];
+  const label = ai ? (model || 'AI') : a.replace(/\s*<[^>]*>/, '').split(/\s+[—–-]\s+/)[0];
+  return `<span class="tag author-chip" title="${esc(a)}">${ai?'🤖':'👤'} ${esc(trim(label, 24))}</span>`;
 }
 async function deleteHypothesis(id){
   let e = ENTITIES[id]; if(!e || e.type!=='Hypothesis') return;
@@ -445,13 +447,5 @@ function archIconHtml(e, size){
   if(r && r.src) return `<div class="${cls}"><img src="${esc(r.src)}" alt="" loading="lazy" style="width:100%;height:100%;border-radius:50%" onerror="this.remove()"></div>`;
   const ic = ARCH_ICONS[String(e.fm.icon||'').trim()];
   return `<div class="${cls}">${ic || ICONS.Archetype}</div>`;
-}
-function avatarHtml(e, nm){
-  const r = picFor(e);
-  const img = r && r.src ? `<img src="${esc(r.src)}" alt="" loading="lazy" onerror="this.remove()">` : '';
-  // blocked external image: say why the initials are showing rather than leave
-  // it looking like a missing file (the switch itself lives in Settings)
-  const why = r && r.blocked ? ` title="Picture not shown — this file points at an image on ${esc(r.host)}. Allow external images in Settings ▸ Privacy &amp; network, or save the image into the repo and use a relative path."` : '';
-  return `<div class="avatar"${why}><span>${initialsFor(nm)}</span>${img}</div>`;
 }
 

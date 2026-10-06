@@ -63,7 +63,6 @@ function personaEditorialHtml(e){
   const uniq = t => [...new Map(all.filter(x=> x.e.type===t).map(x=> [x.e.id, x])).values()];
   const heard = uniq('Signal'), read = uniq('Evidence'), archs = peLinks(section(e.body,'Archetypes')).filter(x=> x.e.type==='Archetype');
   const { n: people, off } = personaParticipants(e, true);
-  const pic = picFor(e);
   const ideas = peLinks(section(e.body,'Ideas for this persona')).filter(x=> x.e.type==='IdeaForImprovement');
   const pairs = graphPairs(wsEntities());
   const nb = id => { const s = new Set(); pairs.forEach(([a,b])=>{ if(a===id) s.add(b); else if(b===id) s.add(a); }); return s; };
@@ -82,7 +81,7 @@ function personaEditorialHtml(e){
           <button type="button" class="dx-btn dx-btn-line dx-btn-sm" id="pPosterBtn">${tr('Poster')} ↗</button>
         </div>
       </div>
-      <div class="pe-portrait${prim?' prim':''}">${pic && pic.src ? `<img src="${esc(pic.src)}" alt="">` : `<span>${esc((first[0]||'?').toUpperCase())}</span>`}</div>
+      ${faceHtml(e, 'pe-portrait'+(prim?' prim':''), first, 'data-lean="6"')}
     </section>`;
 
   /* four facts */
@@ -93,7 +92,7 @@ function personaEditorialHtml(e){
       <div><span class="dx-fl">${tr('Sources')}${dxTip(tr('Heard {h} · Read {r}').replace('{h}', heard.length).replace('{r}', read.length), esc(tr('Solid = heard in your own sessions (signals). Striped = read in published research or data (evidence).')))}</span>
         <b class="pe-fact">${heard.length + read.length}</b><span class="dx-split"><i style="flex:${heard.length} 1 0"></i><i class="ev" style="flex:${read.length} 1 0"></i></span></div>
       <div><span class="dx-fl">${tr('How solid')}${dxTip(tr('How solid is a persona?'), peLevelTip(lv), 'right')}</span>
-        <span class="pe-lvl">${dxBars(lv,5)}</span><span class="pe-lvl-t">${esc(tr('{n} of 5').replace('{n}', lv))} — ${esc(tr(LEVEL_TEXT[lv][0]))}</span></div>
+        ${levelMeter(lv, '', true)}</div>
     </section>`;
 
   /* frustrations — with the relievers the researcher connected to each (the poster's `(→ …)` links) */
@@ -170,7 +169,7 @@ function personaEditorialWire(root, e){
   wireTalkButton(root, e, peFirst(e));
   wireVotes(root);
   wirePeek(root);
-  const pb = root.querySelector('#pPosterBtn'); if(pb) pb.onclick = ()=> posterOpen(e.id);
+  const pb = root.querySelector('#pPosterBtn'); if(pb) pb.onclick = ()=>{ location.hash = 'poster:' + e.id; };
   root.querySelectorAll('a.xref[data-goto]').forEach(a=> a.onclick = ev=>{ ev.preventDefault(); location.hash = '#'+a.dataset.goto; });
   root.querySelectorAll('[data-pe-edit]').forEach(b=> b.onclick = ()=> editSection(e, b.dataset.peEdit));
 }

@@ -485,7 +485,7 @@ function projectsLeave(to){
   projectsExit();
   const target = to || '';
   const cur = location.hash.replace(/^#/, '');
-  if(cur === target){ if(target === 'dashboard') dashboardEnter(); }
+  if(cur === target){ if(target === 'dashboard'){ dashboardEnter(); motionPage(); } }
   else { suppressRoute = false; location.hash = target; }   // hashchange → route() renders it
   if(typeof tourMaybeOpen === 'function') tourMaybeOpen();   // the first-run tour, held back while this screen was up
 }

@@ -19,6 +19,36 @@
   body.detail-open .topnav { left: 0; }
   body.projects-open .topnav, body.welcome-open .topnav, body.nav-open .topnav { display: none; }
 
+  /* The poster sits under the bar like any page (its Back and trail live
+     there); the bar lifts over it so the account menu still opens on top. */
+  body.poster-open .topnav { left: 0; z-index: 470; }
+  body.poster-open #posterView { top: var(--topbar-h); }
+
+  /* ← Back · Project / Section / Page — only on the pages below the rail
+     (15-topnav.js navTrail). The last crumb is where you are and gives way first. */
+  .topnav-trail { display: none; flex: 1; min-width: 0; align-items: center; gap: var(--s-3); }
+  body.detail-open .topnav-trail, body.poster-open .topnav-trail { display: flex; }
+  .nav-back {
+    flex: none; display: inline-flex; align-items: center; gap: 6px; height: 34px; padding: 0 12px 0 9px;
+    background: var(--bg-elev); border: 1px solid var(--line); border-radius: var(--r-md);
+    font-family: var(--font-ui); font-size: var(--fs-md); color: var(--text); cursor: pointer;
+    transition: border-color .12s, background .12s;
+  }
+  .nav-back:hover { border-color: var(--hover-border); background: var(--hover-bg); }
+  .topnav-trail ol { display: flex; align-items: center; min-width: 0; margin: 0; padding: 0; list-style: none; font-size: var(--fs-md); }
+  .topnav-trail li { display: flex; align-items: center; min-width: 0; white-space: nowrap; }
+  .topnav-trail li + li::before { content: '/'; color: var(--text-mute); padding: 0 2px; }
+  .nav-crumb { padding: 4px 6px; background: none; border: 0; border-radius: var(--r-sm);
+    font: inherit; color: var(--text-dim); cursor: pointer; }
+  .nav-crumb:hover { color: var(--text); background: var(--hover-bg); }
+  .nav-here { padding: 4px 6px; font-weight: 600; color: var(--text); overflow: hidden; text-overflow: ellipsis; }
+  @media (max-width: 600px) {
+    .nav-back span { display: none; }
+    .nav-back { padding: 0 9px; }
+    .topnav-trail li:first-child { display: none; }   /* the project; the section and page stay */
+    .topnav-trail li:nth-child(2)::before { content: none; }
+  }
+
   /* only what the bar actually covers moves down — never the rail */
   .main { padding-top: var(--topbar-h); }
   .detail { padding-top: var(--topbar-h); }

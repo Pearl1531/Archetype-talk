@@ -215,9 +215,7 @@ function openDetail(id){
   document.getElementById('editBtn').style.display = '';
   galleryView.style.display="none"; detailView.classList.add('active');
   syncLinTheme();
-  document.getElementById('crumbType').textContent = e.meta.label;
-  document.getElementById('crumbType').onclick = ()=>{ activeType=e.type; renderTabs(); renderGrid(searchInput.value); updatePageHead(); location.hash=''; };
-  document.getElementById('crumbHere').textContent = e.title;
+  navTrail([{ label: tr(e.meta.label), go: ()=> goTypeList(e.type) }, { label: e.title }], ()=> goTypeList(e.type));
   document.getElementById('dKicker').innerHTML =
     `<span class="type-badge">${ICONS[e.type]}${tr(e.meta.singular)}</span>${e.type==='Transcript'&&isExcluded(e)?`<span class="demo-badge exc-badge" title="${esc(tr('Out of sample stats, heard-from counts and AI analyses'))}">${tr('Excluded')}</span>`:''}${e.draft?`<span class="demo-badge draft-badge" title="${esc(tr('Local draft — lives in this browser until you connect the project folder'))}">${tr('Draft')}</span>`:''}${e.fm.demo?`<span class="demo-badge" title="${esc(tr('Illustrative example content, not real research'))}">${tr('Demo')}</span>`:''}`;
   const delBtn = document.getElementById('deleteDraftBtn');
@@ -440,7 +438,8 @@ function peStripTabled(md){
   return md.replace(/(\n---\s*){2,}/g, '\n---\n');
 }
 function closeDetail(){ detailView.classList.remove('active'); galleryView.style.display=""; window.scrollTo(0,0); }
-document.getElementById('backBtn').onclick=()=>{ location.hash=''; };
+// one level up from an entity: the list of its type, the way the rail opens it
+function goTypeList(type){ activeType=type; renderTabs(); renderGrid(searchInput.value); updatePageHead(); location.hash=''; }
 
 /* ---------- in-place editing (File System Access API — Chromium; user grants write access) ---------- */
 let EDITING = false, suppressRoute = false;

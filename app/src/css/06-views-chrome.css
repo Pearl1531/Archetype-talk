@@ -181,7 +181,7 @@
   .tableview tbody tr { cursor: pointer; }
   .tableview tbody tr:hover { background: var(--bg-elev-2); }
   .tableview .td-title { font-weight: 600; color: var(--text); display: flex; align-items: center; gap: 10px; }
-  .tableview .td-title .avatar { width: 26px; height: 26px; font-size: 14px; }
+  .tableview .td-title .face { width: 26px; height: 26px; }
   .tableview .muted { color: var(--text-dim); }
   .crumbs .spacer { flex: 1; }
   .editor {

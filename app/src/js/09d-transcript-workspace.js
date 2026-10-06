@@ -267,7 +267,7 @@ function trMetaHtml(e){
   const score = p => peLinks(p.body).filter(l=> l.e.id===e.id || sigIds.has(l.e.id)).length;
   const per = wsEntities().filter(p=> p.type==='Persona').map(p=> [p, score(p)]).filter(([,n])=> n).sort((a,b)=> b[1]-a[1])[0];
   const bits = [];
-  if(per) bits.push(`<a class="xref tr-who" data-goto="${per[0].id}">${dxPortrait(per[0], 'tr-face')}${esc(peFirst(per[0]))}</a>`);
+  if(per) bits.push(`<a class="xref tr-who" data-goto="${per[0].id}">${faceHtml(per[0], 'tr-face')}${esc(peFirst(per[0]))}</a>`);
   if(e.fm.date) bits.push(`<span>${esc(String(e.fm.date))}</span>`);
   if(e.fm.method) bits.push(`<span>${esc(String(e.fm.method))}</span>`);
   if(isExcluded(e)) return `<span class="tr-meta">${bits.join('<i aria-hidden="true">·</i>')}</span>`;   // out of AI analyses: nothing to extract

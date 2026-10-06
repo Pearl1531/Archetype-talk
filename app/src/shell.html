@@ -38,6 +38,8 @@
      a copy of everything, and the way out. Keeping these three out of the left
      rail leaves that rail as pure navigation (and room for more of it). -->
 <div class="topnav" id="topNav">
+  <!-- Back + where you are, on the pages below the rail (an entity, its poster) — 15-topnav.js -->
+  <nav class="topnav-trail" id="navTrail" aria-label="Breadcrumb" data-i18n-aria="Breadcrumb"></nav>
   <button class="topnav-ava" id="avatarBtn" aria-haspopup="menu" aria-expanded="false" aria-label="Account menu" data-i18n-aria="Account menu"><span id="avatarInitials">A</span></button>
   <div class="topnav-menu" id="avatarMenu" role="menu" style="display:none">
     <div class="topnav-who">
@@ -261,11 +263,6 @@
 <div class="detail" id="detailView">
   <div class="detail-wrap">
     <div class="crumbs">
-      <button class="crumb" id="backBtn" data-i18n="Graph">Graph</button>
-      <span class="sep">/</span>
-      <button class="crumb" id="crumbType"></button>
-      <span class="sep">/</span>
-      <span class="here" id="crumbHere"></span>
       <span class="spacer"></span>
       <button class="btn btn-ghost btn-sm" id="mapHereBtn" title="See this entity in the context of its connections" data-i18n-title="See this entity in the context of its connections" data-i18n="◎ Map">◎ Map</button>
       <button class="btn btn-ghost btn-sm" id="deleteDraftBtn" style="display:none" title="Delete this local draft" data-i18n-title="Delete this local draft" data-i18n="Delete draft">Delete draft</button>

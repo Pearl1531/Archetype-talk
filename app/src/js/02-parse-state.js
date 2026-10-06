@@ -239,6 +239,27 @@ function picResolve(raw, file){
   return hit ? { src: hit } : null;
 }
 function picFor(e, field){ return e ? picResolve(e.fm && e.fm[field||'picture'], e.file) : null; }
+// a drawn avatar (SVG) stands on a portrait circle's bottom edge; a photo fills the circle
+function picIsPhoto(e, pic){
+  return !!(pic && pic.src) && !/^data:image\/svg/i.test(pic.src) && !/\.svg$/i.test(String(e.fm.picture||'').split('#')[0].trim());
+}
+/* A persona's face — the ONE renderer for every place a persona shows up:
+   the Overview (cards, hero cast, Ask menu), the persona page, the Personas
+   tab, tables, the poster, the backlog, a transcript. `cls` only sizes and
+   colours it; the component decides the rest (CSS: `.face`, 03-cards-gallery):
+   a drawn avatar stands on the circle's bottom edge (.is-drawn), a photo fills
+   it (.is-photo), no picture shows initials (.is-initials). The picture comes
+   first and hides the initials, so an image that fails to load falls back to
+   them. `attrs` adds attributes (data-lean on the persona page). No entity (a
+   backlog row naming someone not in the graph) → the initials of `name`. */
+function faceHtml(e, cls, name, attrs){
+  const pic = e ? picFor(e) : null, src = pic && pic.src;
+  const nm = name || (e ? e.title.split(/\s+[—–-]\s+/)[0].trim() : '?');
+  const kind = src ? (picIsPhoto(e, pic) ? 'is-photo' : 'is-drawn') : 'is-initials';
+  // an external picture the privacy setting blocks: say why the initials are showing
+  const why = pic && pic.blocked ? ` title="${esc(tr('Picture not shown — this file points at an image on {h}. Allow external images in Settings ▸ Privacy & network, or save the image into the repo and use a relative path.').replace('{h}', pic.host))}"` : '';
+  return `<span class="face ${kind}${cls ? ' '+cls : ''}"${why}${attrs ? ' '+attrs : ''}>${src ? `<img src="${esc(src)}" alt="" loading="lazy" onerror="this.remove()">` : ''}<span class="face-ini" aria-hidden="true">${esc(initialsFor(nm) || '?')}</span></span>`;
+}
 
 /* "Us" — our own product, the anchor competitors are measured against. Parsed
    from Product Context.md (root doc); powers the market-map anchor node and the

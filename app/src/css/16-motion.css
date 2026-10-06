@@ -1,0 +1,90 @@
+  /* ── Motion — the shared vocabulary ─────────────────────────────────────
+     One way things move, on every page: a page's blocks rise as they scroll
+     into view (.dx-rv, a few at a time, 45ms apart), the items inside a
+     block follow one after another (.dx-st), numbers count up and bars draw
+     once their block is in view (dxCount, 12c-motion.js), and what sits under
+     the pointer lifts a little toward you. Transforms and opacity only.
+
+     The "before" states exist only under .dx-motion, which motionReveal sets
+     when a page is ENTERED (the router, a rail tab) and motion is allowed —
+     so with JS off, with reduced motion, or on a re-render in place (a save,
+     a highlight, typing in the filter) everything is simply there. Arrivals
+     use animations on `translate`; hovers use transitions on `translate` or
+     `transform` of other elements, so the two never fight over a property.
+     The Overview adds its own choreography on top (12-project-home.css). */
+  :root { --ease-out: cubic-bezier(.16, 1, .3, 1); --ease-spring: cubic-bezier(.34, 1.56, .64, 1); }
+  .dx-w, .dx-w > span { display: inline-block; max-width: 100%; }
+  .dx-w { overflow: hidden; vertical-align: top; padding-bottom: .14em; margin-bottom: -.14em; }
+
+  @media (prefers-reduced-motion: no-preference) {
+    @keyframes dxUp { from { opacity: 0; translate: 0 22px; } }
+    @keyframes dxRise { from { transform: translateY(108%); } }
+    @keyframes dxPop { from { transform: scale(0); } }
+    @keyframes dxCastIn { from { opacity: 0; scale: .55; } }
+    @keyframes moFade { from { opacity: 0; } }
+    @keyframes moPop { from { opacity: 0; scale: .96; translate: 0 10px; } }
+
+    /* arrivals */
+    .dx-motion .dx-rv:not(.in), .dx-motion .dx-rv:not(.in) .dx-st { opacity: 0; }
+    .dx-motion .dx-rv.in { animation: dxUp .85s var(--ease-out) backwards; animation-delay: calc(var(--b, 0) * 45ms); }
+    .dx-motion .dx-rv.in .dx-st { animation: dxUp .75s var(--ease-out) backwards; animation-delay: calc(.12s + var(--i, 0) * 60ms); }
+
+    /* bars draw left to right once their block is in view */
+    .dx-motion .dx-rv :is(.dx-track i, .dx-split i, .dx-lvl i) { transform: scaleX(0); transform-origin: left; transition: transform 1.1s var(--ease-out) .35s; }
+    .dx-motion .dx-rv .dx-lvl i { transition-duration: .5s; }
+    .dx-motion .dx-rv .dx-lvl i:nth-child(2) { transition-delay: .42s; }
+    .dx-motion .dx-rv .dx-lvl i:nth-child(3) { transition-delay: .49s; }
+    .dx-motion .dx-rv .dx-lvl i:nth-child(4) { transition-delay: .56s; }
+    .dx-motion .dx-rv .dx-lvl i:nth-child(5) { transition-delay: .63s; }
+    .dx-motion .dx-rv.in :is(.dx-track i, .dx-split i, .dx-lvl i) { transform: none; }
+
+    /* a page's name arrives word by word out of its own mask and its dot pops —
+       the Overview's title (.dx-motion, the grid) and a persona's name
+       (.mo-enter, set on the hero itself so a re-render in place never replays it) */
+    :is(.dx-motion, .mo-enter) .dx-w > span { animation: dxRise 1.05s var(--ease-out) backwards; animation-delay: calc(.12s + var(--i) * 90ms); }
+    :is(.dx-motion .dx-title, .mo-enter .pe-name) .dx-dot, .mo-enter #pageTitle::after { display: inline-block; animation: dxPop .7s var(--ease-spring) backwards; animation-delay: calc(.35s + var(--n, 1) * 90ms); }
+
+    /* the persona page's hero = the Overview's hero, one person: kicker, name,
+       the rest rising after it, and the portrait landing like the cast does */
+    .mo-enter .pe-kicker { animation: dxUp .8s var(--ease-out) backwards .05s; }
+    .mo-enter :is(.pe-role, .pe-arch) { animation: dxUp .8s var(--ease-out) backwards .38s; }
+    .mo-enter .pe-actions { animation: dxUp .8s var(--ease-out) backwards .5s; }
+    .mo-enter .pe-portrait { animation: dxCastIn 1s var(--ease-spring) backwards .3s; }
+
+    /* the Personas tab: its title rises like a persona's name (its dot is the
+       page head's ::after, popped by the rule above), the subtitle and the bars follow */
+    .mo-enter #pageSub { animation: dxUp .8s var(--ease-out) backwards .3s; }
+    .mo-enter ~ #newBar { animation: dxUp .8s var(--ease-out) backwards .42s; }
+    .mo-enter ~ #filterBar { animation: dxUp .8s var(--ease-out) backwards .5s; }
+
+    /* ── the lean — a persona card's gesture, ONE component: anything with
+       data-lean="<deg>" (Overview and Personas-tab cards, the persona
+       portrait) leans toward the pointer (--rx/--ry, 12c-motion.js), lifts,
+       lights where the cursor is (--mx/--my), and the face inside it turns
+       and takes the ink ring. A face that leans itself does the same at once. */
+    [data-lean] { --lean-shadow: 0 1px 2px rgba(10,10,10,.06), 0 28px 48px -26px rgba(10,10,10,.38);
+      position: relative; isolation: isolate; transform: perspective(900px) rotateX(var(--rx, 0deg)) rotateY(var(--ry, 0deg));
+      transition: transform .7s var(--ease-out), translate .5s var(--ease-out), box-shadow .5s var(--ease-out), border-color .15s; }
+    [data-lean]::after { content: ""; position: absolute; inset: 0; z-index: -1; border-radius: inherit; pointer-events: none; opacity: 0;
+      background: radial-gradient(260px circle at var(--mx, 50%) var(--my, 50%), rgba(255,77,0,.11), transparent 68%); transition: opacity .35s; }
+    .face[data-lean]::after { z-index: 2; background: radial-gradient(160px circle at var(--mx, 50%) var(--my, 50%), rgba(255,255,255,.3), transparent 66%); }
+    [data-lean] .face, .face[data-lean] { transition: transform .7s var(--ease-out), translate .5s var(--ease-out), scale .65s var(--ease-spring), rotate .65s var(--ease-spring), box-shadow .4s var(--ease-out); }
+
+    /* dialogs: the card rises into place over a fading scrim */
+    .modal[open] > * { animation: moPop .38s var(--ease-out); }
+    .modal[open]::backdrop { animation: moFade .3s ease-out; }
+
+    /* what can lift, lifts the same way */
+    .card, .bl-card, .tr-card, .pj-card { transition: translate .45s var(--ease-out), box-shadow .45s var(--ease-out), border-color .15s, background .15s; }
+  }
+
+  @media (hover: hover) and (prefers-reduced-motion: no-preference) {
+    body.lin-all .card:hover, .pj-card:hover { translate: 0 -3px; box-shadow: 0 1px 2px rgba(10,10,10,.05), 0 20px 36px -24px rgba(10,10,10,.32); }
+    body.lin-all [data-lean]:hover, [data-lean]:hover { translate: 0 -6px; transition-duration: .25s, .5s, .5s, .15s; box-shadow: var(--lean-shadow); }
+    [data-lean]:hover::after { opacity: 1; }
+    [data-lean]:hover .face { scale: 1.08; rotate: -5deg; box-shadow: 0 0 0 4px var(--bg-elev), 0 0 0 5.5px var(--text); }
+    .face[data-lean]:hover { scale: 1.03; rotate: -4deg; box-shadow: 0 0 0 6px var(--bg), 0 0 0 8px var(--text), 0 30px 50px -28px rgba(10,10,10,.4); }
+    :is([data-lean], .pe-actions) .dx-btn-line:hover { background: var(--text); color: var(--bg-elev); }   /* Ask / Poster fill with ink */
+    .bl-card:not(.dragging):not(.sel):hover { translate: 0 -2px; box-shadow: 0 1px 2px rgba(10,10,10,.05), 0 16px 28px -20px rgba(10,10,10,.3); }
+    .tr-card:not(.lit):hover { translate: 0 -2px; box-shadow: 0 14px 26px -20px rgba(10,10,10,.28); }
+  }

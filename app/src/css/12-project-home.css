@@ -34,17 +34,16 @@
   .dx-btn-inv { border: 1.5px solid var(--bg-elev); color: var(--bg-elev); font-weight: 600; height: 46px; }
   .dx-btn-inv:hover { background: rgba(255,255,255,.08); }
 
-  /* ⓘ popovers: hover or keyboard focus opens them */
+  /* ⓘ popovers: hover or keyboard focus opens them — in the top layer
+     (popover="manual", placed by dxTipShow), so nothing that clips can cut them */
   .dx-tip { position: relative; display: inline-flex; }
   .dx-tip-btn { width: 26px; height: 26px; margin: -5px 0; border-radius: 50%; display: inline-flex; align-items: center; justify-content: center; color: var(--text-dim); cursor: help; }
   .dx-tip-btn:hover { color: var(--text); }
-  .dx-tip-pop { display: none; position: absolute; left: -8px; top: 30px; z-index: 30; width: 320px; padding: 14px 16px; border-radius: 12px;
+  .dx-tip-pop { position: fixed; inset: auto; margin: 0; border: 0; overflow: visible; width: 320px; max-width: calc(100vw - 24px); padding: 14px 16px; border-radius: 12px;
     background: #0A0A0A; color: #C9C5BC; font-size: var(--text-body); font-weight: 400; line-height: 1.45; letter-spacing: 0; text-transform: none;
     text-align: left; white-space: normal; box-shadow: 0 18px 40px -12px rgba(10,10,10,.45); }
   .dx-tip-pop b { display: block; margin-bottom: 4px; color: #FFFFFF; font-size: var(--fs-md); font-weight: 700; }
   .dx-tip-pop b ~ b, .dx-tip-pop :not(:first-child) b { display: inline; color: #FFFFFF; font-size: inherit; }
-  .dx-tip-r .dx-tip-pop { left: auto; right: -8px; }
-  .dx-tip:hover .dx-tip-pop, .dx-tip:focus-within .dx-tip-pop { display: block; }
 
   /* menus (Ask a persona, More) */
   .dx-menu-wrap { position: relative; }
@@ -56,12 +55,9 @@
     color: var(--text); text-decoration: none; font-size: var(--fs-md); text-align: left; white-space: nowrap; }
   .dx-menu a:hover, .dx-menu button:hover { background: var(--bg-elev-2); }
 
-  /* faces */
-  .dx-face, .dx-face-md, .dx-face-xs { display: flex; align-items: flex-end; justify-content: center; overflow: hidden; border-radius: 50%; background: #E4DED2; flex: none; }
-  .dx-face img, .dx-face-md img, .dx-face-xs img { width: 94%; height: 94%; object-fit: cover; object-position: bottom; }
-  .dx-noimg { align-items: center; background: var(--bg-elev-2); border: 2px dashed var(--edge); font-weight: 800; color: var(--text); }
-  .dx-face-md { width: 72px; height: 72px; font-size: 26px; }
-  .dx-face-xs { width: 28px; height: 28px; font-size: 13px; }
+  /* faces are .face (faceHtml, 03-cards-gallery.css) — only their sizes here */
+  .dx-face-md { width: 72px; height: 72px; }
+  .dx-face-xs { width: 28px; height: 28px; }
 
   /* hero */
   .dx-hero { display: grid; grid-template-columns: minmax(0, 1fr) 440px; gap: 32px; align-items: end; }
@@ -73,7 +69,7 @@
   .dx-actions { margin-top: 36px; display: flex; gap: 10px; align-items: center; flex-wrap: wrap; }
   .dx-cast { position: relative; height: 420px; }
   .dx-cast > a { position: absolute; display: block; border-radius: 50%; text-decoration: none; color: var(--text); }
-  .dx-cast .dx-face { width: 100%; height: 100%; font-size: 40px; }
+  .dx-cast .dx-face { width: 100%; height: 100%; }
   .dx-cast-0 { left: 0; top: 0; width: 280px; height: 280px; }
   .dx-cast-0 .dx-face { background: var(--accent); }
   .dx-cast-1 { left: 262px; top: 110px; width: 170px; height: 170px; box-shadow: 0 0 0 6px var(--bg); }
@@ -88,7 +84,7 @@
   .dx-of { color: var(--edge); }
   .dx-fs { font-size: var(--text-body); color: var(--text-dim); }
   .dx-fs.ok { color: #1F7A4D; font-weight: 600; }
-  .dx-link { color: var(--text); font-weight: 600; text-decoration: underline; text-underline-offset: 3px; }
+  .dx-facts .dx-btn { align-self: flex-start; margin-top: 2px; }   /* a button in a fact cell keeps its own width */
   .dx-split { display: flex; height: 8px; gap: 2px; margin-top: 4px; }
   .dx-split i { background: var(--text); border-radius: 2px 0 0 2px; min-width: 2px; }
   .dx-split i.ev { border-radius: 0 2px 2px 0; background: repeating-linear-gradient(135deg, var(--text) 0 2px, transparent 2px 5px); box-shadow: inset 0 0 0 1.5px var(--text); }
@@ -103,11 +99,6 @@
   .dx-pc-name { font-size: 36px; font-weight: 800; letter-spacing: -0.05em; line-height: 1; color: var(--text); text-decoration: none; }
   .dx-pc-desc { color: var(--text-soft); font-size: var(--fs-md); display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; min-height: 2.9em; }
   .dx-pc-foot { margin-top: auto; display: flex; align-items: center; justify-content: space-between; gap: 10px; }
-  .dx-pc-lvl { display: flex; align-items: center; gap: 8px; font-size: var(--text-body); font-weight: 600; font-variant-numeric: tabular-nums; }
-  .dx-lvl { display: flex; gap: 3px; }
-  .dx-lvl i { width: 13px; height: 6px; border-radius: 2px; background: #E4DED2; }
-  .dx-lvl i.on { background: var(--text); }
-  .dx-lvl i.on.hot { background: var(--accent); }
 
   /* research health */
   .dx-health { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); overflow: hidden; }
@@ -140,18 +131,26 @@
   .dx-who { color: var(--text-dim); }
   .dx-sw { display: inline-block; width: 9px; height: 9px; border-radius: 2px; margin-right: 6px; background: var(--text); }
   .dx-sw.ember { background: var(--accent); }
-  .dx-ses-card { padding: 24px 24px 18px; }
-  .dx-ses-plot { position: relative; height: 140px; }
-  .dx-ses-axis { position: absolute; left: 0; right: 0; bottom: 0; display: flex; justify-content: space-between; padding-top: 6px;
-    border-top: 1.5px solid var(--text); font-family: var(--font-mono); font-size: var(--text-caption); color: var(--text-dim); }
-  .dx-ses { position: absolute; bottom: 26px; width: 0; height: var(--h); text-decoration: none; }
-  .dx-ses-stem { position: absolute; left: -1px; bottom: 0; width: 2px; height: 100%; background: var(--text); }
-  .dx-ses-dot { position: absolute; left: -6px; top: -12px; width: 12px; height: 12px; border-radius: 50%; background: var(--text); }
-  .dx-ses.test .dx-ses-dot { border-radius: 3px; }
-  .dx-ses.ex .dx-ses-stem { background: none; border-left: 2px dotted var(--edge); }
-  .dx-ses.ex .dx-ses-dot { background: var(--bg-elev); border: 2px dashed var(--text); }
-  .dx-ses:first-child .dx-ses-dot { background: var(--accent); }
-  .dx-ses-lbl { position: absolute; left: 0; top: -32px; transform: translateX(-50%); font-size: var(--text-caption); font-weight: 600; color: var(--text); white-space: nowrap; }
+  /* fresh research — the Revolut-style line (dxFresh / dxFreshWire, 13) */
+  .dx-fr { padding: 24px 24px 18px; display: flex; flex-direction: column; gap: 14px; outline: none; }
+  .dx-fr:focus-visible { box-shadow: 0 0 0 2px var(--text); }
+  .dx-fr-head { display: grid; grid-template-columns: auto 1fr; column-gap: 10px; row-gap: 4px; align-items: baseline; min-height: 74px; }
+  .dx-fr-v { font-size: 44px; font-weight: 800; line-height: 1; letter-spacing: -0.04em; color: var(--text); font-variant-numeric: tabular-nums; }
+  .dx-fr-unit { font-size: var(--fs-md); font-weight: 600; color: var(--text-dim); }
+  .dx-fr-when { grid-column: 1 / -1; font-size: var(--text-body); font-weight: 700; color: var(--text); }
+  .dx-fr-what { grid-column: 1 / -1; font-size: var(--text-body); color: var(--text-soft); }
+  .dx-fr-plot { position: relative; height: 160px; cursor: crosshair; touch-action: pan-y; }
+  .dx-fr-plot svg { position: absolute; inset: 0; width: 100%; height: 100%; overflow: visible; }
+  .dx-fr-area { fill: url(#dxFrFill); }
+  .dx-fr-line { fill: none; stroke: var(--text); stroke-width: 2; stroke-linejoin: round; vector-effect: non-scaling-stroke; }
+  .dx-fr-dot { position: absolute; width: 10px; height: 10px; margin: -5px 0 0 -5px; border-radius: 50%; background: var(--text); box-shadow: 0 0 0 2px var(--bg-elev); }
+  .dx-fr-dot.down { background: var(--accent); }
+  .dx-fr-dot.mix { background: var(--bg-elev); box-shadow: inset 0 0 0 2.5px var(--accent), 0 0 0 2px var(--bg-elev); }
+  .dx-fr-dot.on { transform: scale(1.6); }
+  .dx-fr-cursor { position: absolute; top: 0; bottom: 0; width: 0; border-left: 1.5px dashed var(--edge); opacity: 0; pointer-events: none; }
+  .dx-fr.scrub .dx-fr-cursor { opacity: 1; }
+  .dx-fr-axis { display: flex; justify-content: space-between; padding-top: 8px; border-top: 1.5px solid var(--text);
+    font-family: var(--font-mono); font-size: var(--text-caption); color: var(--text-dim); }
 
   /* open questions */
   .dx-oq td { font-weight: 600; vertical-align: middle; }
@@ -173,4 +172,60 @@
     .dx-facts > div:nth-child(3) { border-left: 0; padding-left: 0; }
     .dx-ht:nth-child(3) { border-left: 0; }
     .dx-pair { grid-template-columns: minmax(0, 1fr); }
+  }
+
+  /* ── Motion, the Overview's own part ─────────────────────────────────────
+     The shared vocabulary — sections rising as they scroll in (.dx-rv /
+     .dx-st), numbers counting, bars drawing, the easing tokens — lives in
+     16-motion.css for every page, and so does the title rising word by word
+     out of its own mask (shared with the persona page). What is here is this
+     page's choreography: the cast landing and breathing, the band opening, the session stems, the persona-card tilt. */
+
+  @media (prefers-reduced-motion: no-preference) {
+    @keyframes dxFloat { 50% { transform: translateY(-7px); } }
+
+    /* arrivals — the hero choreographs itself, every later section rises as it scrolls in */
+    .dx-motion .dx-kicker { animation: dxUp .8s var(--ease-out) backwards .05s; }
+    .dx-motion .dx-actions { animation: dxUp .8s var(--ease-out) backwards .5s; }
+    .dx-motion .dx-cast > a { animation: dxCastIn 1s var(--ease-spring) backwards; animation-delay: calc(.3s + var(--i) * 120ms); }
+    .dx-motion .dx-band.dx-rv { clip-path: inset(0 7% round 20px); transition: clip-path 1.1s var(--ease-out) .1s; }
+    .dx-motion .dx-band.dx-rv.in { clip-path: inset(0 0 round 20px); }
+
+
+    /* the cast breathes, out of step, and drifts against the pointer by depth */
+    .dx-cast-0 { --i: 0; --d: 14; } .dx-cast-1 { --i: 1; --d: -10; } .dx-cast-2 { --i: 2; --d: 18; } .dx-cast-3 { --i: 3; --d: -16; }
+    .dx-cast > a { translate: calc(var(--hx, 0) * var(--d) * 1px) calc(var(--hy, 0) * var(--d) * 1px);
+      transition: translate .7s var(--ease-out), scale .5s var(--ease-spring); }
+    .dx-cast .dx-face { animation: dxFloat 7s ease-in-out infinite; animation-delay: calc(var(--i) * -1.75s); }
+    .dx-cast .dx-face img { transition: transform .7s var(--ease-out); }
+
+    .dx-btn { transition: background .25s, color .25s, border-color .25s, filter .25s, transform .45s var(--ease-spring), translate .35s var(--ease-out); }
+    .dx-btn:active { transform: scale(.96); }
+    .dx-btn-ember { position: relative; isolation: isolate; overflow: hidden; translate: var(--tx, 0) var(--ty, 0); }
+    .dx-btn-ember::after { content: ""; position: absolute; inset: 0; z-index: -1; pointer-events: none;
+      background: linear-gradient(105deg, transparent 30%, rgba(255,255,255,.5) 50%, transparent 70%);
+      transform: translateX(-130%); transition: transform .9s var(--ease-out); }
+
+    .dx-table tbody tr { transition: background .2s; }
+
+    /* the fresh-research line draws itself left to right, then its dots land */
+    .dx-motion .dx-rv .dx-fr-plot svg { clip-path: inset(0 100% 0 0); transition: clip-path 1.6s var(--ease-out) .3s; }
+    .dx-motion .dx-rv.in .dx-fr-plot svg { clip-path: inset(0 0 0 0); }
+    .dx-motion .dx-rv .dx-fr-dot { scale: 0; transition: scale .5s var(--ease-spring), transform .25s var(--ease-spring); transition-delay: calc(.6s + var(--i) * 45ms), 0s; }
+    .dx-motion .dx-rv.in .dx-fr-dot { scale: 1; }
+    .dx-fr-dot { transition: transform .25s var(--ease-spring); }
+    .dx-fr-cursor { transition: left .18s var(--ease-out), opacity .2s; }
+  }
+
+  /* hovers — pointer devices only */
+  @media (hover: hover) and (prefers-reduced-motion: no-preference) {
+    .dx-cast > a:hover { scale: 1.06; z-index: 2; }
+    .dx-cast > a:hover .dx-face img { transform: translateY(-3%) scale(1.05); }
+    .dx-band .dx-btn-ember:hover::after { transform: translateX(130%); }   /* the hero's buttons stay still */
+
+    /* a persona card's gesture is the lean component (data-lean, 16-motion.css);
+       only the primary card's keyline has to survive its hover shadow */
+    .dx-pc.prim[data-lean]:hover { box-shadow: inset 0 0 0 1.5px var(--text), var(--lean-shadow); }
+
+    .dx-table tbody tr:hover { background: var(--bg); }
   }
