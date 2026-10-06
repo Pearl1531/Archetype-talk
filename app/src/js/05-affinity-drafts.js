@@ -352,7 +352,10 @@ function closeIdeaForm(){ document.getElementById('ideaModal').close(); IDEA=nul
    first) with their names beside them, flipped left near the right edge, so
    nothing stacks. A click opens a side panel (who brought it up, in their
    words, the way to the profile) instead of leaving the map; "Mentioned by"
-   lights only what one persona's participants named. Phones get a list. */
+   lights only what one persona's participants named. Dragging a dot sideways
+   moves it to another market column — the researcher's call, so it asks first,
+   writes proximity: into the file (keeping the reasoning comment beside it)
+   and offers Undo. Phones get a list. */
 const MAP_BANDS = [['indirect', 'TAM — indirect'], ['adjacent', 'SAM — adjacent'], ['direct', 'SOM — direct (our segment)']];
 let MAP_SEL = null, MAP_PERSONA = null, MAP_LIST = [];
 const mapIdsOf = names => new Set([].concat(names||[]).map(t=> byBasename[String(t).replace(/\.md$/i,'').toLowerCase()]).filter(id=> ENTITIES[id] && ENTITIES[id].type==='Transcript' && !isExcluded(ENTITIES[id])));
@@ -365,6 +368,23 @@ function personaTranscriptIds(p){   // a persona's own transcripts: linked direc
     }
   };
   add(p.body, true); return ids;
+}
+async function mapMoveProximity(c, prox){
+  const cur = String(c.fm.proximity||'').trim().toLowerCase();
+  if(prox === cur){ renderMap(MAP_LIST); return; }
+  const name = k=> tr((MAP_BANDS.find(b=> b[0]===k) || [, 'Proximity not set'])[1]);
+  ppDialog({
+    title: tr('Move {name}?').replace('{name}', c.title),
+    body: `<p>${esc(tr('From {a} to {b}. How close a competitor is to your market is your call as the researcher — it is written into the file as proximity: {v}.').replace('{a}', name(cur)).replace('{b}', name(prox)).replace('{v}', prox))}</p>`,
+    ok: tr('Move'), check: ()=> '',
+    run: async ()=>{
+      const w = await ensureWritable(c); if(!w) return;
+      const why = (w.md.match(/^proximity:[^#\n]*(#.*)$/m) || [])[1];   // the researcher's one-line reasoning stays
+      if(await saveEntityText(w, setFmField(w.md, 'proximity', prox + (why ? '   ' + why : ''))))
+        toast(tr('Moved to {b} ✓').replace('{b}', name(prox)), { label: tr('Undo'), fn: undoLastSave }, 8000, c.title);
+    },
+  });
+  document.getElementById('ppModal').addEventListener('close', ()=> renderMap(MAP_LIST), { once: true });   // cancelled: the dot goes back
 }
 function mapSide(c, N){
   const m = competitorMentions(c), prox = PROX_LABEL[String(c.fm.proximity||'').trim().toLowerCase()];
@@ -437,5 +457,27 @@ function renderMap(list){
   card.querySelectorAll('.map-chip').forEach(b=> b.onclick = ()=>{ MAP_PERSONA = b.dataset.p || null; again(); });
   card.querySelectorAll('[data-goto]').forEach(a=> a.onclick = ()=>{ location.hash = '#'+a.dataset.goto; });
   const x = card.querySelector('.map-side-x'); if(x) x.onclick = ()=>{ MAP_SEL = null; again(); };
+  // drag a dot sideways (mouse or pen) to move it to another market column; a drag is not a click
+  const plot = card.querySelector('.map-plot');
+  card.querySelectorAll('.map-node[data-c]').forEach(n=> n.onpointerdown = ev=>{
+    if(ev.button !== 0 || ev.pointerType === 'touch') return;
+    const r = plot.getBoundingClientRect(), x0 = ev.clientX, left0 = parseFloat(n.style.left);
+    const bandAt = cx => Math.max(0, Math.min(2, Math.floor((cx - r.left) / r.width * 3)));
+    let moved = false;
+    const move = e2=>{
+      if(!moved && Math.abs(e2.clientX - x0) < 6) return;
+      if(!moved){ moved = true; n.classList.add('drag'); }
+      n.style.left = Math.max(0, Math.min(100, left0 + (e2.clientX - x0) / r.width * 100)) + '%';
+      plot.dataset.band = bandAt(e2.clientX);
+    };
+    const up = e2=>{
+      removeEventListener('pointermove', move); removeEventListener('pointerup', up);
+      if(!moved) return;
+      n.addEventListener('click', e3=> e3.stopImmediatePropagation(), { capture: true, once: true });
+      delete plot.dataset.band;
+      mapMoveProximity(ENTITIES[n.dataset.c], MAP_BANDS[bandAt(e2.clientX)][0]);
+    };
+    addEventListener('pointermove', move); addEventListener('pointerup', up);   // on the window: a fast drag leaves the dot behind
+  });
   card.onkeydown = ev=>{ if(ev.key==='Escape' && MAP_SEL){ ev.stopPropagation(); MAP_SEL = null; again(); } };
 }

@@ -1353,6 +1353,11 @@ const PL = {
   'TAM — indirect': 'TAM — pośredni', 'SAM — adjacent': 'SAM — sąsiedni', 'SOM — direct (our segment)': 'SOM — bezpośredni (nasz segment)',
   'How to read the map': 'Jak czytać tę mapę',
   'Mentioned by': 'Wspominane przez',
+  'Move {name}?': 'Przenieść {name}?',
+  'Move': 'Przenieś',
+  'Moved to {b} ✓': 'Przeniesione do {b} ✓',
+  'From {a} to {b}. How close a competitor is to your market is your call as the researcher — it is written into the file as proximity: {v}.':
+    'Z {a} do {b}. To, jak blisko Twojego rynku jest konkurent, to decyzja badacza — trafi do pliku jako proximity: {v}.',
   'Everyone': 'Wszyscy',
   'Who brought it up': 'Kto wspomniał',
   'In their words': 'Ich słowami',

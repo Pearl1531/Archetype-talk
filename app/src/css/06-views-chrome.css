@@ -48,6 +48,11 @@
   .map-node.zero .map-tile { border-style: dashed; box-shadow: none; opacity: .8; }
   .map-node.zero .cap { color: var(--text-dim); border-style: dashed; }
   .map-node.dim { opacity: .22; }
+  .map-node.drag { z-index: 5; cursor: grabbing; transition: none; }
+  .map-node.drag .map-tile { box-shadow: 0 12px 24px -10px rgba(10,10,10,.4); }
+  /* while a dot is dragged, the column it would land in lights up */
+  .map-plot[data-band]::before { content: ""; position: absolute; top: 0; bottom: 0; width: 33.33%; background: var(--accent-soft); pointer-events: none; }
+  .map-plot[data-band="0"]::before { left: 0; } .map-plot[data-band="1"]::before { left: 33.33%; } .map-plot[data-band="2"]::before { left: 66.66%; }
   .map-node.flip { flex-direction: row-reverse; transform: translate(calc(-100% + 22px), -50%); }
   .map-node.us { flex-direction: column; transform: translate(-24px, -24px); cursor: default; pointer-events: none; z-index: 1; }
   .map-node.us .cap { border: 0; background: var(--accent); color: #0A0A0A; text-transform: uppercase; letter-spacing: .06em; }

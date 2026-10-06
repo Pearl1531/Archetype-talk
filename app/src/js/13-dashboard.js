@@ -443,7 +443,7 @@ function renderDashboard(){
         <div class="dx-kicker"><b>${tr('Overview')}</b><span aria-hidden="true">·</span><span>${esc(asOf)}</span>${demo ? `<span class="dx-chip">${tr('Example data')}${dxTip(tr('This is the example project'), esc(tr('Illustrative research on Spotify listeners, not your users. The numbers are read as of the day its research closed, and it never mixes with your own projects.')))}</span>` : ''}</div>
         <h1 class="dx-title">${esc(name)}<span class="dx-dot">.</span></h1>
         <div class="dx-actions">
-          <button type="button" class="dx-btn dx-btn-ember" id="dashPlan">${tr('Plan the next round')}</button>
+          <button type="button" class="dx-btn dx-btn-primary" id="dashPlan">${tr('Plan the next round')}</button>
           ${personas.length ? `<div class="dx-menu-wrap"><button type="button" class="dx-btn dx-btn-line" id="dxAsk" aria-haspopup="menu" aria-expanded="false">${TALK_ICO}${tr('Ask a persona')}${DX_CARET}</button><div class="dx-menu" id="dxAskMenu" role="menu" hidden>${askMenu}</div></div>` : ''}
         </div>
       </div>
@@ -473,7 +473,7 @@ function renderDashboard(){
         <p class="dx-pc-desc" title="${esc(e.fm.description||'')}">${esc(e.fm.description||'')}</p>
         <div class="dx-pc-foot">
           ${levelMeter(lv, tr('How solid: {l} of 5 · stands on {s} heard + {e} read').replace('{l}',lv).replace('{s}',r.sig).replace('{e}',r.ev))}
-          <button type="button" class="dx-btn dx-btn-sm ${prim?'dx-btn-ember':'dx-btn-line'}" data-ask="${esc(e.id)}" title="${esc(tr('Copies the line that starts the conversation — paste it into {a}, opened in this project folder').replace('{a}', pjAgentLabel(pjAgent())))}">${TALK_ICO}${tr('Ask')}</button>
+          <button type="button" class="dx-btn dx-btn-sm ${prim?'dx-btn-primary':'dx-btn-line'}" data-ask="${esc(e.id)}" title="${esc(tr('Copies the line that starts the conversation — paste it into {a}, opened in this project folder').replace('{a}', pjAgentLabel(pjAgent())))}">${TALK_ICO}${tr('Ask')}</button>
         </div>
       </article>`;
   }).join('');
@@ -539,8 +539,8 @@ function renderDashboard(){
       <span class="dx-band-h">${esc(head)}</span>
       <span class="dx-band-acts">
         ${zeroData
-          ? `<code class="dx-cmd">/cold-start</code><button type="button" class="dx-btn dx-btn-ember" id="dashColdStart">${tr('⧉ Copy command')}</button>`
-          : `<button type="button" class="dx-btn dx-btn-ember" id="dashCopyPrompt">${tr('⧉ Copy AI prompt')}</button>
+          ? `<code class="dx-cmd">/cold-start</code><button type="button" class="dx-btn dx-btn-primary" id="dashColdStart">${tr('⧉ Copy command')}</button>`
+          : `<button type="button" class="dx-btn dx-btn-primary" id="dashCopyPrompt">${tr('⧉ Copy AI prompt')}</button>
              <div class="dx-menu-wrap"><button type="button" class="dx-btn dx-btn-inv" id="dxMore" aria-haspopup="menu" aria-expanded="false">${tr('More')}${DX_CARET}</button>
                <div class="dx-menu dx-menu-up" id="dxMoreMenu" role="menu" hidden>
                  <button type="button" role="menuitem" id="dashDlPrompt">${tr('↓ Prompt .md')}</button>
@@ -599,7 +599,7 @@ function dxMotion(){
   if(hero && cast) follow(hero, (x, y)=>{ cast.style.setProperty('--hx', (x-.5).toFixed(3)); cast.style.setProperty('--hy', (y-.5).toFixed(3)); }, []);
   if(hero && cast) hero.onpointerleave = ()=>{ cast.style.removeProperty('--hx'); cast.style.removeProperty('--hy'); };
   // the band's main button leans a little toward the pointer (the hero's buttons stay still)
-  grid.querySelectorAll('.dx-band .dx-btn-ember').forEach(b=> follow(b, (x, y, r)=>{
+  grid.querySelectorAll('.dx-band .dx-btn-primary').forEach(b=> follow(b, (x, y, r)=>{
     b.style.setProperty('--tx', ((x-.5)*r.width*.16).toFixed(1)+'px'); b.style.setProperty('--ty', ((y-.5)*r.height*.3).toFixed(1)+'px');
   }, ['--tx','--ty']));
 }

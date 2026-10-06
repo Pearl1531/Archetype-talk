@@ -862,8 +862,8 @@
   .pe-pill:hover { background: #D9D2C3; }
   .pe-actions { margin-top: 24px; display: flex; align-items: center; gap: 10px; flex-wrap: wrap; }
   .pe-actions .p-talk { width: auto; margin: 0; display: inline-flex; }
-  .pe-actions .p-talk .pj-btn { height: 52px; padding: 0 22px; font-size: var(--fs-lg); font-weight: 700; background: var(--accent); color: #0A0A0A; border-color: var(--accent); }
-  .pe-actions .p-talk .pj-split-more { padding: 0 14px; border-left: 1px solid rgba(10,10,10,.2); }
+  .pe-actions .p-talk .pj-btn { height: 52px; padding: 0 22px; font-size: var(--fs-lg); font-weight: 700; background: var(--primary-bg); color: var(--primary-fg); border-color: var(--primary-bg); }
+  .pe-actions .p-talk .pj-split-more { padding: 0 14px; border-left: 1px solid rgba(255,255,255,.25); }
   .pe-cmd { display: inline-flex; align-items: center; height: 52px; padding: 0 16px; border: 1.5px solid var(--text); border-radius: 14px; background: var(--bg-elev-2); max-width: 100%; }
   .pe-cmd code { font-family: var(--font-mono); font-size: var(--text-body); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
   .pe-portrait { width: 240px; height: 240px; }   /* a .face (faceHtml) */
@@ -1330,6 +1330,11 @@
   .map-node.zero .map-tile { border-style: dashed; box-shadow: none; opacity: .8; }
   .map-node.zero .cap { color: var(--text-dim); border-style: dashed; }
   .map-node.dim { opacity: .22; }
+  .map-node.drag { z-index: 5; cursor: grabbing; transition: none; }
+  .map-node.drag .map-tile { box-shadow: 0 12px 24px -10px rgba(10,10,10,.4); }
+  /* while a dot is dragged, the column it would land in lights up */
+  .map-plot[data-band]::before { content: ""; position: absolute; top: 0; bottom: 0; width: 33.33%; background: var(--accent-soft); pointer-events: none; }
+  .map-plot[data-band="0"]::before { left: 0; } .map-plot[data-band="1"]::before { left: 33.33%; } .map-plot[data-band="2"]::before { left: 66.66%; }
   .map-node.flip { flex-direction: row-reverse; transform: translate(calc(-100% + 22px), -50%); }
   .map-node.us { flex-direction: column; transform: translate(-24px, -24px); cursor: default; pointer-events: none; z-index: 1; }
   .map-node.us .cap { border: 0; background: var(--accent); color: #0A0A0A; text-transform: uppercase; letter-spacing: .06em; }
@@ -2871,12 +2876,13 @@
   .dx-spacer { flex: 1; }
   .dx-fl { display: flex; align-items: center; gap: 4px; font-size: var(--text-caption); color: var(--text-dim); }
 
-  /* buttons — ember = the one main move, line = secondary, inv = on the dark band */
+  /* buttons — primary (ink, the --primary-* tokens, as .btn-primary) = the one main
+     move, line = secondary, inv = on the dark band, where the primary turns white */
   .dx-btn { display: inline-flex; align-items: center; gap: 8px; height: 52px; padding: 0 24px; border-radius: var(--r-pill);
     font-size: var(--fs-lg); font-weight: 700; white-space: nowrap; text-decoration: none; color: var(--text); cursor: pointer; }
   .dx-btn-sm { height: 40px; padding: 0 16px; font-size: var(--fs-md); font-weight: 600; }
-  .dx-btn-ember { background: var(--accent); color: #0A0A0A; }
-  .dx-btn-ember:hover { filter: brightness(1.06); }
+  .dx-btn-primary { background: var(--primary-bg); color: var(--primary-fg); }
+  .dx-btn-primary:hover { opacity: .88; }
   .dx-btn-line { border: 1.5px solid var(--text); font-weight: 600; }
   .dx-btn-line:hover { background: var(--bg-elev); }
   .dx-btn-inv { border: 1.5px solid var(--bg-elev); color: var(--bg-elev); font-weight: 600; height: 46px; }
@@ -3010,7 +3016,7 @@
   .dx-band-k { font-family: var(--font-mono); font-size: var(--text-caption); letter-spacing: .08em; text-transform: uppercase; color: var(--accent); }
   .dx-band-h { flex: 1; min-width: 260px; font-size: 26px; font-weight: 800; letter-spacing: -0.02em; line-height: 1.15; }
   .dx-band-acts { display: flex; gap: 8px; align-items: center; }
-  .dx-band .dx-btn-ember { height: 46px; font-size: var(--fs-md); }
+  .dx-band .dx-btn-primary { height: 46px; font-size: var(--fs-md); background: var(--primary-fg); color: var(--primary-bg); }
   .dx-cmd { font-family: var(--font-mono); font-size: var(--fs-md); color: #FFFFFF; padding: 0 8px; }
 
   @media (max-width: 1100px){
@@ -3049,9 +3055,9 @@
 
     .dx-btn { transition: background .25s, color .25s, border-color .25s, filter .25s, transform .45s var(--ease-spring), translate .35s var(--ease-out); }
     .dx-btn:active { transform: scale(.96); }
-    .dx-btn-ember { position: relative; isolation: isolate; overflow: hidden; translate: var(--tx, 0) var(--ty, 0); }
-    .dx-btn-ember::after { content: ""; position: absolute; inset: 0; z-index: -1; pointer-events: none;
-      background: linear-gradient(105deg, transparent 30%, rgba(255,255,255,.5) 50%, transparent 70%);
+    .dx-btn-primary { position: relative; isolation: isolate; overflow: hidden; translate: var(--tx, 0) var(--ty, 0); }
+    .dx-btn-primary::after { content: ""; position: absolute; inset: 0; z-index: -1; pointer-events: none;
+      background: linear-gradient(105deg, transparent 30%, color-mix(in srgb, currentColor 16%, transparent) 50%, transparent 70%);
       transform: translateX(-130%); transition: transform .9s var(--ease-out); }
 
     .dx-table tbody tr { transition: background .2s; }
@@ -3069,7 +3075,7 @@
   @media (hover: hover) and (prefers-reduced-motion: no-preference) {
     .dx-cast > a:hover { scale: 1.06; z-index: 2; }
     .dx-cast > a:hover .dx-face img { transform: translateY(-3%) scale(1.05); }
-    .dx-band .dx-btn-ember:hover::after { transform: translateX(130%); }   /* the hero's buttons stay still */
+    .dx-band .dx-btn-primary:hover::after { transform: translateX(130%); }   /* the hero's buttons stay still */
 
     /* a persona card's gesture is the lean component (data-lean, 16-motion.css);
        only the primary card's keyline has to survive its hover shadow */
@@ -8640,6 +8646,11 @@ const PL = {
   'TAM — indirect': 'TAM — pośredni', 'SAM — adjacent': 'SAM — sąsiedni', 'SOM — direct (our segment)': 'SOM — bezpośredni (nasz segment)',
   'How to read the map': 'Jak czytać tę mapę',
   'Mentioned by': 'Wspominane przez',
+  'Move {name}?': 'Przenieść {name}?',
+  'Move': 'Przenieś',
+  'Moved to {b} ✓': 'Przeniesione do {b} ✓',
+  'From {a} to {b}. How close a competitor is to your market is your call as the researcher — it is written into the file as proximity: {v}.':
+    'Z {a} do {b}. To, jak blisko Twojego rynku jest konkurent, to decyzja badacza — trafi do pliku jako proximity: {v}.',
   'Everyone': 'Wszyscy',
   'Who brought it up': 'Kto wspomniał',
   'In their words': 'Ich słowami',
@@ -9759,7 +9770,10 @@ function closeIdeaForm(){ document.getElementById('ideaModal').close(); IDEA=nul
    first) with their names beside them, flipped left near the right edge, so
    nothing stacks. A click opens a side panel (who brought it up, in their
    words, the way to the profile) instead of leaving the map; "Mentioned by"
-   lights only what one persona's participants named. Phones get a list. */
+   lights only what one persona's participants named. Dragging a dot sideways
+   moves it to another market column — the researcher's call, so it asks first,
+   writes proximity: into the file (keeping the reasoning comment beside it)
+   and offers Undo. Phones get a list. */
 const MAP_BANDS = [['indirect', 'TAM — indirect'], ['adjacent', 'SAM — adjacent'], ['direct', 'SOM — direct (our segment)']];
 let MAP_SEL = null, MAP_PERSONA = null, MAP_LIST = [];
 const mapIdsOf = names => new Set([].concat(names||[]).map(t=> byBasename[String(t).replace(/\.md$/i,'').toLowerCase()]).filter(id=> ENTITIES[id] && ENTITIES[id].type==='Transcript' && !isExcluded(ENTITIES[id])));
@@ -9772,6 +9786,23 @@ function personaTranscriptIds(p){   // a persona's own transcripts: linked direc
     }
   };
   add(p.body, true); return ids;
+}
+async function mapMoveProximity(c, prox){
+  const cur = String(c.fm.proximity||'').trim().toLowerCase();
+  if(prox === cur){ renderMap(MAP_LIST); return; }
+  const name = k=> tr((MAP_BANDS.find(b=> b[0]===k) || [, 'Proximity not set'])[1]);
+  ppDialog({
+    title: tr('Move {name}?').replace('{name}', c.title),
+    body: `<p>${esc(tr('From {a} to {b}. How close a competitor is to your market is your call as the researcher — it is written into the file as proximity: {v}.').replace('{a}', name(cur)).replace('{b}', name(prox)).replace('{v}', prox))}</p>`,
+    ok: tr('Move'), check: ()=> '',
+    run: async ()=>{
+      const w = await ensureWritable(c); if(!w) return;
+      const why = (w.md.match(/^proximity:[^#\n]*(#.*)$/m) || [])[1];   // the researcher's one-line reasoning stays
+      if(await saveEntityText(w, setFmField(w.md, 'proximity', prox + (why ? '   ' + why : ''))))
+        toast(tr('Moved to {b} ✓').replace('{b}', name(prox)), { label: tr('Undo'), fn: undoLastSave }, 8000, c.title);
+    },
+  });
+  document.getElementById('ppModal').addEventListener('close', ()=> renderMap(MAP_LIST), { once: true });   // cancelled: the dot goes back
 }
 function mapSide(c, N){
   const m = competitorMentions(c), prox = PROX_LABEL[String(c.fm.proximity||'').trim().toLowerCase()];
@@ -9844,6 +9875,28 @@ function renderMap(list){
   card.querySelectorAll('.map-chip').forEach(b=> b.onclick = ()=>{ MAP_PERSONA = b.dataset.p || null; again(); });
   card.querySelectorAll('[data-goto]').forEach(a=> a.onclick = ()=>{ location.hash = '#'+a.dataset.goto; });
   const x = card.querySelector('.map-side-x'); if(x) x.onclick = ()=>{ MAP_SEL = null; again(); };
+  // drag a dot sideways (mouse or pen) to move it to another market column; a drag is not a click
+  const plot = card.querySelector('.map-plot');
+  card.querySelectorAll('.map-node[data-c]').forEach(n=> n.onpointerdown = ev=>{
+    if(ev.button !== 0 || ev.pointerType === 'touch') return;
+    const r = plot.getBoundingClientRect(), x0 = ev.clientX, left0 = parseFloat(n.style.left);
+    const bandAt = cx => Math.max(0, Math.min(2, Math.floor((cx - r.left) / r.width * 3)));
+    let moved = false;
+    const move = e2=>{
+      if(!moved && Math.abs(e2.clientX - x0) < 6) return;
+      if(!moved){ moved = true; n.classList.add('drag'); }
+      n.style.left = Math.max(0, Math.min(100, left0 + (e2.clientX - x0) / r.width * 100)) + '%';
+      plot.dataset.band = bandAt(e2.clientX);
+    };
+    const up = e2=>{
+      removeEventListener('pointermove', move); removeEventListener('pointerup', up);
+      if(!moved) return;
+      n.addEventListener('click', e3=> e3.stopImmediatePropagation(), { capture: true, once: true });
+      delete plot.dataset.band;
+      mapMoveProximity(ENTITIES[n.dataset.c], MAP_BANDS[bandAt(e2.clientX)][0]);
+    };
+    addEventListener('pointermove', move); addEventListener('pointerup', up);   // on the window: a fast drag leaves the dot behind
+  });
   card.onkeydown = ev=>{ if(ev.key==='Escape' && MAP_SEL){ ev.stopPropagation(); MAP_SEL = null; again(); } };
 }
 /* everything the filter can match: title + body + frontmatter VALUES (feature
@@ -15348,7 +15401,7 @@ function renderDashboard(){
         <div class="dx-kicker"><b>${tr('Overview')}</b><span aria-hidden="true">·</span><span>${esc(asOf)}</span>${demo ? `<span class="dx-chip">${tr('Example data')}${dxTip(tr('This is the example project'), esc(tr('Illustrative research on Spotify listeners, not your users. The numbers are read as of the day its research closed, and it never mixes with your own projects.')))}</span>` : ''}</div>
         <h1 class="dx-title">${esc(name)}<span class="dx-dot">.</span></h1>
         <div class="dx-actions">
-          <button type="button" class="dx-btn dx-btn-ember" id="dashPlan">${tr('Plan the next round')}</button>
+          <button type="button" class="dx-btn dx-btn-primary" id="dashPlan">${tr('Plan the next round')}</button>
           ${personas.length ? `<div class="dx-menu-wrap"><button type="button" class="dx-btn dx-btn-line" id="dxAsk" aria-haspopup="menu" aria-expanded="false">${TALK_ICO}${tr('Ask a persona')}${DX_CARET}</button><div class="dx-menu" id="dxAskMenu" role="menu" hidden>${askMenu}</div></div>` : ''}
         </div>
       </div>
@@ -15378,7 +15431,7 @@ function renderDashboard(){
         <p class="dx-pc-desc" title="${esc(e.fm.description||'')}">${esc(e.fm.description||'')}</p>
         <div class="dx-pc-foot">
           ${levelMeter(lv, tr('How solid: {l} of 5 · stands on {s} heard + {e} read').replace('{l}',lv).replace('{s}',r.sig).replace('{e}',r.ev))}
-          <button type="button" class="dx-btn dx-btn-sm ${prim?'dx-btn-ember':'dx-btn-line'}" data-ask="${esc(e.id)}" title="${esc(tr('Copies the line that starts the conversation — paste it into {a}, opened in this project folder').replace('{a}', pjAgentLabel(pjAgent())))}">${TALK_ICO}${tr('Ask')}</button>
+          <button type="button" class="dx-btn dx-btn-sm ${prim?'dx-btn-primary':'dx-btn-line'}" data-ask="${esc(e.id)}" title="${esc(tr('Copies the line that starts the conversation — paste it into {a}, opened in this project folder').replace('{a}', pjAgentLabel(pjAgent())))}">${TALK_ICO}${tr('Ask')}</button>
         </div>
       </article>`;
   }).join('');
@@ -15444,8 +15497,8 @@ function renderDashboard(){
       <span class="dx-band-h">${esc(head)}</span>
       <span class="dx-band-acts">
         ${zeroData
-          ? `<code class="dx-cmd">/cold-start</code><button type="button" class="dx-btn dx-btn-ember" id="dashColdStart">${tr('⧉ Copy command')}</button>`
-          : `<button type="button" class="dx-btn dx-btn-ember" id="dashCopyPrompt">${tr('⧉ Copy AI prompt')}</button>
+          ? `<code class="dx-cmd">/cold-start</code><button type="button" class="dx-btn dx-btn-primary" id="dashColdStart">${tr('⧉ Copy command')}</button>`
+          : `<button type="button" class="dx-btn dx-btn-primary" id="dashCopyPrompt">${tr('⧉ Copy AI prompt')}</button>
              <div class="dx-menu-wrap"><button type="button" class="dx-btn dx-btn-inv" id="dxMore" aria-haspopup="menu" aria-expanded="false">${tr('More')}${DX_CARET}</button>
                <div class="dx-menu dx-menu-up" id="dxMoreMenu" role="menu" hidden>
                  <button type="button" role="menuitem" id="dashDlPrompt">${tr('↓ Prompt .md')}</button>
@@ -15504,7 +15557,7 @@ function dxMotion(){
   if(hero && cast) follow(hero, (x, y)=>{ cast.style.setProperty('--hx', (x-.5).toFixed(3)); cast.style.setProperty('--hy', (y-.5).toFixed(3)); }, []);
   if(hero && cast) hero.onpointerleave = ()=>{ cast.style.removeProperty('--hx'); cast.style.removeProperty('--hy'); };
   // the band's main button leans a little toward the pointer (the hero's buttons stay still)
-  grid.querySelectorAll('.dx-band .dx-btn-ember').forEach(b=> follow(b, (x, y, r)=>{
+  grid.querySelectorAll('.dx-band .dx-btn-primary').forEach(b=> follow(b, (x, y, r)=>{
     b.style.setProperty('--tx', ((x-.5)*r.width*.16).toFixed(1)+'px'); b.style.setProperty('--ty', ((y-.5)*r.height*.3).toFixed(1)+'px');
   }, ['--tx','--ty']));
 }

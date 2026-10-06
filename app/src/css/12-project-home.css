@@ -23,12 +23,13 @@
   .dx-spacer { flex: 1; }
   .dx-fl { display: flex; align-items: center; gap: 4px; font-size: var(--text-caption); color: var(--text-dim); }
 
-  /* buttons — ember = the one main move, line = secondary, inv = on the dark band */
+  /* buttons — primary (ink, the --primary-* tokens, as .btn-primary) = the one main
+     move, line = secondary, inv = on the dark band, where the primary turns white */
   .dx-btn { display: inline-flex; align-items: center; gap: 8px; height: 52px; padding: 0 24px; border-radius: var(--r-pill);
     font-size: var(--fs-lg); font-weight: 700; white-space: nowrap; text-decoration: none; color: var(--text); cursor: pointer; }
   .dx-btn-sm { height: 40px; padding: 0 16px; font-size: var(--fs-md); font-weight: 600; }
-  .dx-btn-ember { background: var(--accent); color: #0A0A0A; }
-  .dx-btn-ember:hover { filter: brightness(1.06); }
+  .dx-btn-primary { background: var(--primary-bg); color: var(--primary-fg); }
+  .dx-btn-primary:hover { opacity: .88; }
   .dx-btn-line { border: 1.5px solid var(--text); font-weight: 600; }
   .dx-btn-line:hover { background: var(--bg-elev); }
   .dx-btn-inv { border: 1.5px solid var(--bg-elev); color: var(--bg-elev); font-weight: 600; height: 46px; }
@@ -162,7 +163,7 @@
   .dx-band-k { font-family: var(--font-mono); font-size: var(--text-caption); letter-spacing: .08em; text-transform: uppercase; color: var(--accent); }
   .dx-band-h { flex: 1; min-width: 260px; font-size: 26px; font-weight: 800; letter-spacing: -0.02em; line-height: 1.15; }
   .dx-band-acts { display: flex; gap: 8px; align-items: center; }
-  .dx-band .dx-btn-ember { height: 46px; font-size: var(--fs-md); }
+  .dx-band .dx-btn-primary { height: 46px; font-size: var(--fs-md); background: var(--primary-fg); color: var(--primary-bg); }
   .dx-cmd { font-family: var(--font-mono); font-size: var(--fs-md); color: #FFFFFF; padding: 0 8px; }
 
   @media (max-width: 1100px){
@@ -201,9 +202,9 @@
 
     .dx-btn { transition: background .25s, color .25s, border-color .25s, filter .25s, transform .45s var(--ease-spring), translate .35s var(--ease-out); }
     .dx-btn:active { transform: scale(.96); }
-    .dx-btn-ember { position: relative; isolation: isolate; overflow: hidden; translate: var(--tx, 0) var(--ty, 0); }
-    .dx-btn-ember::after { content: ""; position: absolute; inset: 0; z-index: -1; pointer-events: none;
-      background: linear-gradient(105deg, transparent 30%, rgba(255,255,255,.5) 50%, transparent 70%);
+    .dx-btn-primary { position: relative; isolation: isolate; overflow: hidden; translate: var(--tx, 0) var(--ty, 0); }
+    .dx-btn-primary::after { content: ""; position: absolute; inset: 0; z-index: -1; pointer-events: none;
+      background: linear-gradient(105deg, transparent 30%, color-mix(in srgb, currentColor 16%, transparent) 50%, transparent 70%);
       transform: translateX(-130%); transition: transform .9s var(--ease-out); }
 
     .dx-table tbody tr { transition: background .2s; }
@@ -221,7 +222,7 @@
   @media (hover: hover) and (prefers-reduced-motion: no-preference) {
     .dx-cast > a:hover { scale: 1.06; z-index: 2; }
     .dx-cast > a:hover .dx-face img { transform: translateY(-3%) scale(1.05); }
-    .dx-band .dx-btn-ember:hover::after { transform: translateX(130%); }   /* the hero's buttons stay still */
+    .dx-band .dx-btn-primary:hover::after { transform: translateX(130%); }   /* the hero's buttons stay still */
 
     /* a persona card's gesture is the lean component (data-lean, 16-motion.css);
        only the primary card's keyline has to survive its hover shadow */
