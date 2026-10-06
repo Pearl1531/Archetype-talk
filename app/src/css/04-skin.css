@@ -135,8 +135,6 @@
 
   /* ---- board views: market map / affinity / highlights ---- */
   body.lin-all .map { background: var(--bg-elev); border-radius: var(--r-lg); }
-  body.lin-all .map-node .cap { background: rgba(22,22,24,.9); color: var(--text-dim); border-radius: var(--r-lg); }
-  body.lin-all .map-node.us .cap b { color: var(--text); }
   body.lin-all .aff-col { background: var(--bg-elev); border-radius: var(--r-lg); }
   body.lin-all .aff-col.locked { box-shadow: 0 0 0 1.5px var(--accent); }
   body.lin-all .aff-name { color: var(--text); }

@@ -343,53 +343,99 @@ async function createIdea(){
 }
 function closeIdeaForm(){ document.getElementById('ideaModal').close(); IDEA=null; PROMOTE_FROM=null; }
 
-const PROX_X = { indirect: 17, adjacent: 50, direct: 83 };
+/* The market map — proximity × research mentions (Competitors/README.md).
+   Honest by construction: the vertical scale runs from 0 to every participant
+   you heard (distinctParticipants), so a dot's height IS "brought up by m of
+   N" — not a share of the loudest competitor — and a dot on the zero line is
+   a research gap, drawn hollow. You sit at the top right: your segment, every
+   participant is your user. A column's dots spread side by side (loudest
+   first) with their names beside them, flipped left near the right edge, so
+   nothing stacks. A click opens a side panel (who brought it up, in their
+   words, the way to the profile) instead of leaving the map; "Mentioned by"
+   lights only what one persona's participants named. Phones get a list. */
+const MAP_BANDS = [['indirect', 'TAM — indirect'], ['adjacent', 'SAM — adjacent'], ['direct', 'SOM — direct (our segment)']];
+let MAP_SEL = null, MAP_PERSONA = null, MAP_LIST = [];
+const mapIdsOf = names => new Set([].concat(names||[]).map(t=> byBasename[String(t).replace(/\.md$/i,'').toLowerCase()]).filter(id=> ENTITIES[id] && ENTITIES[id].type==='Transcript' && !isExcluded(ENTITIES[id])));
+function personaTranscriptIds(p){   // a persona's own transcripts: linked directly or through its Signals
+  const ids = new Set(), add = (body, deep)=>{
+    for(const m of body.matchAll(MD_LINK)){
+      if(/^https?:/.test(m[2])) continue;
+      const x = ENTITIES[resolveRef(m[2])]; if(!x) continue;
+      if(x.type==='Transcript') ids.add(x.id); else if(deep && x.type==='Signal') add(x.body, false);
+    }
+  };
+  add(p.body, true); return ids;
+}
+function mapSide(c, N){
+  const m = competitorMentions(c), prox = PROX_LABEL[String(c.fm.proximity||'').trim().toLowerCase()];
+  const ts = [...mapIdsOf(c.fm.mentioned_in)].map(id=> ENTITIES[id]);
+  const said = wsEntities().filter(e=> e.type==='Signal' && [].concat(e.fm.competitors||[]).includes(c.title)).slice(0, 3);
+  const r = picFor(c), tile = r && r.src ? `<img src="${esc(r.src)}" alt="" onerror="this.remove()">` : esc(c.title.slice(0,2));
+  return `<aside class="map-side" aria-label="${esc(c.title)}">
+      <div class="map-side-head"><span class="map-tile">${tile}</span><div><b>${esc(c.title)}</b>${prox ? `<span class="map-prox" title="${esc(prox[1])}">${esc(prox[0])}</span>` : `<span class="map-prox off">${tr('Proximity not set')}</span>`}</div>
+        <button type="button" class="map-side-x" aria-label="${esc(tr('Close'))}">✕</button></div>
+      ${compIntro(c) ? `<p class="map-side-intro">${esc(compIntro(c))}</p>` : ''}
+      <div class="map-side-sec"><span class="dx-fl">${tr('Who brought it up')}</span>
+        <b class="map-side-n">${m ? esc(tr('{m} of {T} participants').replace('{m}', m).replace('{T}', N)) : tr('Nobody yet — maybe nobody asked')}</b>
+        ${ts.length ? `<div class="map-side-links">${ts.map(t=> `<a class="xref" data-goto="${esc(t.id)}">${esc(t.title)}</a>`).join('')}</div>` : ''}</div>
+      ${said.length ? `<div class="map-side-sec"><span class="dx-fl">${tr('In their words')}</span>${said.map(sg=> `<a class="map-side-q" data-goto="${esc(sg.id)}">“${esc(trim((firstQuote(sg.body)||sg.title).replace(/^["“]|["”]$/g,''), 140))}”</a>`).join('')}</div>` : ''}
+      <button type="button" class="dx-btn dx-btn-line dx-btn-sm" data-goto="${esc(c.id)}">${tr('Open profile')} →</button>
+    </aside>`;
+}
 function renderMap(list){
-  const maxM = Math.max(1, ...list.map(competitorMentions));
+  MAP_LIST = list;
+  if(MAP_SEL && !list.some(c=> c.id===MAP_SEL)) MAP_SEL = null;
+  const N = Math.max(1, distinctParticipants(), ...list.map(competitorMentions));
+  const Y = m => 86 - m / N * 74;                         // % from the top: 0 at 86%, everyone at 12%
+  const band = c => Math.max(0, MAP_BANDS.findIndex(b=> b[0]===String(c.fm.proximity||'').trim().toLowerCase()));   // unset → the middle column
+  const personas = wsEntities().filter(e=> e.type==='Persona');
+  const lit = MAP_PERSONA && ENTITIES[MAP_PERSONA] ? personaTranscriptIds(ENTITIES[MAP_PERSONA]) : null;
+  const groups = [[], [], []];
+  list.forEach(c=> groups[band(c)].push(c));
   let nodes = '';
-  list.forEach((c,i)=>{
-    const prox = String(c.fm.proximity||'').trim().toLowerCase();
-    const m = competitorMentions(c);
-    // deterministic jitter so same-cell competitors don't stack
-    const x = Math.min(93, Math.max(7, (PROX_X[prox] ?? 50) + ((i*37)%13) - 6));
-    const y = Math.min(85, Math.max(12, 82 - 58*(m/maxM) + ((i*23)%11) - 5));
-    const r = picFor(c);
-    const tile = r && r.src ? `<img src="${esc(r.src)}" alt="" onerror="this.remove()">` : esc(c.title.slice(0,2));
-    const proxLabel = prox ? prox : 'proximity not set';
-    nodes += `<div class="map-node" role="button" tabindex="0" style="left:${x}%;top:${y}%" data-goto="${c.id}" title="${esc(c.title)} — ${esc(proxLabel)}; brought up by ${m} of ${totalTranscripts()} participants we talked to. Click for details.">
-      <div class="map-tile">${tile}</div><div class="cap">${esc(c.title)}</div></div>`;
-  });
-  // "Us" anchor — top-right: we ARE our own segment (far right) and every
-  // participant is our user (top). The fixed reference everything else is
-  // measured against; visually distinct (solid ink), not a competitor node.
+  groups.forEach(g=> g.sort((a,b)=> competitorMentions(b) - competitorMentions(a) || a.title.localeCompare(b.title)).forEach((c, k)=>{
+    const m = competitorMentions(c), b = band(c), set = String(c.fm.proximity||'').trim();
+    const x = b*33.33 + (k+1) * 33.33 / (g.length+1);
+    const hit = !lit || [...mapIdsOf(c.fm.mentioned_in)].some(id=> lit.has(id));
+    const r = picFor(c), tile = r && r.src ? `<img src="${esc(r.src)}" alt="" onerror="this.remove()">` : esc(c.title.slice(0,2));
+    nodes += `<button type="button" class="map-node${m ? '' : ' zero'}${hit ? '' : ' dim'}${MAP_SEL===c.id ? ' sel' : ''}${x > 78 ? ' flip' : ''}" style="left:${x.toFixed(2)}%;top:${Y(m).toFixed(2)}%" data-c="${esc(c.id)}"
+        aria-label="${esc(c.title)} — ${esc(m ? tr('{m} of {T} participants').replace('{m}', m).replace('{T}', N) : tr('Nobody yet — maybe nobody asked'))}${set ? '' : ' · '+esc(tr('Proximity not set'))}">
+        <span class="map-tile">${tile}${m ? `<b class="map-n">${m}</b>` : ''}</span><span class="cap">${esc(c.title)}</span></button>`;
+  }));
   const prod = getProduct();
-  const usNode = prod ? `<div class="map-node us" style="left:90%;top:11%" title="${esc(prod.name)} — that's us. This is the anchor: our own segment (right) and, by definition, every participant we interviewed is our user (top). Competitors are read relative to this point.">
-      <div class="map-tile us">${esc(prod.name.slice(0,2))}</div><div class="cap"><b>${esc(prod.name)}</b> · ${tr('you')}</div></div>` : '';
+  const us = prod ? `<div class="map-node us" style="left:95%;top:${Y(N).toFixed(2)}%" title="${esc(prod.name)} — ${esc(tr('you'))}"><span class="map-tile us">${esc(prod.name.slice(0,2))}</span><span class="cap">${tr('you')}</span></div>` : '';
+  const step = N <= 6 ? 1 : Math.ceil(N / 5);
+  let ticks = '';
+  for(let v = 0; v <= N; v += step) ticks += `<i class="map-tick" style="top:${Y(v).toFixed(2)}%"><span>${v}</span></i>`;
+  const sel = MAP_SEL && ENTITIES[MAP_SEL];
+  const rows = MAP_BANDS.slice().reverse().map(([key, label], bi)=>{
+    const cs = list.filter(c=> band(c)===2-bi).sort((a,b)=> competitorMentions(b)-competitorMentions(a));
+    return cs.length ? `<div class="map-list-band"><span class="dx-fl">${tr(label)}</span>${cs.map(c=> `<a class="map-list-row" data-goto="${esc(c.id)}"><b>${esc(c.title)}</b><span>${competitorMentions(c) ? esc(tr('{m} of {T} participants').replace('{m}', competitorMentions(c)).replace('{T}', N)) : tr('Nobody yet — maybe nobody asked')}</span></a>`).join('')}</div>` : '';
+  }).join('');
   grid.innerHTML = `<div class="map-card">
-    <div class="map-yaxis">↑ ${tr('Participants who brought them up (distinct transcripts)')}</div>
-    <div class="map-plot">
-      <div class="vline" style="left:33.3%"></div><div class="vline" style="left:66.6%"></div><div class="hline"></div>
-      <div class="map-quad" style="top:0;right:0">${tr('Pulling our users')}</div>
-      <div class="map-quad" style="bottom:0;right:0">${tr('Same market, quiet so far')}</div>
-      <div class="map-quad" style="top:0;left:0">${tr('Pull from outside')}</div>
-      <div class="map-quad" style="bottom:0;left:0">${tr('Periphery')}</div>
-      ${usNode}${nodes}
+    <div class="map-bar">
+      <div class="map-filter" role="group" aria-label="${esc(tr('Mentioned by'))}"><span class="dx-fl">${tr('Mentioned by')}</span>
+        <button type="button" class="map-chip${MAP_PERSONA ? '' : ' on'}" data-p="">${tr('Everyone')}</button>
+        ${personas.map(p=> `<button type="button" class="map-chip${MAP_PERSONA===p.id ? ' on' : ''}" data-p="${esc(p.id)}">${faceHtml(p, 'dx-face-xs')}${esc(p.title.split(/\s+[—–-]\s+/)[0])}</button>`).join('')}</div>
+      <span class="dx-fl map-how">${tr('How to read the map')}${dxTip(tr('How to read the map'), esc(tr("Right = closer to your market — the researcher's call (proximity:): TAM indirect · SAM adjacent · SOM direct. Up = how many of your {T} participants brought it up themselves — never market share; a hollow dot on the zero line may only mean nobody asked. You sit top right: your segment, and every participant is your user.").replace('{T}', N)), 'right')}</span>
     </div>
-    <div class="map-xaxis"><span>${tr('TAM — indirect')}</span><span>${tr('SAM — adjacent')}</span><span>${tr('SOM — direct (our segment)')}</span></div>
-    <div class="map-legend" aria-label="${esc(tr('How to read the map'))}">
-      <div class="lg-i"><span class="lg-glyph"><span class="map-tile">Aa</span></span>
-        <div class="lg-t"><b>${tr('A competitor')}</b><span>${tr('One dot per <code>Competitors/</code> file. Click it to open the profile.')}</span></div></div>
-      <div class="lg-i"><span class="lg-glyph"><span class="map-tile us">${prod?esc(prod.name.slice(0,2)):'Us'}</span></span>
-        <div class="lg-t"><b>${tr('You — the anchor')}</b><span>${tr('Fixed top right: your segment, your users. Every dot is read relative to this point.')}</span></div></div>
-      <div class="lg-i"><span class="lg-glyph"><svg width="26" height="14" viewBox="0 0 26 14" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="2" y1="7" x2="22" y2="7"/><polyline points="17 2 22 7 17 12"/></svg></span>
-        <div class="lg-t"><b>${tr('Right = closer to your market')}</b><span>${tr("The researcher's call (<code>proximity:</code>) — TAM indirect · SAM adjacent · SOM direct.")}</span></div></div>
-      <div class="lg-i"><span class="lg-glyph"><svg width="14" height="26" viewBox="0 0 14 26" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="7" y1="24" x2="7" y2="4"/><polyline points="2 9 7 4 12 9"/></svg></span>
-        <div class="lg-t"><b>${tr('Up = heard more often')}</b><span>${tr("Distinct participants who brought them up — never market share. A low dot may just mean you haven't asked.")}</span></div></div>
+    <div class="map-body${sel ? ' has-side' : ''}">
+      <div class="map-main">
+        <div class="map-plot">
+          <i class="map-band" style="left:33.33%"></i><i class="map-band" style="left:66.66%"></i>
+          ${ticks}${us}${nodes}
+        </div>
+        <div class="map-xaxis">${MAP_BANDS.map(b=> `<span>${tr(b[1])}</span>`).join('')}</div>
+      </div>
+      ${sel ? mapSide(sel, N) : ''}
     </div>
+    <div class="map-list">${rows}</div>
   </div>`;
-  grid.querySelectorAll('.map-node[data-goto]').forEach(n=>{
-    const go = ()=>{ location.hash = '#'+n.dataset.goto; };
-    n.onclick = go;
-    n.onkeydown = ev=>{ if(ev.key==='Enter' || ev.key===' '){ ev.preventDefault(); go(); } };
-  });
+  const card = grid.querySelector('.map-card');
+  const again = ()=> renderMap(MAP_LIST);
+  card.querySelectorAll('.map-node[data-c]').forEach(n=> n.onclick = ()=>{ MAP_SEL = MAP_SEL===n.dataset.c ? null : n.dataset.c; again(); grid.querySelector(`.map-node[data-c="${CSS.escape(n.dataset.c)}"]`)?.focus(); });
+  card.querySelectorAll('.map-chip').forEach(b=> b.onclick = ()=>{ MAP_PERSONA = b.dataset.p || null; again(); });
+  card.querySelectorAll('[data-goto]').forEach(a=> a.onclick = ()=>{ location.hash = '#'+a.dataset.goto; });
+  const x = card.querySelector('.map-side-x'); if(x) x.onclick = ()=>{ MAP_SEL = null; again(); };
+  card.onkeydown = ev=>{ if(ev.key==='Escape' && MAP_SEL){ ev.stopPropagation(); MAP_SEL = null; again(); } };
 }

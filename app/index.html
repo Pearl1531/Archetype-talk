@@ -765,8 +765,6 @@
 
   /* ---- board views: market map / affinity / highlights ---- */
   body.lin-all .map { background: var(--bg-elev); border-radius: var(--r-lg); }
-  body.lin-all .map-node .cap { background: rgba(22,22,24,.9); color: var(--text-dim); border-radius: var(--r-lg); }
-  body.lin-all .map-node.us .cap b { color: var(--text); }
   body.lin-all .aff-col { background: var(--bg-elev); border-radius: var(--r-lg); }
   body.lin-all .aff-col.locked { box-shadow: 0 0 0 1.5px var(--accent); }
   body.lin-all .aff-name { color: var(--text); }
@@ -1301,44 +1299,79 @@
   .section-head .n { font-size: var(--text-caption); background: rgba(10,10,10,0.06); color: var(--text-dim);
     padding: 1px 7px; border-radius: var(--r-pill); }
   /* competitor map */
-  .map-card { background: var(--bg-elev); border: 1px solid var(--line);
-    border-radius: var(--r-lg); box-shadow: var(--shadow-subtle); padding: var(--s-5); }
-  .map-plot { position: relative; height: 440px; border: 1px solid var(--line); border-radius: var(--r-md); background: var(--bg-elev-2); overflow: hidden; }
-  .map-plot .vline { position: absolute; top: 0; bottom: 0; width: 0; border-left: 1px dashed var(--line); }
-  .map-plot .hline { position: absolute; left: 0; right: 0; height: 0; top: 50%; border-top: 1px dashed var(--line); }
-  .map-quad { position: absolute; font-size: var(--text-caption); letter-spacing: var(--tracking-caption);
-    text-transform: uppercase; font-weight: 500; color: var(--text-dim); padding: var(--s-3); }
-  .map-node { position: absolute; transform: translate(-50%,-50%); display: flex; flex-direction: column;
-    align-items: center; gap: 4px; cursor: pointer; text-align: center; transition: transform .12s; z-index: 2; }
-  .map-node:hover { transform: translate(-50%,-50%) scale(1.06); z-index: 3; }
-  .map-tile { width: 44px; height: 44px; border-radius: var(--r-md); background: var(--bg-elev);
+  /* ── the market map (renderMap, 05) — proximity × "brought up by m of N" */
+  .map-card { background: var(--bg-elev); border: 1px solid var(--line); border-radius: var(--r-lg); box-shadow: var(--shadow-subtle); padding: var(--s-5); }
+  .map-bar { display: flex; align-items: center; justify-content: space-between; gap: var(--s-4); flex-wrap: wrap; margin-bottom: var(--s-4); }
+  .map-filter { display: flex; align-items: center; gap: 6px; flex-wrap: wrap; }
+  .map-filter .dx-fl { margin-right: 4px; }
+  .map-chip { display: inline-flex; align-items: center; gap: 6px; height: 32px; padding: 0 12px; border: 1px solid var(--line); border-radius: var(--r-pill);
+    background: var(--bg-elev); font: inherit; font-size: var(--text-body); color: var(--text-soft); cursor: pointer; }
+  .map-chip .face { margin-left: -6px; }
+  .map-chip:hover { border-color: var(--hover-border); color: var(--text); }
+  .map-chip.on { background: var(--text); border-color: var(--text); color: var(--bg-elev); }
+  .map-body { display: grid; grid-template-columns: minmax(0, 1fr); gap: var(--s-5); }
+  .map-body.has-side { grid-template-columns: minmax(0, 1fr) 300px; }
+  .map-plot { position: relative; height: 440px; margin-left: 28px; border-left: 1.5px solid var(--text); border-bottom: 1.5px solid var(--text); }
+  .map-band { position: absolute; top: 0; bottom: 0; width: 0; border-left: 1px dashed var(--line); }
+  .map-tick { position: absolute; left: 0; right: 0; height: 0; border-top: 1px solid var(--line-soft); }
+  .map-tick span { position: absolute; right: calc(100% + 8px); top: -9px; font-family: var(--font-mono); font-size: var(--text-caption); color: var(--text-dim); }
+  /* a dot = its tile, centred on the point, with the name beside it (flipped left near the right edge) */
+  .map-node { position: absolute; transform: translate(-22px, -50%); display: flex; align-items: center; gap: 8px;
+    padding: 0; border: 0; background: none; font: inherit; cursor: pointer; text-align: center; z-index: 2; transition: opacity .2s; }
+  .map-node:hover, .map-node:focus-visible, .map-node.sel { z-index: 3; }
+  .map-node .cap { max-width: 170px; padding: 2px 8px; border: 1px solid var(--line); border-radius: var(--r-pill); background: var(--bg-elev);
+    font-size: var(--text-caption); font-weight: 600; line-height: 1.3; color: var(--text); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .map-node:hover .cap, .map-node.sel .cap { border-color: var(--text); }
+  .map-node.sel .map-tile { box-shadow: 0 0 0 3px var(--bg-elev), 0 0 0 4.5px var(--text); }
+  .map-node:focus-visible { outline: none; }
+  .map-node:focus-visible .map-tile { box-shadow: 0 0 0 3px var(--bg-elev), 0 0 0 4.5px var(--accent); }
+  .map-n { position: absolute; top: -7px; right: -7px; min-width: 20px; height: 20px; padding: 0 5px; border-radius: var(--r-pill);
+    background: var(--text); color: var(--bg-elev); font-size: 14px; font-weight: 700; line-height: 20px; box-shadow: 0 0 0 2px var(--bg-elev); }
+  .map-node.zero .map-tile { border-style: dashed; box-shadow: none; opacity: .8; }
+  .map-node.zero .cap { color: var(--text-dim); border-style: dashed; }
+  .map-node.dim { opacity: .22; }
+  .map-node.flip { flex-direction: row-reverse; transform: translate(calc(-100% + 22px), -50%); }
+  .map-node.us { flex-direction: column; transform: translate(-24px, -24px); cursor: default; pointer-events: none; z-index: 1; }
+  .map-node.us .cap { border: 0; background: var(--accent); color: #0A0A0A; text-transform: uppercase; letter-spacing: .06em; }
+  .map-xaxis { display: flex; margin: var(--s-2) 0 0 28px; }
+  .map-xaxis span { flex: 1; text-align: center; font-size: var(--text-caption); letter-spacing: var(--tracking-caption); text-transform: uppercase; color: var(--text-dim); font-weight: 500; }
+  /* the side panel a dot opens */
+  .map-side { display: flex; flex-direction: column; gap: var(--s-4); padding: var(--s-4); border: 1px solid var(--line); border-radius: var(--r-md); background: var(--bg); align-self: start; }
+  .map-side-head { display: grid; grid-template-columns: auto 1fr auto; gap: 12px; align-items: center; }
+  .map-side-head b { display: block; font-size: var(--text-body-lg); color: var(--text); }
+  .map-prox { display: inline-block; margin-top: 2px; font-size: var(--text-caption); color: var(--text-dim); }
+  .map-prox.off { font-style: italic; }
+  .map-side-x { width: 32px; height: 32px; border: 0; border-radius: var(--r-sm); background: none; color: var(--text-dim); cursor: pointer; }
+  .map-side-x:hover { background: var(--hover-bg); color: var(--text); }
+  .map-side-intro { margin: 0; font-size: var(--text-body); line-height: 1.5; color: var(--text-soft); }
+  .map-side-sec { display: flex; flex-direction: column; gap: 6px; }
+  .map-side-n { font-size: var(--fs-md); color: var(--text); }
+  .map-side-links { display: flex; flex-wrap: wrap; gap: 6px; }
+  .map-side-q { display: block; padding: 8px 10px; border-left: 2px solid var(--accent); background: var(--bg-elev); border-radius: 0 var(--r-sm) var(--r-sm) 0;
+    font-size: var(--text-body); line-height: 1.45; color: var(--text-soft); cursor: pointer; text-decoration: none; }
+  .map-side-q:hover { color: var(--text); }
+  .map-side .dx-btn { align-self: flex-start; }
+  /* phones: the same facts as a list, closest market first */
+  .map-list { display: none; }
+  @media (max-width: 720px) {
+    .map-body { display: none; }
+    .map-list { display: flex; flex-direction: column; gap: var(--s-4); }
+    .map-list-band { display: flex; flex-direction: column; gap: 6px; }
+    .map-list-row { display: flex; justify-content: space-between; gap: 12px; padding: 12px; border: 1px solid var(--line); border-radius: var(--r-md);
+      color: var(--text); text-decoration: none; cursor: pointer; }
+    .map-list-row span { color: var(--text-dim); font-size: var(--text-caption); text-align: right; }
+    .map-how { display: none; }
+  }
+  @media (max-width: 1100px) { .map-body.has-side { grid-template-columns: minmax(0, 1fr); } }
+  .map-tile { position: relative; width: 44px; height: 44px; border-radius: var(--r-md); background: var(--bg-elev);
     border: 1px solid var(--line); box-shadow: var(--shadow-subtle);
-    display: grid; place-items: center; font-weight: 600; font-size: var(--text-body); color: var(--text); overflow: hidden; }
-  .map-tile img { width: 100%; height: 100%; object-fit: contain; padding: 6px; }
-  .map-node .cap { font-size: 14px; color: var(--text-dim); max-width: 90px; line-height: 1.25; background: color-mix(in srgb, var(--bg-elev-2) 80%, transparent); border-radius: var(--r-sm); padding: 0 4px; }
-  /* "Us" anchor — solid ink, distinct from the white competitor tiles */
-  .map-node.us { cursor: default; z-index: 4; }
-  .map-tile.us { position: relative; width: 52px; height: 52px; background: var(--text); color: var(--bg-elev);
-    border: none; box-shadow: 0 0 0 4px color-mix(in srgb, var(--text) 12%, transparent); font-size: var(--text-body-lg); }
-  .map-tile.us .you { position: absolute; top: -8px; left: 50%; transform: translateX(-50%);
-    font-size: 14px; font-weight: 700; letter-spacing: 0.5px; background: var(--text); color: var(--bg-elev);
-    padding: 1px 5px; border-radius: var(--r-pill); }
-  .map-node.us .cap b { color: var(--text); }
+    display: grid; place-items: center; font-weight: 600; font-size: var(--text-body); color: var(--text); }
+  .map-tile img { width: 100%; height: 100%; object-fit: contain; padding: 6px; border-radius: inherit; }
+  .map-tile.us { width: 48px; height: 48px; background: var(--accent); color: #0A0A0A; border: none; font-size: var(--text-body-lg); font-weight: 800;
+    box-shadow: 0 0 0 4px var(--bg-elev-2), 0 0 0 5.5px var(--accent); }
   .type-badge.us { color: var(--text); font-weight: 600; }
   .you-badge { background: var(--text); color: var(--bg-elev); font-size: 14px; font-weight: 700;
     letter-spacing: 0.5px; padding: 1px 6px; border-radius: var(--r-pill); margin-right: 4px; }
-  .map-xaxis { display: flex; margin-top: var(--s-2); }
-  .map-xaxis span { flex: 1; text-align: center; font-size: var(--text-caption); letter-spacing: var(--tracking-caption); text-transform: uppercase; color: var(--text-dim); font-weight: 500; }
-  .map-yaxis { font-size: var(--text-caption); letter-spacing: var(--tracking-caption); text-transform: uppercase; color: var(--text-dim); font-weight: 500; margin-bottom: var(--s-2); }
-  /* visual legend under the map — glyph + micro-caption, no prose */
-  .map-legend { display: grid; grid-template-columns: repeat(auto-fit, minmax(215px, 1fr)); gap: var(--s-4);
-    margin-top: var(--s-4); border-top: 1px solid var(--bg); padding-top: var(--s-4); }
-  .lg-i { display: flex; align-items: flex-start; gap: var(--s-3); min-width: 0; }
-  .lg-glyph { width: 40px; height: 40px; flex: none; display: grid; place-items: center; color: var(--text-dim); }
-  .map-legend .map-tile { width: 32px; height: 32px; font-size: 14px; }
-  .map-legend .map-tile.us { box-shadow: 0 0 0 3px color-mix(in srgb, var(--text) 12%, transparent); }
-  .lg-t b { display: block; font-size: var(--text-body); font-weight: 600; color: var(--text); }
-  .lg-t span { display: block; margin-top: 1px; font-size: var(--text-caption); line-height: 1.45; color: var(--text-dim); }
   /* Compare view — Apple-style: three pickers, columns below, project-specific categories */
   .cmp-wrap { max-width: var(--width-column); }
   .cmp-grid { display: grid; grid-template-columns: repeat(3, 1fr); column-gap: var(--s-5); align-items: start; }
@@ -8604,25 +8637,17 @@ const PL = {
   'Give the idea a filename-safe name': 'Nadaj pomysłowi nazwę, która może być nazwą pliku',
   'An idea with that name already exists': 'Pomysł o tej nazwie już istnieje',
   /* market map */
-  'Pulling our users': 'Przyciągają naszych użytkowników',
-  'Same market, quiet so far': 'Ten sam rynek, na razie cicho',
-  'Pull from outside': 'Przyciąganie z zewnątrz',
-  'Periphery': 'Peryferie',
   'TAM — indirect': 'TAM — pośredni', 'SAM — adjacent': 'SAM — sąsiedni', 'SOM — direct (our segment)': 'SOM — bezpośredni (nasz segment)',
-  'A competitor': 'Konkurent',
-  'One dot per <code>Competitors/</code> file. Click it to open the profile.':
-    'Jedna kropka na plik w <code>Competitors/</code>. Kliknij, żeby otworzyć profil.',
-  'You — the anchor': 'Ty — punkt odniesienia',
-  'Fixed top right: your segment, your users. Every dot is read relative to this point.':
-    'Na stałe w prawym górnym rogu: twój segment, twoi użytkownicy. Każdą kropkę czyta się względem tego punktu.',
-  'Right = closer to your market': 'W prawo = bliżej twojego rynku',
-  "The researcher's call (<code>proximity:</code>) — TAM indirect · SAM adjacent · SOM direct.":
-    'Decyzja badacza (<code>proximity:</code>) — TAM pośredni · SAM sąsiedni · SOM bezpośredni.',
-  'Up = heard more often': 'W górę = słyszane częściej',
-  "Distinct participants who brought them up — never market share. A low dot may just mean you haven't asked.":
-    'Liczba różnych uczestników, którzy o nich wspomnieli — nigdy udział w rynku. Nisko położona kropka może znaczyć tylko tyle, że nie pytałeś.',
-  'Participants who brought them up (distinct transcripts)': 'Uczestnicy, którzy sami o nich wspomnieli (odrębne transkrypcje)',
   'How to read the map': 'Jak czytać tę mapę',
+  'Mentioned by': 'Wspominane przez',
+  'Everyone': 'Wszyscy',
+  'Who brought it up': 'Kto wspomniał',
+  'In their words': 'Ich słowami',
+  'Proximity not set': 'Bliskość rynku nieustalona',
+  '{m} of {T} participants': '{m} z {T} uczestników',
+  'Nobody yet — maybe nobody asked': 'Jeszcze nikt — może nikt nie zapytał',
+  "Right = closer to your market — the researcher's call (proximity:): TAM indirect · SAM adjacent · SOM direct. Up = how many of your {T} participants brought it up themselves — never market share; a hollow dot on the zero line may only mean nobody asked. You sit top right: your segment, and every participant is your user.":
+    'W prawo = bliżej Twojego rynku — decyzja badacza (proximity:): TAM pośredni · SAM sąsiedni · SOM bezpośredni. W górę = ilu z Twoich {T} uczestników samo o nim wspomniało — nigdy udział w rynku; pusta kropka na linii zera może znaczyć tylko tyle, że nikt nie zapytał. Ty jesteś w prawym górnym rogu: Twój segment, a każdy uczestnik to Twój użytkownik.',
   /* competitor + hypothesis forms */
   'Competitor name': 'Nazwa konkurenta', 'Website': 'Strona WWW',
   '(optional — feeds the favicon & research)': '(opcjonalne — zasila faviconę i research)',
@@ -9725,55 +9750,101 @@ async function createIdea(){
 }
 function closeIdeaForm(){ document.getElementById('ideaModal').close(); IDEA=null; PROMOTE_FROM=null; }
 
-const PROX_X = { indirect: 17, adjacent: 50, direct: 83 };
+/* The market map — proximity × research mentions (Competitors/README.md).
+   Honest by construction: the vertical scale runs from 0 to every participant
+   you heard (distinctParticipants), so a dot's height IS "brought up by m of
+   N" — not a share of the loudest competitor — and a dot on the zero line is
+   a research gap, drawn hollow. You sit at the top right: your segment, every
+   participant is your user. A column's dots spread side by side (loudest
+   first) with their names beside them, flipped left near the right edge, so
+   nothing stacks. A click opens a side panel (who brought it up, in their
+   words, the way to the profile) instead of leaving the map; "Mentioned by"
+   lights only what one persona's participants named. Phones get a list. */
+const MAP_BANDS = [['indirect', 'TAM — indirect'], ['adjacent', 'SAM — adjacent'], ['direct', 'SOM — direct (our segment)']];
+let MAP_SEL = null, MAP_PERSONA = null, MAP_LIST = [];
+const mapIdsOf = names => new Set([].concat(names||[]).map(t=> byBasename[String(t).replace(/\.md$/i,'').toLowerCase()]).filter(id=> ENTITIES[id] && ENTITIES[id].type==='Transcript' && !isExcluded(ENTITIES[id])));
+function personaTranscriptIds(p){   // a persona's own transcripts: linked directly or through its Signals
+  const ids = new Set(), add = (body, deep)=>{
+    for(const m of body.matchAll(MD_LINK)){
+      if(/^https?:/.test(m[2])) continue;
+      const x = ENTITIES[resolveRef(m[2])]; if(!x) continue;
+      if(x.type==='Transcript') ids.add(x.id); else if(deep && x.type==='Signal') add(x.body, false);
+    }
+  };
+  add(p.body, true); return ids;
+}
+function mapSide(c, N){
+  const m = competitorMentions(c), prox = PROX_LABEL[String(c.fm.proximity||'').trim().toLowerCase()];
+  const ts = [...mapIdsOf(c.fm.mentioned_in)].map(id=> ENTITIES[id]);
+  const said = wsEntities().filter(e=> e.type==='Signal' && [].concat(e.fm.competitors||[]).includes(c.title)).slice(0, 3);
+  const r = picFor(c), tile = r && r.src ? `<img src="${esc(r.src)}" alt="" onerror="this.remove()">` : esc(c.title.slice(0,2));
+  return `<aside class="map-side" aria-label="${esc(c.title)}">
+      <div class="map-side-head"><span class="map-tile">${tile}</span><div><b>${esc(c.title)}</b>${prox ? `<span class="map-prox" title="${esc(prox[1])}">${esc(prox[0])}</span>` : `<span class="map-prox off">${tr('Proximity not set')}</span>`}</div>
+        <button type="button" class="map-side-x" aria-label="${esc(tr('Close'))}">✕</button></div>
+      ${compIntro(c) ? `<p class="map-side-intro">${esc(compIntro(c))}</p>` : ''}
+      <div class="map-side-sec"><span class="dx-fl">${tr('Who brought it up')}</span>
+        <b class="map-side-n">${m ? esc(tr('{m} of {T} participants').replace('{m}', m).replace('{T}', N)) : tr('Nobody yet — maybe nobody asked')}</b>
+        ${ts.length ? `<div class="map-side-links">${ts.map(t=> `<a class="xref" data-goto="${esc(t.id)}">${esc(t.title)}</a>`).join('')}</div>` : ''}</div>
+      ${said.length ? `<div class="map-side-sec"><span class="dx-fl">${tr('In their words')}</span>${said.map(sg=> `<a class="map-side-q" data-goto="${esc(sg.id)}">“${esc(trim((firstQuote(sg.body)||sg.title).replace(/^["“]|["”]$/g,''), 140))}”</a>`).join('')}</div>` : ''}
+      <button type="button" class="dx-btn dx-btn-line dx-btn-sm" data-goto="${esc(c.id)}">${tr('Open profile')} →</button>
+    </aside>`;
+}
 function renderMap(list){
-  const maxM = Math.max(1, ...list.map(competitorMentions));
+  MAP_LIST = list;
+  if(MAP_SEL && !list.some(c=> c.id===MAP_SEL)) MAP_SEL = null;
+  const N = Math.max(1, distinctParticipants(), ...list.map(competitorMentions));
+  const Y = m => 86 - m / N * 74;                         // % from the top: 0 at 86%, everyone at 12%
+  const band = c => Math.max(0, MAP_BANDS.findIndex(b=> b[0]===String(c.fm.proximity||'').trim().toLowerCase()));   // unset → the middle column
+  const personas = wsEntities().filter(e=> e.type==='Persona');
+  const lit = MAP_PERSONA && ENTITIES[MAP_PERSONA] ? personaTranscriptIds(ENTITIES[MAP_PERSONA]) : null;
+  const groups = [[], [], []];
+  list.forEach(c=> groups[band(c)].push(c));
   let nodes = '';
-  list.forEach((c,i)=>{
-    const prox = String(c.fm.proximity||'').trim().toLowerCase();
-    const m = competitorMentions(c);
-    // deterministic jitter so same-cell competitors don't stack
-    const x = Math.min(93, Math.max(7, (PROX_X[prox] ?? 50) + ((i*37)%13) - 6));
-    const y = Math.min(85, Math.max(12, 82 - 58*(m/maxM) + ((i*23)%11) - 5));
-    const r = picFor(c);
-    const tile = r && r.src ? `<img src="${esc(r.src)}" alt="" onerror="this.remove()">` : esc(c.title.slice(0,2));
-    const proxLabel = prox ? prox : 'proximity not set';
-    nodes += `<div class="map-node" role="button" tabindex="0" style="left:${x}%;top:${y}%" data-goto="${c.id}" title="${esc(c.title)} — ${esc(proxLabel)}; brought up by ${m} of ${totalTranscripts()} participants we talked to. Click for details.">
-      <div class="map-tile">${tile}</div><div class="cap">${esc(c.title)}</div></div>`;
-  });
-  // "Us" anchor — top-right: we ARE our own segment (far right) and every
-  // participant is our user (top). The fixed reference everything else is
-  // measured against; visually distinct (solid ink), not a competitor node.
+  groups.forEach(g=> g.sort((a,b)=> competitorMentions(b) - competitorMentions(a) || a.title.localeCompare(b.title)).forEach((c, k)=>{
+    const m = competitorMentions(c), b = band(c), set = String(c.fm.proximity||'').trim();
+    const x = b*33.33 + (k+1) * 33.33 / (g.length+1);
+    const hit = !lit || [...mapIdsOf(c.fm.mentioned_in)].some(id=> lit.has(id));
+    const r = picFor(c), tile = r && r.src ? `<img src="${esc(r.src)}" alt="" onerror="this.remove()">` : esc(c.title.slice(0,2));
+    nodes += `<button type="button" class="map-node${m ? '' : ' zero'}${hit ? '' : ' dim'}${MAP_SEL===c.id ? ' sel' : ''}${x > 78 ? ' flip' : ''}" style="left:${x.toFixed(2)}%;top:${Y(m).toFixed(2)}%" data-c="${esc(c.id)}"
+        aria-label="${esc(c.title)} — ${esc(m ? tr('{m} of {T} participants').replace('{m}', m).replace('{T}', N) : tr('Nobody yet — maybe nobody asked'))}${set ? '' : ' · '+esc(tr('Proximity not set'))}">
+        <span class="map-tile">${tile}${m ? `<b class="map-n">${m}</b>` : ''}</span><span class="cap">${esc(c.title)}</span></button>`;
+  }));
   const prod = getProduct();
-  const usNode = prod ? `<div class="map-node us" style="left:90%;top:11%" title="${esc(prod.name)} — that's us. This is the anchor: our own segment (right) and, by definition, every participant we interviewed is our user (top). Competitors are read relative to this point.">
-      <div class="map-tile us">${esc(prod.name.slice(0,2))}</div><div class="cap"><b>${esc(prod.name)}</b> · ${tr('you')}</div></div>` : '';
+  const us = prod ? `<div class="map-node us" style="left:95%;top:${Y(N).toFixed(2)}%" title="${esc(prod.name)} — ${esc(tr('you'))}"><span class="map-tile us">${esc(prod.name.slice(0,2))}</span><span class="cap">${tr('you')}</span></div>` : '';
+  const step = N <= 6 ? 1 : Math.ceil(N / 5);
+  let ticks = '';
+  for(let v = 0; v <= N; v += step) ticks += `<i class="map-tick" style="top:${Y(v).toFixed(2)}%"><span>${v}</span></i>`;
+  const sel = MAP_SEL && ENTITIES[MAP_SEL];
+  const rows = MAP_BANDS.slice().reverse().map(([key, label], bi)=>{
+    const cs = list.filter(c=> band(c)===2-bi).sort((a,b)=> competitorMentions(b)-competitorMentions(a));
+    return cs.length ? `<div class="map-list-band"><span class="dx-fl">${tr(label)}</span>${cs.map(c=> `<a class="map-list-row" data-goto="${esc(c.id)}"><b>${esc(c.title)}</b><span>${competitorMentions(c) ? esc(tr('{m} of {T} participants').replace('{m}', competitorMentions(c)).replace('{T}', N)) : tr('Nobody yet — maybe nobody asked')}</span></a>`).join('')}</div>` : '';
+  }).join('');
   grid.innerHTML = `<div class="map-card">
-    <div class="map-yaxis">↑ ${tr('Participants who brought them up (distinct transcripts)')}</div>
-    <div class="map-plot">
-      <div class="vline" style="left:33.3%"></div><div class="vline" style="left:66.6%"></div><div class="hline"></div>
-      <div class="map-quad" style="top:0;right:0">${tr('Pulling our users')}</div>
-      <div class="map-quad" style="bottom:0;right:0">${tr('Same market, quiet so far')}</div>
-      <div class="map-quad" style="top:0;left:0">${tr('Pull from outside')}</div>
-      <div class="map-quad" style="bottom:0;left:0">${tr('Periphery')}</div>
-      ${usNode}${nodes}
+    <div class="map-bar">
+      <div class="map-filter" role="group" aria-label="${esc(tr('Mentioned by'))}"><span class="dx-fl">${tr('Mentioned by')}</span>
+        <button type="button" class="map-chip${MAP_PERSONA ? '' : ' on'}" data-p="">${tr('Everyone')}</button>
+        ${personas.map(p=> `<button type="button" class="map-chip${MAP_PERSONA===p.id ? ' on' : ''}" data-p="${esc(p.id)}">${faceHtml(p, 'dx-face-xs')}${esc(p.title.split(/\s+[—–-]\s+/)[0])}</button>`).join('')}</div>
+      <span class="dx-fl map-how">${tr('How to read the map')}${dxTip(tr('How to read the map'), esc(tr("Right = closer to your market — the researcher's call (proximity:): TAM indirect · SAM adjacent · SOM direct. Up = how many of your {T} participants brought it up themselves — never market share; a hollow dot on the zero line may only mean nobody asked. You sit top right: your segment, and every participant is your user.").replace('{T}', N)), 'right')}</span>
     </div>
-    <div class="map-xaxis"><span>${tr('TAM — indirect')}</span><span>${tr('SAM — adjacent')}</span><span>${tr('SOM — direct (our segment)')}</span></div>
-    <div class="map-legend" aria-label="${esc(tr('How to read the map'))}">
-      <div class="lg-i"><span class="lg-glyph"><span class="map-tile">Aa</span></span>
-        <div class="lg-t"><b>${tr('A competitor')}</b><span>${tr('One dot per <code>Competitors/</code> file. Click it to open the profile.')}</span></div></div>
-      <div class="lg-i"><span class="lg-glyph"><span class="map-tile us">${prod?esc(prod.name.slice(0,2)):'Us'}</span></span>
-        <div class="lg-t"><b>${tr('You — the anchor')}</b><span>${tr('Fixed top right: your segment, your users. Every dot is read relative to this point.')}</span></div></div>
-      <div class="lg-i"><span class="lg-glyph"><svg width="26" height="14" viewBox="0 0 26 14" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="2" y1="7" x2="22" y2="7"/><polyline points="17 2 22 7 17 12"/></svg></span>
-        <div class="lg-t"><b>${tr('Right = closer to your market')}</b><span>${tr("The researcher's call (<code>proximity:</code>) — TAM indirect · SAM adjacent · SOM direct.")}</span></div></div>
-      <div class="lg-i"><span class="lg-glyph"><svg width="14" height="26" viewBox="0 0 14 26" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="7" y1="24" x2="7" y2="4"/><polyline points="2 9 7 4 12 9"/></svg></span>
-        <div class="lg-t"><b>${tr('Up = heard more often')}</b><span>${tr("Distinct participants who brought them up — never market share. A low dot may just mean you haven't asked.")}</span></div></div>
+    <div class="map-body${sel ? ' has-side' : ''}">
+      <div class="map-main">
+        <div class="map-plot">
+          <i class="map-band" style="left:33.33%"></i><i class="map-band" style="left:66.66%"></i>
+          ${ticks}${us}${nodes}
+        </div>
+        <div class="map-xaxis">${MAP_BANDS.map(b=> `<span>${tr(b[1])}</span>`).join('')}</div>
+      </div>
+      ${sel ? mapSide(sel, N) : ''}
     </div>
+    <div class="map-list">${rows}</div>
   </div>`;
-  grid.querySelectorAll('.map-node[data-goto]').forEach(n=>{
-    const go = ()=>{ location.hash = '#'+n.dataset.goto; };
-    n.onclick = go;
-    n.onkeydown = ev=>{ if(ev.key==='Enter' || ev.key===' '){ ev.preventDefault(); go(); } };
-  });
+  const card = grid.querySelector('.map-card');
+  const again = ()=> renderMap(MAP_LIST);
+  card.querySelectorAll('.map-node[data-c]').forEach(n=> n.onclick = ()=>{ MAP_SEL = MAP_SEL===n.dataset.c ? null : n.dataset.c; again(); grid.querySelector(`.map-node[data-c="${CSS.escape(n.dataset.c)}"]`)?.focus(); });
+  card.querySelectorAll('.map-chip').forEach(b=> b.onclick = ()=>{ MAP_PERSONA = b.dataset.p || null; again(); });
+  card.querySelectorAll('[data-goto]').forEach(a=> a.onclick = ()=>{ location.hash = '#'+a.dataset.goto; });
+  const x = card.querySelector('.map-side-x'); if(x) x.onclick = ()=>{ MAP_SEL = null; again(); };
+  card.onkeydown = ev=>{ if(ev.key==='Escape' && MAP_SEL){ ev.stopPropagation(); MAP_SEL = null; again(); } };
 }
 /* everything the filter can match: title + body + frontmatter VALUES (feature
    tags, participant, dates, status…) — case-insensitive. Long values (inline

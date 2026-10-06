@@ -1350,25 +1350,17 @@ const PL = {
   'Give the idea a filename-safe name': 'Nadaj pomysłowi nazwę, która może być nazwą pliku',
   'An idea with that name already exists': 'Pomysł o tej nazwie już istnieje',
   /* market map */
-  'Pulling our users': 'Przyciągają naszych użytkowników',
-  'Same market, quiet so far': 'Ten sam rynek, na razie cicho',
-  'Pull from outside': 'Przyciąganie z zewnątrz',
-  'Periphery': 'Peryferie',
   'TAM — indirect': 'TAM — pośredni', 'SAM — adjacent': 'SAM — sąsiedni', 'SOM — direct (our segment)': 'SOM — bezpośredni (nasz segment)',
-  'A competitor': 'Konkurent',
-  'One dot per <code>Competitors/</code> file. Click it to open the profile.':
-    'Jedna kropka na plik w <code>Competitors/</code>. Kliknij, żeby otworzyć profil.',
-  'You — the anchor': 'Ty — punkt odniesienia',
-  'Fixed top right: your segment, your users. Every dot is read relative to this point.':
-    'Na stałe w prawym górnym rogu: twój segment, twoi użytkownicy. Każdą kropkę czyta się względem tego punktu.',
-  'Right = closer to your market': 'W prawo = bliżej twojego rynku',
-  "The researcher's call (<code>proximity:</code>) — TAM indirect · SAM adjacent · SOM direct.":
-    'Decyzja badacza (<code>proximity:</code>) — TAM pośredni · SAM sąsiedni · SOM bezpośredni.',
-  'Up = heard more often': 'W górę = słyszane częściej',
-  "Distinct participants who brought them up — never market share. A low dot may just mean you haven't asked.":
-    'Liczba różnych uczestników, którzy o nich wspomnieli — nigdy udział w rynku. Nisko położona kropka może znaczyć tylko tyle, że nie pytałeś.',
-  'Participants who brought them up (distinct transcripts)': 'Uczestnicy, którzy sami o nich wspomnieli (odrębne transkrypcje)',
   'How to read the map': 'Jak czytać tę mapę',
+  'Mentioned by': 'Wspominane przez',
+  'Everyone': 'Wszyscy',
+  'Who brought it up': 'Kto wspomniał',
+  'In their words': 'Ich słowami',
+  'Proximity not set': 'Bliskość rynku nieustalona',
+  '{m} of {T} participants': '{m} z {T} uczestników',
+  'Nobody yet — maybe nobody asked': 'Jeszcze nikt — może nikt nie zapytał',
+  "Right = closer to your market — the researcher's call (proximity:): TAM indirect · SAM adjacent · SOM direct. Up = how many of your {T} participants brought it up themselves — never market share; a hollow dot on the zero line may only mean nobody asked. You sit top right: your segment, and every participant is your user.":
+    'W prawo = bliżej Twojego rynku — decyzja badacza (proximity:): TAM pośredni · SAM sąsiedni · SOM bezpośredni. W górę = ilu z Twoich {T} uczestników samo o nim wspomniało — nigdy udział w rynku; pusta kropka na linii zera może znaczyć tylko tyle, że nikt nie zapytał. Ty jesteś w prawym górnym rogu: Twój segment, a każdy uczestnik to Twój użytkownik.',
   /* competitor + hypothesis forms */
   'Competitor name': 'Nazwa konkurenta', 'Website': 'Strona WWW',
   '(optional — feeds the favicon & research)': '(opcjonalne — zasila faviconę i research)',

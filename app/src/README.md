@@ -41,7 +41,7 @@ what 16px should become.
 | 02-parse-state.js | frontmatter parser, global state, per-project storage, link resolver, "us" competitor |
 | 03-workspaces-nav.js | workspaces + switcher, sidebar nav, page subtitles, skin classes. Also `projectNameOverride`/`projectDisplayName` — `project_name:` in `Product Context.md` frontmatter is what the project is *called* (workspace label, Projects list); the folder name stays wherever we talk about the folder itself |
 | 04-gallery-stats.js | gallery views per tab, heard-from strength, exclusions, freshness, margin of error |
-| 05-affinity-drafts.js | affinity board, new-idea form, local drafts, demo sandbox + write-through, rehydrate |
+| 05-affinity-drafts.js | the competitor market map (`renderMap`: proximity × "brought up by m of N" on a real 0…N scale, hollow dots for never-mentioned, side panel `mapSide`, "Mentioned by" persona filter, a list on phones), affinity board, new-idea form, local drafts, demo sandbox + write-through, rehydrate |
 | 06-filter-tables.js | filter matching, participant counts, table columns/sorting (a 4th `'fit'` in `TABLE_COLS` sizes a column to its widest cell until the user drags it), highlights board, competitor list rows |
 | 07-compare-votes.js | competitor compare view, markdown table cells, idea voting, YAML vote block |
 | 08-highlights-hypotheses.js | transcript highlights + tag rename, hypotheses + promote flow, new competitor/hypothesis forms, email masking |
