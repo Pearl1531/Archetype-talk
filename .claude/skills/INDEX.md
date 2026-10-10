@@ -16,6 +16,7 @@ or re-describing a skill.
 | **`/ai-persona`** | Core skill for creating and leveling up intention-based personas across the knowledge graph. Use when the user wants to create a persona/archetype, deepen one to the next level, turn research into Evidence/Signal files, or export a persona for PMs. | 4, load on demand |
 | **`/analytics-sync`** | Connect Mixpanel, GA4, or Amplitude read-only over MCP and turn query results into internal Evidence files. Use for product-usage numbers grounding persona claims or "what % of users…" questions. | 3, load on demand |
 | **`/backlog`** | Review and manage Research backlog.md. Use when the user runs /backlog, asks what's open to research, wants to dedupe/close backlog questions, or plan the next research round. | — |
+| **`/catalog`** | Organizes Signals and Evidence that already exist — themes for signals, topic tags that become evidence folders, missing quote translations, the evidence fields the AI reads first, and a list of what is still unsorted. Use on /catalog, or when the user asks to tidy, sort, group, catalogue or "clean up" signals or evidence. Never extracts new findings (that is /extract-findings) and never changes what a human curated. | — |
 | **`/cold-start`** | Founding-brief protocol for a project with ZERO research data — no transcripts, no reports, empty Inbox. Interviews the founder and plans the first research round. Runs ONLY when the user explicitly invokes /cold-start. | — |
 | **`/contradictions`** | Find and report places where the graph disagrees with itself — Signals vs Signals, Signals vs Evidence, personas vs their sources. Use when the user runs /contradictions, asks where the data conflicts, or when another skill flags a divergence. | — |
 | **`/demo-data`** | List, keep, separate, or delete the demo dataset so it's never mistaken for real research. Use on /demo-data or when asked to clean up/remove/separate demo content. | — |
@@ -41,4 +42,4 @@ or re-describing a skill.
 | **`/subject-access`** | Answer a participant's "what do you hold about me?" — collect everything traceable to one person into a readable bundle (GDPR Art. 15 access, Art. 20 portability). Use on /subject-access or when a participant asks for their data. | — |
 | **`/welcome`** | First-run onboarding — greet a new user, explain what Archetype Talk is and whose it is, list capabilities, and route to setup or the demo persona. Runs via the SessionStart hook on fresh installs or on /welcome. | — |
 
-28 skills. References are loaded **only** when the skill says that mode has activated — never upfront.
+29 skills. References are loaded **only** when the skill says that mode has activated — never upfront.

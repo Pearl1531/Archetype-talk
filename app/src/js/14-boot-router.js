@@ -622,10 +622,12 @@ sideSearch.addEventListener('keydown', ev=>{ if(ev.key==='Escape'){ sideSearch.v
 document.addEventListener('keydown', ev=>{
   if((ev.metaKey || ev.ctrlKey) && !ev.altKey && ev.key.toLowerCase()==='k'){ ev.preventDefault(); sideSearch.focus(); sideSearch.select(); }
 });
+document.getElementById('viewFoldersBtn').onclick = ()=> setView('folders');
 document.getElementById('viewCardsBtn').onclick = ()=> setView('cards');
 document.getElementById('viewListBtn').onclick = ()=> setView('list');
 document.getElementById('viewTableBtn').onclick = ()=> setView('table');
 document.getElementById('viewMapBtn').onclick = ()=> setView('map');
+document.getElementById('viewSourcesBtn').onclick = ()=> setView('sources');
 document.getElementById('viewCompareBtn').onclick = ()=> setView('compare');
 document.getElementById('viewAffinityBtn').onclick = ()=> setView('affinity');
 document.getElementById('viewHlBtn').onclick = ()=> setView('hl');

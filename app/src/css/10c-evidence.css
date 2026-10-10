@@ -1,0 +1,120 @@
+  /* ── Evidence: folders by topic and the strength of each piece (07b-evidence.js)
+     A folder sits closed — its papers tucked behind the front. Under the
+     pointer it opens a little (papers rise and fan, the front tips back); a
+     click opens it fully and spreads its sheets out in the drawer below. The
+     states hold without motion too; only the travel between them is gated. */
+  .ev-wrap { display: flex; flex-direction: column; gap: 28px; }
+  .ev-chips { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; }
+  .ev-chip-n { font-family: var(--font-mono); opacity: .7; }
+  .ev-how { margin-left: auto; }
+
+  .ev-folders { display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 44px 24px; padding-top: 22px; }
+  .ev-fold { position: relative; height: 214px; padding: 0; border: 0; background: none; text-align: left; font: inherit; color: var(--text); cursor: pointer; }
+  .ev-back { position: absolute; inset: 22px 0 0 0; border-radius: 0 16px 16px 16px; background: #D9D3C6; }
+  .ev-back::before { content: ""; position: absolute; left: 0; top: -22px; width: 46%; height: 34px; border-radius: 14px 14px 0 0; background: inherit; }
+  .ev-paper { position: absolute; left: 16px; right: 18px; top: 40px; height: 120px; box-sizing: border-box; border-radius: 8px;
+    background: #FAF9F5; border: 1px solid var(--line); translate: 0 36px; }
+  .ev-paper.p2 { left: 22px; right: 12px; background: #FFFFFF; }
+  .ev-paper.p3 { left: 28px; right: 24px; padding: 10px 12px; background: #FFFFFF; font-size: 14px; line-height: 1.4; color: var(--text-dim); overflow: hidden; }
+  .ev-front { position: absolute; left: 0; right: 0; bottom: 0; height: 150px; box-sizing: border-box; padding: 16px 18px; border-radius: 16px;
+    background: #F6F3EC; border: 1px solid var(--line); display: flex; flex-direction: column; gap: 6px; transform-origin: 50% 100%; }
+  .ev-fold-h { display: flex; align-items: baseline; gap: 10px; }
+  .ev-fold-h b { font-size: 20px; font-weight: 700; letter-spacing: -0.02em; }
+  .ev-fold-h span { margin-left: auto; font-family: var(--font-mono); font-size: 14px; color: var(--text-dim); white-space: nowrap; }
+  .ev-fold-n { display: flex; align-items: center; gap: 10px; }
+  .ev-fold-n b { font-size: 34px; font-weight: 800; line-height: 1; letter-spacing: -0.04em; }
+  .ev-fold-n span { font-size: 14px; font-weight: 600; line-height: 1.25; }
+  .ev-fold-n small { display: block; font-weight: 400; color: var(--text-dim); }
+  .ev-warn { margin-top: auto; font-size: 14px; color: var(--accent-text); }
+  .ev-warn.ok { color: #1F7A4D; }
+  .ev-warn.loose { color: var(--text-dim); }
+  /* Unsorted is a pile, not a folder: no tab, no back, its papers lie askew
+     and the front is a loose sheet with a dashed edge */
+  .ev-fold.loose .ev-back { display: none; }
+  .ev-fold.loose .ev-paper { translate: 0 10px; }
+  .ev-fold.loose .p1 { rotate: -4deg; } .ev-fold.loose .p2 { rotate: 3deg; } .ev-fold.loose .p3 { rotate: -1.5deg; }
+  .ev-fold.loose .ev-front { background: var(--bg-elev); border: 1.5px dashed var(--edge); }
+  .ev-fold:focus-visible { outline: none; }
+  .ev-fold:focus-visible .ev-front { box-shadow: 0 0 0 2px var(--text); }
+  /* open: the folder's tab and back turn ink, its papers stand up */
+  .ev-fold.open .ev-back { background: var(--text); }
+  .ev-fold.open .ev-front { background: var(--bg-elev); border: 1.5px solid var(--text); transform: perspective(700px) rotateX(-16deg); }
+  .ev-fold.open .p1 { translate: 0 -12px; rotate: -5deg; }   /* also for the pile: open lifts its sheets too */
+  .ev-fold.open .p2 { translate: 0 -20px; rotate: 4deg; }
+  .ev-fold.open .p3 { translate: 0 -28px; rotate: -2deg; }
+  @media (hover: hover) {
+    .ev-fold:not(.open):hover .p1 { translate: 0 8px; rotate: -3deg; }
+    .ev-fold:not(.open):hover .p2 { translate: 0 2px; rotate: 2deg; }
+    .ev-fold:not(.open):hover .p3 { translate: 0 -4px; rotate: -1deg; }
+    .ev-fold:not(.open):hover .ev-front { transform: perspective(700px) rotateX(-7deg); box-shadow: 0 22px 40px -26px rgba(10,10,10,.45); }
+  }
+
+  /* the drawer the open folder spreads into */
+  .ev-drawer { padding: 24px; border-radius: 20px; background: #E2DED5; display: flex; flex-direction: column; gap: 18px; }
+  .ev-drawer-h { display: flex; align-items: center; gap: 14px; flex-wrap: wrap; }
+  .ev-drawer-h h2 { margin: 0; font-size: 30px; font-weight: 800; letter-spacing: -0.03em; line-height: 1; }
+  .ev-drawer-h > span { color: var(--text-soft); }
+  .ev-sort { font-size: 14px; color: var(--text-dim) !important; }
+  .ev-close { width: 36px; height: 36px; border-radius: 10px; border: 1px solid var(--line); background: var(--bg-elev); color: var(--text); cursor: pointer; }
+  .ev-close:hover { border-color: var(--hover-border); }
+  /* what the open folder is made of: one bar, a segment per grade */
+  .ev-mix { display: flex; flex-direction: column; gap: 10px; }
+  .ev-mix-bar { display: flex; gap: 4px; height: 12px; }
+  .ev-mix-bar i { min-width: 12px; border-radius: 999px; box-sizing: border-box; transform-origin: 0 50%; }
+  .ev-mix i.ok { background: var(--text); }
+  .ev-mix i.single { background: #A8A399; }
+  .ev-mix i.zero { background: var(--bg-elev); border: 1.5px dashed var(--text-dim); box-sizing: border-box; }
+  .ev-mix-key i { width: 12px; height: 12px; border-radius: 50%; }
+  .ev-mix-key { display: flex; flex-wrap: wrap; gap: 6px 20px; font-size: 14px; color: var(--text-soft); }
+  .ev-mix-key span { display: inline-flex; align-items: center; gap: 8px; }
+
+  .ev-mix-key b { font-size: 16px; font-weight: 800; color: var(--text); }
+  .ev-sheets { display: grid; grid-template-columns: repeat(auto-fill, minmax(420px, 1fr)); gap: 16px; }
+  .ev-sheet { background: var(--bg-elev); border: 1px solid var(--line); border-radius: 14px; padding: 18px 20px;
+    display: grid; grid-template-columns: minmax(0, 1fr) 150px; gap: 6px 18px; }
+  .ev-sheet-main { display: flex; flex-direction: column; gap: 6px; min-width: 0; }
+  .ev-no { font-family: var(--font-mono); font-size: 14px; color: var(--text-mute); }
+  .ev-title { font-size: 18px; font-weight: 700; letter-spacing: -0.01em; line-height: 1.3; }
+  .ev-sheet p { margin: 0; font-size: var(--text-body); line-height: 1.5; color: var(--text-soft); }
+  /* strength: confirming signals lead, the people behind them follow */
+  .ev-strength { border-left: 1px solid var(--line); padding-left: 16px; display: flex; flex-direction: column; gap: 3px; }
+  .ev-strength b { font-size: 40px; font-weight: 800; line-height: 1; letter-spacing: -0.04em; }
+  .ev-strength span { font-size: 14px; font-weight: 600; line-height: 1.25; }
+  .ev-strength small { font-size: 14px; color: var(--text-dim); }
+  .ev-strength.zero b { color: var(--edge); }
+  .ev-strength small.none { color: var(--accent-text); }
+  .ev-lv { font-size: 14px; color: var(--text-soft); white-space: nowrap; }
+  .ev-foot { grid-column: 1 / -1; margin-top: 8px; padding-top: 10px; border-top: 1px solid var(--line-soft);
+    display: flex; flex-wrap: wrap; align-items: center; gap: 6px 16px; font-size: 14px; color: var(--text-soft); }
+  .ev-foot > span { display: inline-flex; align-items: center; gap: 6px; }
+  .ev-foot-k { color: var(--text-dim); }
+  .ev-foot svg { width: 15px; height: 15px; flex: none; color: var(--text-dim); }
+  .ev-foot .row-menu { margin-right: -8px; }
+  .ev-flag { margin-left: auto; height: 24px; padding: 0 9px; border-radius: 999px; background: var(--bg-elev-2); font-weight: 600; color: var(--text-soft); }
+  .ev-flag.ok { background: #E7F6EC; color: #1F7A4D; }
+  .ev-flag.warn { background: #FFE9DF; color: var(--accent-text); }
+  .ev-none { margin: 0; color: var(--text-dim); }
+  /* the table's "Confirmed by" */
+  .ev-cell { display: inline-flex; align-items: center; gap: 10px; }
+  .ev-cell b { min-width: 18px; font-size: 18px; font-weight: 800; color: var(--text); }
+  .ev-stale { color: var(--accent-text); }
+
+  @media (prefers-reduced-motion: no-preference) {
+    @keyframes evSheetIn { from { opacity: 0; translate: 0 18px; rotate: -1deg; } }
+    .ev-paper { transition: translate .55s var(--ease-spring), rotate .55s var(--ease-spring); }
+    .ev-front { transition: transform .5s var(--ease-out), box-shadow .4s var(--ease-out), background .3s, border-color .3s; }
+    .ev-back { transition: background .3s; }
+    .ev-sheet { animation: evSheetIn .6s var(--ease-out) backwards; animation-delay: calc(var(--i, 0) * 70ms);
+      transition: translate .35s var(--ease-out), box-shadow .35s var(--ease-out); }
+    @keyframes evMixIn { from { transform: scaleX(0); } }
+    .ev-mix-bar i { animation: evMixIn .7s var(--ease-out) backwards; animation-delay: calc(120ms + var(--i, 0) * 110ms); }
+  }
+  @media (hover: hover) and (prefers-reduced-motion: no-preference) {
+    .ev-sheet:hover { translate: 0 -3px; box-shadow: 0 18px 32px -22px rgba(10,10,10,.4); }
+  }
+  @media (max-width: 720px) {
+    .ev-sheets { grid-template-columns: minmax(0, 1fr); }
+    .ev-sheet { grid-template-columns: minmax(0, 1fr); }
+    .ev-strength { border-left: 0; padding-left: 0; flex-direction: row; flex-wrap: wrap; align-items: baseline; gap: 8px; }
+    .ev-how { display: none; }
+  }

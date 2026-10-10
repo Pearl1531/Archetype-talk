@@ -70,7 +70,11 @@ FLAG_KEYS = [
     "special_category", "date", "retrieved", "retention_until", "anonymization",
     "key_location", "needs_research", "highlight_tags", "topics",
     "mentions_competitors", "interview_id", "method", "proximity", "feature",
+    "tags", "source_kind", "primary_checked", "question", "stakes",
 ]
+# the keys that name a topic: the Topics section turns them round (topic -> files),
+# so "do we have anything on X?" is one lookup instead of a grep over every folder
+TOPIC_KEYS = ["tags", "topics", "feature", "affinity"]
 
 
 # --------------------------------------------------------------------------
@@ -486,6 +490,28 @@ def cmd_build(argv):
             row += " · → " + "; ".join(t[:-3] for t in e["links"])
         lines.append(row)
     lines.append("")
+
+    # topic -> files, project and demo apart. Routing only: a topic here says a
+    # file is tagged with it, not what the file says — and an untagged file is
+    # absent, never "about nothing". Grep the folders when the topic is not here.
+    lines.append("## Topics — tag, topic, feature or affinity → files")
+    lines.append("")
+    for label, demo in (("This project", False), ("Demo — not this project", True)):
+        topics = {}
+        for p, e in entities.items():
+            if e.get("template") or is_demo(p) != demo:
+                continue
+            for k in TOPIC_KEYS:
+                v = e["flags"].get(k)
+                for t in (v if isinstance(v, list) else [v] if isinstance(v, str) else []):
+                    if str(t).strip():
+                        topics.setdefault(str(t).strip().lower(), set()).add(p[:-3])
+        if not topics:
+            continue
+        lines.append(f"**{label}**")
+        for t in sorted(topics):
+            lines.append(f"- {t}: " + "; ".join(sorted(topics[t])))
+        lines.append("")
 
     if orphans:
         lines.append("## Orphans — nothing links in or out")

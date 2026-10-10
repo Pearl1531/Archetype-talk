@@ -83,7 +83,7 @@ async function removeHighlight(e, hln){
 }
 function hlAllTagNames(){
   const s=new Set();
-  wsEntities().filter(x=>x.type==='Transcript').forEach(x=> entityHighlights(x).forEach(h=> h.tags.forEach(t=>s.add(t))));
+  wsEntities().filter(x=>x.type==='Transcript' || x.type==='Evidence').forEach(x=> entityHighlights(x).forEach(h=> h.tags.forEach(t=>s.add(t))));
   return [...s].sort((a,b)=>a.localeCompare(b));
 }
 /* Rename a tag across every transcript (newName '' = delete the tag; rename
@@ -136,10 +136,10 @@ function hypoSourceIds(e){
 function hypoToIdeaPrefill(e){
   const clean = s => stripLinks(s).replace(/[,.\s]+$/,'').trim();
   return {
-    name:   e.title.replace(/^Hypothesis:\s*/i,'').trim(),
-    when:   clean(afterLabel(e.body,'If')),
-    want:   clean(afterLabel(e.body,'By')),
-    sothat: clean(afterLabel(e.body,'Will')),
+    name:   hyName(e),
+    when:   clean(hyPartRaw(e,'if')),
+    want:   clean(hyPartRaw(e,'by')),
+    sothat: clean(hyPartRaw(e,'will')),
     sourceIds: hypoSourceIds(e)
   };
 }
@@ -184,10 +184,19 @@ function authorChip(e){
   const label = ai ? (model || 'AI') : a.replace(/\s*<[^>]*>/, '').split(/\s+[—–-]\s+/)[0];
   return `<span class="tag author-chip" title="${esc(a)}">${ai?'🤖':'👤'} ${esc(trim(label, 24))}</span>`;
 }
-async function deleteHypothesis(id){
-  let e = ENTITIES[id]; if(!e || e.type!=='Hypothesis') return;
+/* Delete a hypothesis or a piece of evidence — the file goes, Undo brings it
+   back. Evidence that Signals cite says so first: their links to it would break. */
+const DEL_WORDS = {
+  Hypothesis: ['Delete the hypothesis “{name}”?', 'Hypothesis deleted', 'Hypothesis restored ✓'],
+  Evidence:   ['Delete the evidence “{name}”?', 'Evidence deleted', 'Evidence restored ✓'],
+};
+async function deleteEntity(id){
+  let e = ENTITIES[id]; if(!e || !DEL_WORDS[e.type]) return;
   const w = await ensureWritable(e); if(!w) return; e = w;
-  if(!confirm(tr('Delete the hypothesis “{name}”?').replace('{name}', e.title.replace(/^Hypothesis:\s*/,''))
+  const words = DEL_WORDS[e.type];
+  const cited = e.type==='Evidence' ? (evidenceIndex().get(id)?.sig.size || 0) : 0;
+  if(!confirm(tr(words[0]).replace('{name}', e.title.replace(HY_PREFIX,''))
+      + (cited ? '\n' + trn(cited, '{n} Signal cites it — its link to it will stop working.', '{n} Signals cite it — their links to it will stop working.', 'Cytuje go {n} Sygnał — jego link przestanie działać.', 'Cytują go {n} Sygnały — ich linki przestaną działać.', 'Cytuje go {n} Sygnałów — ich linki przestaną działać.') : '')
       + '\n' + tr(e.draft ? 'It is a local draft — this cannot be undone later.'
                 : e.handle ? 'The .md file will be removed from disk.'
                 : '(Demo sandbox — Reset demo can always bring it back.)'))) return;
@@ -207,12 +216,12 @@ async function deleteHypothesis(id){
   delete ENTITIES[id]; reindex();
   if(CURRENT===id){ location.hash=''; }
   renderWsMenu(); renderTabs(); renderGrid(searchInput.value);
-  toast(tr('Hypothesis deleted'), {label:tr('Undo'), fn: async ()=>{
+  toast(tr(words[1]), {label:tr('Undo'), fn: async ()=>{
     if(trash.hadHandle){ await writeRepoFile(trash.file, trash.md); const fh=await getFileHandleFor(trash.file); const ne=parseEntity(trash.md, trash.file); ne.id=id; ne.handle=fh; ne.ws=trash.ws; ENTITIES[id]=ne; }
     else if(trash.wasDraft){ const ne=parseEntity(trash.md, trash.file); ne.id=id; ne.draft=true; ne.ws=trash.ws; ENTITIES[id]=ne; persistDraft(trash.file, trash.md, trash.ws); }
     else { const m=loadDemoOverlay(); delete m[trash.file]; saveDemoOverlay(m); if(EMBEDDED_DEMO[id]) ENTITIES[id]=EMBEDDED_DEMO[id]; }
     reindex(); renderWsMenu(); renderTabs(); renderGrid(searchInput.value);
-    toast(tr('Hypothesis restored ✓'));
+    toast(tr(words[2]));
   }});
 }
 async function editHypothesis(id){
@@ -318,23 +327,27 @@ let HYPO = null;
 function openHypoForm(editEnt){
   HYPO = editEnt
     ? { editId: editEnt.id,
-        name: editEnt.title.replace(/^Hypothesis:\s*/i,'').trim(),
+        name: hyName(editEnt),
         feature: String(editEnt.fm.feature||''),
-        if_: stripLinks(afterLabel(editEnt.body,'If')).replace(/,\s*$/,''),
-        by: stripLinks(afterLabel(editEnt.body,'By')).replace(/,\s*$/,''),
-        will: stripLinks(afterLabel(editEnt.body,'Will')).replace(/,\s*$/,''),
-        because: stripLinks(afterLabel(editEnt.body,'Because')).replace(/[.,]\s*$/,''),
+        if_: hyPart(editEnt,'if'), by: hyPart(editEnt,'by'), will: hyPart(editEnt,'will'), because: hyPart(editEnt,'because'),
+        for_: resolveRef((hyPartRaw(editEnt,'for').match(/\]\(([^)]+)\)/)||[])[1]||'') || '',
+        instead: hyPart(editEnt,'instead'), wrong: hyWrongIf(editEnt),
         sel: hypoSourceIds(editEnt) }
-    : { name:'', feature:'', if_:'', by:'', will:'', because:'', sel:[] };
+    : { name:'', feature:'', if_:'', by:'', will:'', because:'', for_:'', instead:'', wrong:'', sel:[] };
+  const personas = wsEntities().filter(x=> x.type==='Persona').sort((a,b)=> a.title.localeCompare(b.title));
   document.getElementById('hypoModal').showModal();
-  document.querySelector('#hypoModal .modal-head h2').textContent = editEnt ? 'Edit hypothesis' : 'New hypothesis';
+  document.querySelector('#hypoModal .modal-head h2').textContent = tr(editEnt ? 'Edit hypothesis' : 'New hypothesis');
   document.getElementById('hypoBody').innerHTML = `
     <div class="idea-field"><label>${tr('Hypothesis name')}</label><input id="hfName" value="${esc(HYPO.name)}" placeholder="${esc(tr('e.g. Guest mode protects recommendations'))}" autocomplete="off"></div>
     <div class="idea-field"><label>${tr('Feature it concerns')} <span class="muted">${tr('(optional)')}</span></label><input id="hfFeature" value="${esc(HYPO.feature)}" placeholder="${esc(tr('e.g. listening-profiles'))}" autocomplete="off"></div>
+    <div class="idea-field"><label>${LANG==='pl' ? 'Dla' : 'For'} <span class="muted">${tr('— the persona this bet is about (optional)')}</span></label>
+      <select id="hfFor" class="set-input"><option value="">${tr('nobody in particular')}</option>${personas.map(x=> `<option value="${x.id}"${HYPO.for_===x.id?' selected':''}>${esc(x.title)}</option>`).join('')}</select></div>
     <div class="idea-field"><label>${tr('If')} <span class="muted">${tr('— we do X')}</span></label><textarea id="hfIf" placeholder="${esc(tr('we add a one-tap guest mode'))}">${esc(HYPO.if_)}</textarea></div>
     <div class="idea-field"><label>${tr('By')} <span class="muted">${tr('— the mechanism')}</span></label><textarea id="hfBy" placeholder="${esc(tr('excluding guest playback from taste modeling'))}">${esc(HYPO.by)}</textarea></div>
+    <div class="idea-field"><label>${tr('Instead of')} <span class="muted">${tr('— what we compare it with (optional)')}</span></label><textarea id="hfInstead" placeholder="${esc(tr('asking listeners to clean their history by hand'))}">${esc(HYPO.instead)}</textarea></div>
     <div class="idea-field"><label>${tr('Will')} <span class="muted">${tr('— the checkable outcome')}</span></label><textarea id="hfWill" placeholder="${esc(tr('trust in Discover Weekly recovers'))}">${esc(HYPO.will)}</textarea></div>
     <div class="idea-field"><label>${tr('Because')} <span class="muted">${tr('— the assumption this bet rests on')}</span></label><textarea id="hfBecause" placeholder="${esc(tr('we assume distrust comes from polluting sessions, not the recommender'))}">${esc(HYPO.because)}</textarea></div>
+    <div class="idea-field"><label>${tr('Argument against this hypothesis')} <span class="muted">${tr('(optional — what would show that it is wrong)')}</span></label><textarea id="hfWrong" placeholder="${esc(tr('listeners who never share their account distrust Discover Weekly just as much'))}">${esc(HYPO.wrong)}</textarea></div>
     <div class="idea-field">
       <label>${tr('Hints')} <span class="muted">${tr('(optional — a hypothesis needs NO grounding; link a quote/signal only if one inspired it)')}</span></label>
       <div class="idea-pick">
@@ -342,9 +355,11 @@ function openHypoForm(editEnt){
         <div class="idea-pick-list" id="hfList"></div>
       </div>
     </div>
-    ${DIRHANDLE ? '' : `<div class="idea-draft-note">📝 No folder connected — saved as a local draft in this browser.</div>`}`;
+    ${DIRHANDLE ? '' : `<div class="idea-draft-note">📝 ${tr('No folder connected — saved as a local draft in this browser.')}</div>`}`;
   const bind=(fid,key)=>{ const el=document.getElementById(fid); el.oninput=()=>{ HYPO[key]=el.value; validateHypo(); }; };
   bind('hfName','name'); bind('hfFeature','feature'); bind('hfIf','if_'); bind('hfBy','by'); bind('hfWill','will'); bind('hfBecause','because');
+  bind('hfInstead','instead'); bind('hfWrong','wrong');
+  document.getElementById('hfFor').onchange = ev=>{ HYPO.for_ = ev.target.value; };
   document.getElementById('hfSearch').oninput=()=> renderHypoPickList(document.getElementById('hfSearch').value);
   renderHypoPickList(''); validateHypo();
   document.getElementById('hfName').focus();
@@ -364,46 +379,57 @@ function validateHypo(){
   const msg=document.getElementById('hypoValid'), btn=document.getElementById('hypoCreate');
   let err='';
   if(!HYPO.name.trim()) err='Name required.';
-  else if(!HYPO.if_.trim()||!HYPO.by.trim()||!HYPO.will.trim()||!HYPO.because.trim()) err='All four parts (If / By / Will / Because) are required — that\'s what makes it testable.';
-  msg.textContent=err; btn.disabled=!!err;
+  else if(!HYPO.if_.trim() || !HYPO.will.trim()) err='Write at least If and Will: what we would do, and what should happen.';
+  msg.textContent=tr(err); btn.disabled=!!err;
   return !err;
 }
+/* The file for the form. Editing changes only what the form holds — the
+   title, the feature, the bet's parts and the linked hints — and leaves every
+   other line, section, note and front-matter field as it was. A new file is
+   written in the app's language (English or Polish labels). */
 function hypoMarkdown(base){
-  // base = the existing entity when editing: status/source/author/idea/demo/tags
-  // survive an edit untouched; only the form fields are rewritten.
-  const name=HYPO.name.trim();
-  const keep = base ? base.fm : {};
-  const links = HYPO.sel.map(id=>{ const e=ENTITIES[id]; return `- [${e.title}](${ideaLink(e)})`; }).join('\n');
-  const promoted = base && base.body.match(/^\*\*Promoted to:\*\*.*$/m);
+  const name = HYPO.name.trim().replace(/'/g,'’'), who = ENTITIES[HYPO.for_];
+  const forVal = who ? `[${who.title.split(/\s+[—–-]\s+/)[0]}](${ideaLink(who)})` : '';
+  const vals = { if: HYPO.if_, by: HYPO.by, instead: HYPO.instead, will: HYPO.will, because: HYPO.because, wrong: HYPO.wrong };
+  const linkLine = id => `- [${ENTITIES[id].title}](${ideaLink(ENTITIES[id])})`;
+  if(base){
+    let md = base.md;
+    const prefix = (base.title.match(HY_PREFIX) || [])[1] || 'Hypothesis';
+    if(name !== hyName(base)){
+      md = setFmField(md, 'title', `'${prefix}: ${name}'`);
+      md = md.replace(/^(---\n[\s\S]*?\n---[\s\S]*?)^# .*$/m, `$1# ${prefix}: ${name}`);
+    }
+    if(HYPO.feature.trim() !== String(base.fm.feature||'').trim()) md = setFmField(md, 'feature', HYPO.feature.trim() ? `'${HYPO.feature.trim().replace(/'/g,'’')}'` : null);
+    const forNow = resolveRef((hyPartRaw(base,'for').match(/\]\(([^)]+)\)/)||[])[1]||'') || '';
+    if(forNow !== (HYPO.for_ || '')) vals.for = forVal;
+    md = hyApplyParts(md, vals);
+    /* hints: a newly ticked one is added to the links section, an unticked one loses its bullet */
+    const had = hypoSourceIds(base);
+    had.filter(id=> !HYPO.sel.includes(id)).forEach(id=>{
+      md = md.split('\n').filter(l=> !(/^\s*-\s/.test(l) && [...l.matchAll(MD_LINK)].some(m=> resolveRef(m[2])===id))).join('\n');
+    });
+    const add = HYPO.sel.filter(id=> !had.includes(id)).map(linkLine);
+    if(add.length){
+      const h = md.match(/^##\s+(Possible links|Możliwe powiązania).*$/mi);
+      md = h ? md.replace(h[0], h[0] + '\n\n' + add.join('\n'))
+             : md.replace(/\n*$/, '\n\n## ' + (hyPolish(md) ? 'Możliwe powiązania' : 'Possible links (optional)') + '\n\n' + add.join('\n') + '\n');
+    }
+    return md.replace(/\n{3,}/g, '\n\n');
+  }
+  const pl = LANG === 'pl', prefix = pl ? 'Hipoteza' : 'Hypothesis';
   const fm = [
     "type: 'Hypothesis'",
-    `title: 'Hypothesis: ${name.replace(/'/g,'')}'`,
-    ...(keep.demo ? ['demo: true'] : []),
-    ...(HYPO.feature.trim() ? [`feature: '${HYPO.feature.trim().replace(/'/g,'')}'`] : []),
-    `tags: [${Array.isArray(keep.tags)? keep.tags.join(', ') : ''}]`,
-    `status: ${keep.status || 'open'}`,
-    `source: '${String(keep.source || 'created in the app').replace(/'/g,'')}'`,
-    `author: '${String(keep.author || hypoAuthor()).replace(/'/g,'')}'`,
-    ...(keep.idea ? [`idea: '${String(keep.idea).replace(/'/g,'')}'`] : []),
+    `title: '${prefix}: ${name}'`,
+    ...(HYPO.feature.trim() ? [`feature: '${HYPO.feature.trim().replace(/'/g,'’')}'`] : []),
+    `created: ${blToday()}`,   // the day it was made, never the day of an edit
+    'tags: []',
+    'status: open',
+    `source: '${pl ? 'utworzone w aplikacji' : 'created in the app'}'`,
+    `author: '${hypoAuthor().replace(/'/g,'’')}'`,
   ].join('\n');
-  return `---
-${fm}
----
-
-# Hypothesis: ${name}
-
-- **If:** ${HYPO.if_.trim()},
-
-- **By:** ${HYPO.by.trim()},
-
-- **Will:** ${HYPO.will.trim()},
-
-- **Because:** ${HYPO.because.trim()}.
-
-## Possible links (optional)
-
-${links || '<!-- pure assumption — no research linked yet -->'}
-${promoted ? '\n'+promoted[0]+'\n' : ''}`;
+  const links = HYPO.sel.map(linkLine).join('\n');
+  const body = hyApplyParts(`# ${prefix}: ${name}\n`, { for: forVal, ...vals }, pl).replace(/^# .*\n/, '');
+  return `---\n${fm}\n---\n\n# ${prefix}: ${name}\n\n${body.trim()}\n\n## ${pl ? 'Możliwe powiązania' : 'Possible links (optional)'}\n\n${links || '<!-- ' + (pl ? 'czyste przypuszczenie — nic jeszcze nie podlinkowano' : 'pure assumption — no research linked yet') + ' -->'}\n`;
 }
 async function createHypothesis(){
   if(!validateHypo()) return;
@@ -412,8 +438,7 @@ async function createHypothesis(){
     const md = hypoMarkdown(e);
     if(await saveEntityText(e, md)){
       closeHypoForm();
-      location.hash='#'+e.id;
-      if(CURRENT===e.id) openDetail(e.id);
+      if(HY_OPEN!==e.id){ location.hash='#'+e.id; if(CURRENT===e.id) openDetail(e.id); }   // edited from the side panel: stay on the list
       toast(tr('Hypothesis updated ✓')+(e.handle?' — '+tr('saved to')+' '+e.file:e.draft?' ('+tr('draft')+')':' ('+tr('demo sandbox')+')'));
     }
     return;
@@ -435,7 +460,7 @@ async function createHypothesis(){
   }
   closeHypoForm(); renderTabs();
   location.hash='#'+idFor(file);
-  toast(DIRHANDLE ? 'Hypothesis saved ✓ — a bet to test, not a finding' : 'Hypothesis draft saved in this browser ✓');
+  toast(tr(DIRHANDLE ? 'Hypothesis saved ✓ — a bet to test, not a finding' : 'Hypothesis draft saved in this browser ✓'));
 }
 function closeHypoForm(){ document.getElementById('hypoModal').close(); HYPO=null; }
 function barsHtml(g){

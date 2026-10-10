@@ -46,9 +46,16 @@ function section(body, h){
   const re = new RegExp('(?:^|\\n)##\\s*'+h.replace(/[.*+?^${}()|[\]\\]/g,'\\$&')+'\\s*\\n([\\s\\S]*?)(?=\\n##\\s|\\n#\\s|$)','i');
   const mm = body.match(re); return mm ? mm[1].trim() : '';
 }
+/* A Polish project writes its labels in Polish (**Kiedy:** for **When:**), so
+   each English label is also read under the names a Polish file gives it. */
+const LABEL_ALIASES = { 'If': ['Jeśli', 'Jeżeli'], 'By': ['Poprzez', 'Przez'], 'Will': ['To'], 'Because': ['Ponieważ', 'Bo'],
+  'For': ['Dla'], 'Instead of': ['Zamiast'], 'When': ['Kiedy'], 'I want': ['Chcę'], 'So that': ['Żeby', 'Aby'] };
 function afterLabel(body, label){
-  const re = new RegExp('\\*\\*'+label+':\\*\\*\\s*(.+)','i');
-  const mm = body.match(re); return mm ? mm[1].trim() : '';
+  for(const l of [label, ...(LABEL_ALIASES[label] || [])]){
+    const mm = body.match(new RegExp('\\*\\*'+l+':\\*\\*\\s*(.+)','i'));
+    if(mm) return mm[1].trim();
+  }
+  return '';
 }
 function firstQuote(body){ const mm = body.match(/^>\s?(.+)/m); return mm ? mm[1].trim() : ''; }
 function stripLinks(s){ return s.replace(HL_RE,'$1').replace(MD_LINK,'$1').replace(/[*`_]/g,'').trim(); }

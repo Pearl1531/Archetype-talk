@@ -124,6 +124,8 @@ function renderGrid(filter=""){
   const list = filteredList(filter);
   const n = list.length;
   const V = effView();
+  if(activeType==='Evidence') EV_IDX = evidenceIndex();   // confirmations, once per render (07b-evidence.js)
+  if(activeType!=='Hypothesis') hyClose();
   syncViewButtons(V);
   syncFilterBar(filter, n);
   syncLinTheme();
@@ -157,6 +159,12 @@ function renderGrid(filter=""){
     grid.className = ''; renderCompare();
   } else if(V==='list' && activeType==='Competitor' && n){
     grid.className = 'comp-list'; renderCompList(list);
+  } else if(V==='folders' && activeType==='Evidence' && n){
+    grid.className = ''; renderEvFolders(list);
+  } else if(V==='sources' && activeType==='Signal' && n){
+    renderSignalGroups(list);   // by source or by theme (07d-signals.js)
+  } else if(activeType==='Hypothesis' && n){
+    renderHypotheses(list);   // the table; a row opens the side panel (07c-hypotheses.js)
   } else if(V==='table' && n){
     grid.className = 'tableview'; renderTable(list);
   } else if(activeType==='All' && n){
@@ -301,9 +309,9 @@ function card(e){
     const g = ideaGrounding(e);
     const open = hypoStatus(e)==='open';
     inner += `<div class="idea-card-top"><div class="name">${esc(e.title)}</div>${hypoStatusChip(e)}</div>
-      <div class="kv"><b>If</b> — ${esc(trim(stripLinks(afterLabel(e.body,'If')),80))}</div>
-      <div class="kv"><b>Will</b> — ${esc(trim(stripLinks(afterLabel(e.body,'Will')),80))}</div>
-      <div class="kv"><b>${tr('Because')}</b> — ${esc(trim(stripLinks(afterLabel(e.body,'Because')),80))}</div>
+      <div class="kv"><b>${tr('If')}</b> — ${esc(trim(hyPart(e,'if'),80))}</div>
+      <div class="kv"><b>${tr('Will')}</b> — ${esc(trim(hyPart(e,'will'),80))}</div>
+      <div class="kv"><b>${tr('Because')}</b> — ${esc(trim(hyPart(e,'because'),80))}</div>
       ${e.fm.feature?`<div class="tags"><span class="tag">${esc(e.fm.feature)}</span></div>`:''}
       ${open && g.level>0
         ? `<button type="button" class="hypo-promote" data-promote="${e.id}" title="${esc(tr('This bet has research behind it — turn it into a grounded Idea'))}">↑ ${tr('Has {what} — promote to Idea').replace('{what}', esc(g.detail))}</button>`
@@ -311,8 +319,8 @@ function card(e){
   } else if(e.type==='IdeaForImprovement'){
     const g = ideaGrounding(e);
     inner += `<div class="idea-card-top"><div class="name">${esc(e.title.replace(/^Idea:\s*/,'Idea: '))}</div>${votePillHtml(e)}</div>
-      <div class="kv"><b>When</b> — ${esc(trim(stripLinks(afterLabel(e.body,'When')),80))}</div>
-      <div class="kv"><b>I want</b> — ${esc(trim(stripLinks(afterLabel(e.body,'I want')),80))}</div>
+      <div class="kv"><b>${tr('When')}</b> — ${esc(trim(stripLinks(afterLabel(e.body,'When')),80))}</div>
+      <div class="kv"><b>${tr('I want')}</b> — ${esc(trim(stripLinks(afterLabel(e.body,'I want')),80))}</div>
       <div class="kv"><b>${tr('So that')}</b> — ${esc(trim(stripLinks(afterLabel(e.body,'So that')),80))}</div>
       <div class="ground-row">${barsHtml(g)}${esc(g.word)}${g.detail?` · ${esc(g.detail)}`:''}</div>`;
   } else if(e.type==='Transcript'){

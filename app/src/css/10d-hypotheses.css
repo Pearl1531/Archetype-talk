@@ -1,0 +1,33 @@
+  /* ── Hypotheses: the side panel holding one bet (07c-hypotheses.js)
+     The shell is the backlog's .bl-panel (10-backlog.css); these are its own parts. */
+  .tableview tr.hy-on td { background: #FFF6F1; }
+  .tableview tr.hy-on td:first-child { box-shadow: inset 3px 0 0 var(--accent); }
+  .hy-panel a.btn { text-decoration: none; }
+  .hy-no { font-family: var(--font-mono); font-size: 14px; color: var(--text-mute); }
+  .hy-p-head { display: flex; flex-direction: column; gap: 8px; }
+  .hy-p-head > span { display: flex; align-items: center; gap: 10px; }
+  .hy-bet-dl { margin: 0; display: grid; grid-template-columns: 96px minmax(0, 1fr); gap: 10px 14px; font-size: var(--text-body); line-height: 1.5; }
+  .hy-bet-dl dt { font-weight: 700; color: var(--text); }
+  .hy-bet-dl dd { margin: 0; color: var(--text); }
+  /* the argument against: a quiet line to add one, a box once written, a field while editing */
+  .hy-arg-add { align-self: flex-start; padding: 0; border: 0; background: none; font: inherit; font-size: 15px; font-weight: 600; color: var(--text-soft); cursor: pointer; }
+  .hy-arg-add:hover { color: var(--text); }
+  .hy-arg { padding: 14px 16px; border-radius: 12px; background: var(--bg-elev-2); display: flex; flex-direction: column; gap: 6px; }
+  .hy-arg p { margin: 0; font-size: var(--text-body); line-height: 1.5; color: var(--text); }
+  .hy-arg-h, .hy-arg label { display: flex; align-items: center; gap: 10px; font-size: 14px; font-weight: 700; color: var(--text-soft); }
+  .hy-arg-h .hy-plain { margin-left: auto; font-size: 14px; font-weight: 500; }
+  .hy-arg.edit { background: none; padding: 0; }
+  .hy-arg textarea { width: 100%; box-sizing: border-box; resize: vertical; }
+  .hy-arg-acts { display: flex; gap: 8px; }
+  .hy-plain { padding: 0; border: 0; background: none; font: inherit; color: var(--text); cursor: pointer;
+    text-decoration: underline; text-decoration-color: var(--edge); text-underline-offset: 3px; }
+  .hy-plain:hover { color: var(--accent-text); }
+  .hy-cnt { font-family: var(--font-mono); font-size: 14px; font-weight: 400; color: var(--text-mute); }
+  .hy-link { min-height: 44px; padding: 8px 14px; box-sizing: border-box; border: 1px solid var(--line); border-radius: 12px; display: flex; align-items: center; gap: 12px;
+    text-decoration: none; color: var(--text); font-size: 14px; }
+  .hy-link:hover { border-color: var(--hover-border); }
+  .hy-link span { flex: none; width: 72px; font-family: var(--font-mono); font-size: 14px; color: var(--text-mute); }
+  @media (max-width: 720px) {
+    .hy-bet-dl { grid-template-columns: minmax(0, 1fr); gap: 2px; }
+    .hy-bet-dl dd { margin-bottom: 8px; }
+  }

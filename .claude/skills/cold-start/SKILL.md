@@ -70,7 +70,7 @@ Ask in order; skip what the founder already volunteered. Reflect, then move on.
         /persona-talk and /feature-panel must not cite these as facts. -->
    - Target group: … → [Hypothesis: …](Hypotheses/….md)
    ```
-2. **`Hypotheses/`** — distill 3–7 bets in IF/BY/WILL/BECAUSE form (`Hypotheses/_template.md`), each approved individually by the user. `author: 'AI (Claude) — approved by <name>'`, `source: 'cold-start founding brief, <date>'`, `status: open`. The riskiest assumption (Q8) comes first.
+2. **`Hypotheses/`** — distill 3–7 bets in IF/BY/WILL/BECAUSE form with, where it helps, a **We're wrong if:** line — the argument against it (`Hypotheses/_template.md`), each approved individually by the user. `author: 'AI (Claude) — approved by <name>'`, `source: 'cold-start founding brief, <date>'`, `status: open`. The riskiest assumption (Q8) comes first.
 3. **`Research backlog.md`** — the open questions in "how would we know if this is wrong?" form.
 4. **`Competitors/`** — stubs per the `needs_research` convention.
 5. **Verified `Evidence/`** *(optional, only if the user wants desk research now)* — market/problem desk research per `/researcher` rules, with the lookback window offered as 1/2/3 years; pitch-deck stats confirmed at their original sources land here with real citations.

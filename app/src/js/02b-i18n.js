@@ -747,6 +747,62 @@ const PL = {
   'Fresh research': 'Świeże badania',
   'Actions': 'Akcje',
   'Topic': 'Temat',
+  /* evidence folders */
+  'Folders by topic':
+    'Teczki według tematu',
+  'Other topics':
+    'Pozostałe tematy',
+  'Strength':
+    'Siła',
+  'How strong is a piece of evidence?':
+    'Jak mocny jest dowód?',
+  'The Signals — your own interviews and tests — that cite it, and how many different participants stand behind them. Ten signals from one person are still one person. Counted from the links, never typed in; a session the researcher set aside confirms nothing.':
+    'Sygnały — Twoje własne wywiady i testy — które go cytują, i ilu różnych uczestników za nimi stoi. Dziesięć sygnałów od jednej osoby to wciąż jedna osoba. Liczone z powiązań, nigdy wpisywane ręcznie; sesja odłożona przez badacza niczego nie potwierdza.',
+  'Every piece of evidence in this view':
+    'Każdy dowód w tym widoku',
+  'Single source':
+    'Jedno źródło',
+  'Confirmed by one participant only — worth a second source before a decision leans on it':
+    'Potwierdza go tylko jeden uczestnik — warto mieć drugie źródło, zanim oprze się na nim decyzja',
+  'Unconfirmed':
+    'Niepotwierdzony',
+  'Nobody we interviewed backs it yet — desk research, or a secondary source only':
+    'Nie potwierdza go nikt z naszych rozmówców — desk research albo tylko źródło wtórne',
+  'Not confirmed in interviews': 'Nie potwierdzone w wywiadach', 'Source for': 'Źródło dla', 'Confirmed': 'Potwierdzony',
+  'The number is the Signals that cite it. Under it, how many different participants of your own interviews and tests stand behind them: ten signals from one person are still one person, and a secondary source adds nobody. Counted from the links, never typed in.':
+    'Liczba to sygnały, które go cytują. Pod nią: ilu różnych uczestników Twoich własnych wywiadów i testów za nimi stoi — dziesięć sygnałów od jednej osoby to wciąż jedna osoba, a źródło wtórne nie dodaje nikogo. Liczone z powiązań, nigdy wpisywane ręcznie.',
+  'No Signal cites it — desk research nobody has heard in an interview yet':
+    'Żaden sygnał go nie cytuje — desk research, którego nikt jeszcze nie usłyszał w wywiadzie',
+  'No persona yet':
+    'Bez persony',
+  'No persona stands on it — link it, or let it go':
+    'Żadna persona na nim nie stoi — podepnij go albo odpuść',
+  'Out of date':
+    'Przeterminowany',
+  'Retrieved more than three months ago — re-check before relying on it':
+    'Pobrany ponad trzy miesiące temu — sprawdź ponownie, zanim się na nim oprzesz',
+  'Close the folder':
+    'Zamknij teczkę',
+  'strongest first':
+    'najmocniejsze najpierw',
+  'Nothing in this folder matches the filter.':
+    'Nic w tej teczce nie pasuje do filtra.',
+  'every piece confirmed twice or more':
+    'każdy dowód potwierdzony co najmniej dwa razy',
+  '{s} of your own Signals cite it, heard from {p} different participants':
+    'Cytuje go {s} Twoich sygnałów, usłyszanych od {p} różnych uczestników',
+  'No Signal cites it yet':
+    'Żaden sygnał go jeszcze nie cytuje',
+  'no persona yet':
+    'jeszcze bez persony',
+  'retrieved':
+    'pobrano',
+  'Corroborated':
+    'Potwierdzony',
+  'Show':
+    'Pokaż',
+  'Confirmed by':
+    'Potwierdzają',
   'Promote to Idea': 'Awansuj na Pomysł',
   'Ready to promote to an Idea': 'Gotowa do awansu na Pomysł',
   'A live bet — L1 assumption, no evidence yet': 'Żywy zakład — założenie L1, jeszcze bez dowodów',
@@ -1671,7 +1727,129 @@ const PL = {
   'Write permission denied': 'Brak zgody na zapis',
   'Order ideas by votes (request board) or A–Z': 'Sortuj pomysły wg głosów (tablica zgłoszeń) albo A–Z',
 
-  'Stopped — that folder is enormous': 'Przerwano — ten folder jest ogromny'
+  'Stopped — that folder is enormous': 'Przerwano — ten folder jest ogromny',
+
+  /* ---- evidence and signal pages, grouped signals (09e, 07d) ---- */
+  'Go to the quote': 'Przejdź do cytatu',
+  'Add a theme': 'Dodaj temat',
+  'groups it with similar signals': 'połączy go z podobnymi sygnałami',
+  'Change the theme': 'Zmień temat',
+  'Show translation': 'Pokaż tłumaczenie',
+  'Hide translation': 'Ukryj tłumaczenie',
+  'Copy': 'Kopiuj',
+  'Theme, e.g. Pricing & value': 'Temat, np. Cena i wartość',
+  'Theme saved ✓': 'Temat zapisany ✓',
+  'Theme removed': 'Temat usunięty',
+  'Sources behind this theme': 'Źródła w tym temacie',
+  'About the source': 'O źródle',
+  'Add a figure': 'Dodaj liczbę',
+  'Asked': 'Zapytani',
+  'Asked directly, so the attitude is real but how much it matters may be inflated.': 'Pytanie padło wprost, więc postawa jest prawdziwa, ale to, jak bardzo jest ważna, może być zawyżone.',
+  'Backed by interviews': 'Potwierdzone w wywiadach',
+  'Checked today': 'Sprawdzone dziś',
+  'Confirms': 'Potwierdza',
+  'Delete this figure': 'Usuń tę liczbę',
+  'Edit this figure': 'Edytuj tę liczbę',
+  'Every number with who it is about and where it comes from, one row each in the file, so a number is never quoted without its population.': 'Każda liczba z tym, kogo dotyczy i skąd pochodzi — po jednym wierszu w pliku, żeby liczby nigdy nie cytować bez populacji.',
+  'Grounds': 'Jest podstawą dla',
+  'Group by': 'Grupuj',
+  'Grouped by source or theme': 'Pogrupowane według źródła lub tematu',
+  'How many signals from your own interviews and tests back this piece, and how many different people said them. Ten signals from one person are still one person, and a secondary source adds nobody. Counted from the links, never typed in.': 'Ile sygnałów z Twoich własnych wywiadów i testów potwierdza ten dowód i ile różnych osób je wypowiedziało. Dziesięć sygnałów od jednej osoby to wciąż jedna osoba, a źródło wtórne nie dodaje nikogo. Liczone z powiązań, nigdy wpisywane ręcznie.',
+  'In one sentence': 'W jednym zdaniu',
+  'In the conversation': 'W rozmowie',
+  'Key figures': 'Kluczowe liczby',
+  'Last checked': 'Ostatnio sprawdzone',
+  'Link the transcript in the signal’s ## Transcript section': 'Podlinkuj transkrypcję w sekcji ## Transcript sygnału',
+  'Mark as read': 'Oznacz jako przeczytane',
+  'More in the file': 'Więcej w pliku',
+  'No evidence linked yet.': 'Brak podlinkowanych dowodów.',
+  'No evidence yet': 'Bez dowodu',
+  'No quote in this signal — an observation.': 'Ten sygnał nie ma cytatu — to obserwacja.',
+  'No signal cites it yet.': 'Żaden sygnał go jeszcze nie cytuje.',
+  'No source linked': 'Bez podlinkowanego źródła',
+  'No theme yet': 'Jeszcze bez tematu',
+  'Not written yet.': 'Jeszcze nie wpisano.',
+  'Nothing matches this filter.': 'Nic nie pasuje do tego filtra.',
+  'Number': 'Liczba',
+  'Open transcript': 'Otwórz transkrypcję',
+  'Personas standing on it': 'Persony, które się na nim opierają',
+  'Read in the original': 'Przeczytane w oryginale',
+  'Same source also said': 'To samo źródło powiedziało też',
+  'Same theme': 'Ten sam temat',
+  'Secondary source — not our conversation': 'Źródło wtórne — nie nasza rozmowa',
+  'Secondary sources': 'Źródła wtórne',
+  'Set aside — not counted': 'Odłożona — nie liczy się',
+  'Source': 'Źródło',
+  'Source date': 'Data źródła',
+  'Source not linked': 'Źródło niepodlinkowane',
+  'Stance': 'Postawa',
+  'Supported quotes': 'Cytaty ze źródła',
+  'The honest limit every piece needs: what this source cannot tell you, e.g. stated intent rather than behaviour, another market, an old sample.': 'Uczciwa granica, której potrzebuje każdy dowód: czego to źródło nie powie, np. deklaracje zamiast zachowań, inny rynek, stara próba.',
+  'Theme': 'Temat',
+  'Type of source': 'Rodzaj źródła',
+  'Type: survey, report, statistics, analytics, study, community or press. Who was studied: the people the numbers are about. Source date: when the report itself came out, not when you found it. Read in the original: whether the figures were checked in the report itself rather than in articles about it. Last checked: when someone last opened the source. A dashed slot is not filled in yet.': 'Rodzaj: ankieta, raport, statystyka, analityka, badanie, społeczność lub prasa. Kogo badano: ludzie, których dotyczą liczby. Data źródła: kiedy ukazał się sam raport, a nie kiedy go znalazłeś. Przeczytane w oryginale: czy liczby sprawdzono w samym raporcie, a nie w artykułach o nim. Ostatnio sprawdzone: kiedy ktoś ostatnio otworzył źródło. Przerywane pole nie jest jeszcze wypełnione.',
+  'Volunteered': 'Sami z siebie',
+  'What it does not settle': 'Czego nie rozstrzyga',
+  'What it measures': 'Co mierzy',
+  'What the source itself says, with the passages your team marked. Select a passage to highlight it, like in a Word document. Highlights are the team’s emphasis: the AI cites them first and never adds or removes one.': 'Co mówi samo źródło, z fragmentami zaznaczonymi przez zespół. Zaznacz fragment, żeby go wyróżnić, jak w dokumencie Word. Wyróżnienia to akcenty zespołu: AI cytuje je w pierwszej kolejności i nigdy ich nie dodaje ani nie usuwa.',
+  'What this evidence says, in one plain sentence (claim: in the file). The AI reads it first when it decides which evidence to open.': 'Co mówi ten dowód, w jednym prostym zdaniu (claim: w pliku). AI czyta je jako pierwsze, gdy decyduje, który dowód otworzyć.',
+  'Who it is about': 'Kogo dotyczy',
+  'Who was studied': 'Kogo badano',
+  'Write it': 'Wpisz',
+  'Write the number first': 'Najpierw wpisz liczbę',
+  'Yes': 'Tak',
+  'asked by the moderator': 'zapytany przez moderatora',
+  'asked, and did not care': 'zapytany i było mu to obojętne',
+  'assumes up front it won’t work': 'z góry zakłada, że nie zadziała',
+  'because': 'bo',
+  'e.g. 2,000 US adults': 'np. 2000 dorosłych w USA',
+  'e.g. 2,000 US adults, online panel': 'np. 2000 dorosłych w USA, panel online',
+  'e.g. 43%': 'np. 43%',
+  'e.g. Price is the most common reason people cancel a subscription': 'np. Cena to najczęstszy powód rezygnacji z subskrypcji',
+  'e.g. dot.LA': 'np. dot.LA',
+  'e.g. would cancel a “too costly” subscription': 'np. zrezygnowaliby ze „zbyt drogiej” subskrypcji',
+  'genuinely both ways at once': 'naprawdę jedno i drugie naraz',
+  'interested, has not used it': 'zainteresowany, nie używał',
+  'it annoys them, they live with it': 'irytuje, ale z tym żyje',
+  'likes it, would not fight for it': 'lubi, ale nie walczyłby o to',
+  'never encountered it': 'nigdy się z tym nie zetknął',
+  'no evidence yet': 'bez dowodu',
+  'no source': 'bez źródła',
+  'part of the routine, would notice it gone': 'część codzienności, zauważyłby brak',
+  'recommends it unprompted': 'poleca sam z siebie',
+  'returns to it unprompted, with anger': 'wraca do tego sam, ze złością',
+  'said they would leave over it': 'powiedział, że odejdzie z tego powodu',
+  'secondary source': 'źródło wtórne',
+  'survey, report, statistics…': 'ankieta, raport, statystyka…',
+  'volunteered': 'sam z siebie',
+  'when the report came out': 'kiedy ukazał się raport',
+  'Key figures saved ✓': 'Kluczowe liczby zapisane ✓',
+  'Figure removed': 'Liczba usunięta',
+  'Saved ✓': 'Zapisano ✓',
+  'Marked as checked today ✓': 'Oznaczono jako sprawdzone dziś ✓',
+  'Not recorded': 'Nie zapisano',
+  'Not yet': 'Jeszcze nie',
+  'out of date': 'nieaktualne',
+  /* ---- hypotheses panel (07c-hypotheses.js), evidence folders (07b-evidence.js) ---- */
+  'Previous hypothesis': 'Poprzednia hipoteza', 'Next hypothesis': 'Następna hipoteza',
+  'Unsorted': 'Nieposortowane', 'in no topic folder yet': 'jeszcze bez teczki tematycznej',
+  'Delete the evidence “{name}”?': 'Usunąć dowód „{name}”?', 'Evidence deleted': 'Dowód usunięty', 'Evidence restored ✓': 'Dowód przywrócony ✓',
+  'Open the file': 'Otwórz plik',
+  'Instead of': 'Zamiast',
+  '— the persona this bet is about (optional)': '— persona, której dotyczy zakład (opcjonalnie)',
+  'nobody in particular': 'nikt konkretny',
+  '— what we compare it with (optional)': '— z czym to porównujemy (opcjonalnie)',
+  'asking listeners to clean their history by hand': 'proszenie słuchaczy o ręczne czyszczenie historii',
+  'listeners who never share their account distrust Discover Weekly just as much': 'słuchacze, którzy nigdy nie dzielą konta, tak samo nie ufają Discover Weekly',
+  'Argument against this hypothesis': 'Argument przeciw tej hipotezie',
+  '(optional — what would show that it is wrong)': '(opcjonalnie — co by pokazało, że jest błędna)',
+  'What would show that this is wrong? e.g. listeners who never share their account distrust the mixes just as much': 'Co by pokazało, że to nieprawda? np. słuchacze, którzy nie dzielą konta, tak samo nie ufają składankom',
+  'Argument saved ✓': 'Argument zapisany ✓', 'Argument removed': 'Argument usunięty',
+  'Edit hypothesis': 'Edytuj hipotezę',
+  'Write at least If and Will: what we would do, and what should happen.': 'Wpisz co najmniej „Jeśli” i „To”: co zrobimy i co ma się wtedy stać.',
+  'Hypothesis saved ✓ — a bet to test, not a finding': 'Hipoteza zapisana ✓ — zakład do sprawdzenia, nie odkrycie',
+  'Hypothesis draft saved in this browser ✓': 'Szkic hipotezy zapisany w tej przeglądarce ✓',
+  'Linked evidence': 'Powiązane dowody', 'None yet — that is what makes it a hypothesis.': 'Jeszcze żadnych — właśnie dlatego to hipoteza.'
 };
 
 /* Polish counts three ways where English counts two — 1 plik, 2–4 pliki,

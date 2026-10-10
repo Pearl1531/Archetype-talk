@@ -67,6 +67,17 @@
       transition: transform .7s var(--ease-out), translate .5s var(--ease-out), box-shadow .5s var(--ease-out), border-color .15s; }
     [data-lean]::after { content: ""; position: absolute; inset: 0; z-index: -1; border-radius: inherit; pointer-events: none; opacity: 0;
       background: radial-gradient(260px circle at var(--mx, 50%) var(--my, 50%), rgba(255,77,0,.11), transparent 68%); transition: opacity .35s; }
+    /* the net under a leaning card (leanNet, 12c-motion.js): wires from a point behind the face */
+    .lean-net { position: absolute; inset: 0; z-index: -1; width: 100%; height: 100%; pointer-events: none; overflow: visible; opacity: 0; transition: opacity .4s var(--ease-out); }
+    [data-lean]:hover > .lean-net { opacity: 1; }
+    .lean-net .w { stroke: rgba(10,10,10,.16); stroke-width: 1; fill: none; stroke-dasharray: 1; stroke-dashoffset: 1; transition: stroke-dashoffset .9s var(--ease-out) var(--d, 0ms); }
+    .lean-net .w.x { stroke: rgba(10,10,10,.09); stroke-dasharray: .02 .02; }
+    [data-lean]:hover > .lean-net .w { stroke-dashoffset: 0; }
+    [data-lean]:hover > .lean-net .w.x { stroke-dashoffset: 0; }
+    .lean-net .n { fill: var(--bg-elev); stroke: rgba(10,10,10,.35); stroke-width: 1.25; transform-box: fill-box; transform-origin: center; scale: 0; transition: scale .5s var(--ease-spring) var(--d, 0ms); }
+    .lean-net .n.big { stroke: var(--accent); stroke-width: 1.5; }
+    [data-lean]:hover > .lean-net .n { scale: 1; }
+    .lean-net .pulse { fill: var(--accent); opacity: 0; }
     .face[data-lean]::after { z-index: 2; background: radial-gradient(160px circle at var(--mx, 50%) var(--my, 50%), rgba(255,255,255,.3), transparent 66%); }
     [data-lean] .face, .face[data-lean] { transition: transform .7s var(--ease-out), translate .5s var(--ease-out), scale .65s var(--ease-spring), rotate .65s var(--ease-spring), box-shadow .4s var(--ease-out); }
 

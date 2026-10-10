@@ -2596,6 +2596,363 @@
   .toast-x:hover { background: rgba(250,249,245,.1); color: #FAF9F5; }
   .toast-bar { position: absolute; left: 0; right: 0; bottom: 0; height: 3px; background: var(--accent); transform-origin: left center; }
   @media (max-width: 600px) { .toast, body.lin-all .toast { left: 16px; right: 16px; top: 12px; width: auto; max-width: none; } }
+  /* ── Evidence: folders by topic and the strength of each piece (07b-evidence.js)
+     A folder sits closed — its papers tucked behind the front. Under the
+     pointer it opens a little (papers rise and fan, the front tips back); a
+     click opens it fully and spreads its sheets out in the drawer below. The
+     states hold without motion too; only the travel between them is gated. */
+  .ev-wrap { display: flex; flex-direction: column; gap: 28px; }
+  .ev-chips { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; }
+  .ev-chip-n { font-family: var(--font-mono); opacity: .7; }
+  .ev-how { margin-left: auto; }
+
+  .ev-folders { display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 44px 24px; padding-top: 22px; }
+  .ev-fold { position: relative; height: 214px; padding: 0; border: 0; background: none; text-align: left; font: inherit; color: var(--text); cursor: pointer; }
+  .ev-back { position: absolute; inset: 22px 0 0 0; border-radius: 0 16px 16px 16px; background: #D9D3C6; }
+  .ev-back::before { content: ""; position: absolute; left: 0; top: -22px; width: 46%; height: 34px; border-radius: 14px 14px 0 0; background: inherit; }
+  .ev-paper { position: absolute; left: 16px; right: 18px; top: 40px; height: 120px; box-sizing: border-box; border-radius: 8px;
+    background: #FAF9F5; border: 1px solid var(--line); translate: 0 36px; }
+  .ev-paper.p2 { left: 22px; right: 12px; background: #FFFFFF; }
+  .ev-paper.p3 { left: 28px; right: 24px; padding: 10px 12px; background: #FFFFFF; font-size: 14px; line-height: 1.4; color: var(--text-dim); overflow: hidden; }
+  .ev-front { position: absolute; left: 0; right: 0; bottom: 0; height: 150px; box-sizing: border-box; padding: 16px 18px; border-radius: 16px;
+    background: #F6F3EC; border: 1px solid var(--line); display: flex; flex-direction: column; gap: 6px; transform-origin: 50% 100%; }
+  .ev-fold-h { display: flex; align-items: baseline; gap: 10px; }
+  .ev-fold-h b { font-size: 20px; font-weight: 700; letter-spacing: -0.02em; }
+  .ev-fold-h span { margin-left: auto; font-family: var(--font-mono); font-size: 14px; color: var(--text-dim); white-space: nowrap; }
+  .ev-fold-n { display: flex; align-items: center; gap: 10px; }
+  .ev-fold-n b { font-size: 34px; font-weight: 800; line-height: 1; letter-spacing: -0.04em; }
+  .ev-fold-n span { font-size: 14px; font-weight: 600; line-height: 1.25; }
+  .ev-fold-n small { display: block; font-weight: 400; color: var(--text-dim); }
+  .ev-warn { margin-top: auto; font-size: 14px; color: var(--accent-text); }
+  .ev-warn.ok { color: #1F7A4D; }
+  .ev-warn.loose { color: var(--text-dim); }
+  /* Unsorted is a pile, not a folder: no tab, no back, its papers lie askew
+     and the front is a loose sheet with a dashed edge */
+  .ev-fold.loose .ev-back { display: none; }
+  .ev-fold.loose .ev-paper { translate: 0 10px; }
+  .ev-fold.loose .p1 { rotate: -4deg; } .ev-fold.loose .p2 { rotate: 3deg; } .ev-fold.loose .p3 { rotate: -1.5deg; }
+  .ev-fold.loose .ev-front { background: var(--bg-elev); border: 1.5px dashed var(--edge); }
+  .ev-fold:focus-visible { outline: none; }
+  .ev-fold:focus-visible .ev-front { box-shadow: 0 0 0 2px var(--text); }
+  /* open: the folder's tab and back turn ink, its papers stand up */
+  .ev-fold.open .ev-back { background: var(--text); }
+  .ev-fold.open .ev-front { background: var(--bg-elev); border: 1.5px solid var(--text); transform: perspective(700px) rotateX(-16deg); }
+  .ev-fold.open .p1 { translate: 0 -12px; rotate: -5deg; }   /* also for the pile: open lifts its sheets too */
+  .ev-fold.open .p2 { translate: 0 -20px; rotate: 4deg; }
+  .ev-fold.open .p3 { translate: 0 -28px; rotate: -2deg; }
+  @media (hover: hover) {
+    .ev-fold:not(.open):hover .p1 { translate: 0 8px; rotate: -3deg; }
+    .ev-fold:not(.open):hover .p2 { translate: 0 2px; rotate: 2deg; }
+    .ev-fold:not(.open):hover .p3 { translate: 0 -4px; rotate: -1deg; }
+    .ev-fold:not(.open):hover .ev-front { transform: perspective(700px) rotateX(-7deg); box-shadow: 0 22px 40px -26px rgba(10,10,10,.45); }
+  }
+
+  /* the drawer the open folder spreads into */
+  .ev-drawer { padding: 24px; border-radius: 20px; background: #E2DED5; display: flex; flex-direction: column; gap: 18px; }
+  .ev-drawer-h { display: flex; align-items: center; gap: 14px; flex-wrap: wrap; }
+  .ev-drawer-h h2 { margin: 0; font-size: 30px; font-weight: 800; letter-spacing: -0.03em; line-height: 1; }
+  .ev-drawer-h > span { color: var(--text-soft); }
+  .ev-sort { font-size: 14px; color: var(--text-dim) !important; }
+  .ev-close { width: 36px; height: 36px; border-radius: 10px; border: 1px solid var(--line); background: var(--bg-elev); color: var(--text); cursor: pointer; }
+  .ev-close:hover { border-color: var(--hover-border); }
+  /* what the open folder is made of: one bar, a segment per grade */
+  .ev-mix { display: flex; flex-direction: column; gap: 10px; }
+  .ev-mix-bar { display: flex; gap: 4px; height: 12px; }
+  .ev-mix-bar i { min-width: 12px; border-radius: 999px; box-sizing: border-box; transform-origin: 0 50%; }
+  .ev-mix i.ok { background: var(--text); }
+  .ev-mix i.single { background: #A8A399; }
+  .ev-mix i.zero { background: var(--bg-elev); border: 1.5px dashed var(--text-dim); box-sizing: border-box; }
+  .ev-mix-key i { width: 12px; height: 12px; border-radius: 50%; }
+  .ev-mix-key { display: flex; flex-wrap: wrap; gap: 6px 20px; font-size: 14px; color: var(--text-soft); }
+  .ev-mix-key span { display: inline-flex; align-items: center; gap: 8px; }
+
+  .ev-mix-key b { font-size: 16px; font-weight: 800; color: var(--text); }
+  .ev-sheets { display: grid; grid-template-columns: repeat(auto-fill, minmax(420px, 1fr)); gap: 16px; }
+  .ev-sheet { background: var(--bg-elev); border: 1px solid var(--line); border-radius: 14px; padding: 18px 20px;
+    display: grid; grid-template-columns: minmax(0, 1fr) 150px; gap: 6px 18px; }
+  .ev-sheet-main { display: flex; flex-direction: column; gap: 6px; min-width: 0; }
+  .ev-no { font-family: var(--font-mono); font-size: 14px; color: var(--text-mute); }
+  .ev-title { font-size: 18px; font-weight: 700; letter-spacing: -0.01em; line-height: 1.3; }
+  .ev-sheet p { margin: 0; font-size: var(--text-body); line-height: 1.5; color: var(--text-soft); }
+  /* strength: confirming signals lead, the people behind them follow */
+  .ev-strength { border-left: 1px solid var(--line); padding-left: 16px; display: flex; flex-direction: column; gap: 3px; }
+  .ev-strength b { font-size: 40px; font-weight: 800; line-height: 1; letter-spacing: -0.04em; }
+  .ev-strength span { font-size: 14px; font-weight: 600; line-height: 1.25; }
+  .ev-strength small { font-size: 14px; color: var(--text-dim); }
+  .ev-strength.zero b { color: var(--edge); }
+  .ev-strength small.none { color: var(--accent-text); }
+  .ev-lv { font-size: 14px; color: var(--text-soft); white-space: nowrap; }
+  .ev-foot { grid-column: 1 / -1; margin-top: 8px; padding-top: 10px; border-top: 1px solid var(--line-soft);
+    display: flex; flex-wrap: wrap; align-items: center; gap: 6px 16px; font-size: 14px; color: var(--text-soft); }
+  .ev-foot > span { display: inline-flex; align-items: center; gap: 6px; }
+  .ev-foot-k { color: var(--text-dim); }
+  .ev-foot svg { width: 15px; height: 15px; flex: none; color: var(--text-dim); }
+  .ev-foot .row-menu { margin-right: -8px; }
+  .ev-flag { margin-left: auto; height: 24px; padding: 0 9px; border-radius: 999px; background: var(--bg-elev-2); font-weight: 600; color: var(--text-soft); }
+  .ev-flag.ok { background: #E7F6EC; color: #1F7A4D; }
+  .ev-flag.warn { background: #FFE9DF; color: var(--accent-text); }
+  .ev-none { margin: 0; color: var(--text-dim); }
+  /* the table's "Confirmed by" */
+  .ev-cell { display: inline-flex; align-items: center; gap: 10px; }
+  .ev-cell b { min-width: 18px; font-size: 18px; font-weight: 800; color: var(--text); }
+  .ev-stale { color: var(--accent-text); }
+
+  @media (prefers-reduced-motion: no-preference) {
+    @keyframes evSheetIn { from { opacity: 0; translate: 0 18px; rotate: -1deg; } }
+    .ev-paper { transition: translate .55s var(--ease-spring), rotate .55s var(--ease-spring); }
+    .ev-front { transition: transform .5s var(--ease-out), box-shadow .4s var(--ease-out), background .3s, border-color .3s; }
+    .ev-back { transition: background .3s; }
+    .ev-sheet { animation: evSheetIn .6s var(--ease-out) backwards; animation-delay: calc(var(--i, 0) * 70ms);
+      transition: translate .35s var(--ease-out), box-shadow .35s var(--ease-out); }
+    @keyframes evMixIn { from { transform: scaleX(0); } }
+    .ev-mix-bar i { animation: evMixIn .7s var(--ease-out) backwards; animation-delay: calc(120ms + var(--i, 0) * 110ms); }
+  }
+  @media (hover: hover) and (prefers-reduced-motion: no-preference) {
+    .ev-sheet:hover { translate: 0 -3px; box-shadow: 0 18px 32px -22px rgba(10,10,10,.4); }
+  }
+  @media (max-width: 720px) {
+    .ev-sheets { grid-template-columns: minmax(0, 1fr); }
+    .ev-sheet { grid-template-columns: minmax(0, 1fr); }
+    .ev-strength { border-left: 0; padding-left: 0; flex-direction: row; flex-wrap: wrap; align-items: baseline; gap: 8px; }
+    .ev-how { display: none; }
+  }
+  /* ── Hypotheses: the side panel holding one bet (07c-hypotheses.js)
+     The shell is the backlog's .bl-panel (10-backlog.css); these are its own parts. */
+  .tableview tr.hy-on td { background: #FFF6F1; }
+  .tableview tr.hy-on td:first-child { box-shadow: inset 3px 0 0 var(--accent); }
+  .hy-panel a.btn { text-decoration: none; }
+  .hy-no { font-family: var(--font-mono); font-size: 14px; color: var(--text-mute); }
+  .hy-p-head { display: flex; flex-direction: column; gap: 8px; }
+  .hy-p-head > span { display: flex; align-items: center; gap: 10px; }
+  .hy-bet-dl { margin: 0; display: grid; grid-template-columns: 96px minmax(0, 1fr); gap: 10px 14px; font-size: var(--text-body); line-height: 1.5; }
+  .hy-bet-dl dt { font-weight: 700; color: var(--text); }
+  .hy-bet-dl dd { margin: 0; color: var(--text); }
+  /* the argument against: a quiet line to add one, a box once written, a field while editing */
+  .hy-arg-add { align-self: flex-start; padding: 0; border: 0; background: none; font: inherit; font-size: 15px; font-weight: 600; color: var(--text-soft); cursor: pointer; }
+  .hy-arg-add:hover { color: var(--text); }
+  .hy-arg { padding: 14px 16px; border-radius: 12px; background: var(--bg-elev-2); display: flex; flex-direction: column; gap: 6px; }
+  .hy-arg p { margin: 0; font-size: var(--text-body); line-height: 1.5; color: var(--text); }
+  .hy-arg-h, .hy-arg label { display: flex; align-items: center; gap: 10px; font-size: 14px; font-weight: 700; color: var(--text-soft); }
+  .hy-arg-h .hy-plain { margin-left: auto; font-size: 14px; font-weight: 500; }
+  .hy-arg.edit { background: none; padding: 0; }
+  .hy-arg textarea { width: 100%; box-sizing: border-box; resize: vertical; }
+  .hy-arg-acts { display: flex; gap: 8px; }
+  .hy-plain { padding: 0; border: 0; background: none; font: inherit; color: var(--text); cursor: pointer;
+    text-decoration: underline; text-decoration-color: var(--edge); text-underline-offset: 3px; }
+  .hy-plain:hover { color: var(--accent-text); }
+  .hy-cnt { font-family: var(--font-mono); font-size: 14px; font-weight: 400; color: var(--text-mute); }
+  .hy-link { min-height: 44px; padding: 8px 14px; box-sizing: border-box; border: 1px solid var(--line); border-radius: 12px; display: flex; align-items: center; gap: 12px;
+    text-decoration: none; color: var(--text); font-size: 14px; }
+  .hy-link:hover { border-color: var(--hover-border); }
+  .hy-link span { flex: none; width: 72px; font-family: var(--font-mono); font-size: 14px; color: var(--text-mute); }
+  @media (max-width: 720px) {
+    .hy-bet-dl { grid-template-columns: minmax(0, 1fr); gap: 2px; }
+    .hy-bet-dl dd { margin-bottom: 8px; }
+  }
+  /* ── Evidence and Signal pages (09e-evidence-signal-detail.js)
+     The plain file view steps aside: the page is .ed in #pHero, a main column
+     and a side column of what stands behind the entity. */
+  body.lin-all .detail-card.ed-detail, .detail-card.ed-detail { background: none; border: none; box-shadow: none; padding: 8px 0 0; }
+  .detail-card.ed-detail .detail-head, .detail-card.ed-detail .doc-tools, .detail-card.ed-detail #pBody { display: none; }
+  .detail-card.ed-detail .p-hero { margin: 0; padding: 0; background: none; border: 0; }
+  .ed { display: flex; flex-direction: column; gap: 28px; color: var(--text); }
+  .ed-kick { display: flex; align-items: center; gap: 10px; flex-wrap: wrap; margin-bottom: 14px; }
+  .ed-type { height: 28px; padding: 0 10px; border-radius: 8px; background: var(--text); color: var(--bg); display: inline-flex; align-items: center; gap: 7px;
+    font-size: 13px; font-weight: 600; letter-spacing: .06em; text-transform: uppercase; }
+  .ed-type svg { width: 14px; height: 14px; }
+  .ed-chip { height: 28px; padding: 0 10px; border-radius: var(--r-pill); border: 1px solid var(--line); background: var(--bg-elev);
+    display: inline-flex; align-items: center; gap: 6px; font-size: 14px; font-weight: 500; color: var(--text-soft); white-space: nowrap; }
+  .ed-chip.ink { background: var(--text); border-color: var(--text); color: var(--bg-elev); }
+  .ed-title { margin: 0; font-size: clamp(40px, 5vw, 64px); font-weight: 800; line-height: .98; letter-spacing: -0.045em; }
+  .ed-stop { color: var(--accent); }
+  .ed-summary { margin: 16px 0 0; max-width: 72ch; font-size: 18px; line-height: 1.55; color: var(--text-soft); }
+  .ed-grid { display: grid; grid-template-columns: minmax(0, 1fr) 340px; gap: 40px; align-items: start; }
+  .ed-main { min-width: 0; display: flex; flex-direction: column; gap: 32px; }
+  .ed-side { position: sticky; top: 76px; display: flex; flex-direction: column; gap: 16px; }
+  .ed-sec { display: flex; flex-direction: column; gap: 14px; }
+  .ed-h { margin: 0; display: flex; align-items: center; gap: 6px; font-size: 22px; font-weight: 800; letter-spacing: -0.02em; }
+  .ed-label { display: flex; align-items: center; gap: 8px; font-size: 14px; font-weight: 700; letter-spacing: .04em; text-transform: uppercase; }
+  .ed-ember { width: 8px; height: 8px; border-radius: 50%; background: var(--accent); flex: none; }
+  .ed-card { background: var(--bg-elev); border: 1px solid var(--line); border-radius: 16px; padding: 18px 20px; }
+  .ed-none { margin: 0; font-size: 14px; color: var(--text-dim); }
+  .ed-mini { width: 28px; height: 28px; margin-left: 6px; border: 0; border-radius: 8px; background: none; color: var(--text-dim); display: inline-flex; align-items: center; justify-content: center; vertical-align: middle; cursor: pointer; }
+  .ed-mini:hover { background: var(--bg-elev-2); color: var(--text); }
+  .ed-link { padding: 0; border: 0; background: none; font: inherit; font-size: 14px; font-weight: 600; color: var(--text-soft); text-decoration: underline; text-decoration-color: var(--edge); text-underline-offset: 3px; cursor: pointer; }
+  .ed-link:hover { color: var(--accent-text); }
+  .ed-add { align-self: flex-start; height: 30px; padding: 0 10px; border-radius: 8px; border: 1.5px dashed var(--edge); background: none; display: inline-flex; align-items: center; gap: 6px;
+    font: inherit; font-size: 14px; color: var(--text-soft); cursor: pointer; }
+  .ed-add:hover { border-color: var(--text-dim); color: var(--text); }
+  .ed-hint { font-size: 14px; color: var(--text-mute); }
+  .ed-inline { width: 100%; }
+  /* evidence: the claim and the source's facts */
+  .ed-claim { margin: 0; max-width: 46ch; font-size: 26px; font-weight: 600; line-height: 1.3; letter-spacing: -0.015em; }
+  .ed-facts { margin-top: 2px; display: grid; grid-template-columns: repeat(5, minmax(0, 1fr)); background: var(--bg-elev); border: 1px solid var(--line); border-radius: 16px; }
+  .ed-fact { min-width: 0; padding: 14px 16px; display: flex; flex-direction: column; align-items: flex-start; gap: 4px; font-size: 14px; }
+  .ed-fact + .ed-fact { border-left: 1px solid var(--line-soft); }
+  .ed-fk { font-size: 13px; font-weight: 600; letter-spacing: .04em; text-transform: uppercase; color: var(--text-mute); }
+  .ed-fact b { font-size: 16px; overflow-wrap: anywhere; }
+  .ed-fact .ok { color: #1F7A4D; } .ed-fact .warn, .ed-big small.warn { color: var(--accent-text); }
+  /* evidence: key figures — any number of them, three to a row */
+  .ed-figs { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 14px; }
+  .ed-fig { position: relative; background: var(--bg-elev); border: 1px solid var(--line); border-radius: 16px; padding: 18px 20px; display: flex; flex-direction: column; gap: 6px; }
+  .ed-fig > b { font-size: 44px; font-weight: 800; line-height: 1; letter-spacing: -0.04em; overflow-wrap: anywhere; }
+  .ed-fig > span { font-size: 15px; line-height: 1.4; }
+  .ed-fig > small { margin-top: auto; padding-top: 10px; border-top: 1px solid var(--line-soft); font-size: 14px; color: var(--text-dim); }
+  .ed-fig-acts { position: absolute; top: 10px; right: 10px; display: flex; gap: 2px; opacity: 0; transition: opacity .2s; }
+  .ed-fig:hover .ed-fig-acts, .ed-fig:focus-within .ed-fig-acts { opacity: 1; }
+  .ed-fig-acts button { width: 30px; height: 30px; border: 0; border-radius: 8px; background: var(--bg-elev); color: var(--text-soft); display: inline-flex; align-items: center; justify-content: center; cursor: pointer; }
+  .ed-fig-acts button:hover { background: var(--bg-elev-2); color: var(--text); }
+  .ed-fig-add { min-height: 150px; border-radius: 16px; border: 1.5px dashed var(--edge); background: none; display: flex; align-items: center; justify-content: center; gap: 8px;
+    font: inherit; font-size: 15px; font-weight: 600; color: var(--text-soft); cursor: pointer; }
+  .ed-fig-add:hover { border-color: var(--text-dim); color: var(--text); }
+  .ed-fig-form { border: 1.5px solid var(--text); gap: 10px; }
+  .ed-fig-form label { display: flex; flex-direction: column; gap: 4px; font-size: 13px; font-weight: 600; color: var(--text-dim); }
+  .ed-fig-btns { display: flex; gap: 8px; }
+  /* evidence: the text with the team's highlights, takeaways, limits, sources */
+  .ed-quotes { padding: 24px 28px; font-size: 17px; line-height: 1.75; }
+  .ed-quotes p { margin: 0 0 12px; } .ed-quotes p:last-child { margin: 0; }
+  .ed-take { margin: 0; padding: 0; list-style: none; display: flex; flex-direction: column; gap: 10px; }
+  .ed-take li { background: var(--bg-elev); border: 1px solid var(--line); border-radius: 14px; padding: 14px 18px; display: grid; grid-template-columns: 36px minmax(0, 1fr); gap: 12px; font-size: 16px; line-height: 1.5; }
+  .ed-take li > span { font-family: var(--font-mono); font-size: 14px; color: var(--text-mute); padding-top: 2px; }
+  .ed-limits { padding: 18px 22px; border-radius: 16px; border: 1.5px dashed var(--text-dim); display: flex; flex-direction: column; gap: 10px; }
+  .ed-limits ul { margin: 0; padding-left: 20px; font-size: 16px; line-height: 1.6; color: var(--text-soft); }
+  .ed-srcs { padding: 0; overflow: hidden; }
+  .ed-src { min-height: 64px; padding: 12px 20px; display: grid; grid-template-columns: 40px minmax(0, 1fr) auto auto; align-items: center; gap: 14px; text-decoration: none; color: var(--text); border-top: 1px solid var(--line-soft); }
+  .ed-src:first-child { border-top: 0; }
+  a.ed-src:hover { background: var(--bg-elev-2); }
+  .ed-src b { display: block; font-weight: 600; } .ed-src small { font-size: 14px; color: var(--text-dim); }
+  .ed-src-tile { width: 40px; height: 40px; border-radius: 10px; background: var(--bg-elev-2); display: flex; align-items: center; justify-content: center; font-weight: 800; font-size: 14px; text-transform: capitalize; }
+  .ed-src svg { color: var(--text-dim); }
+  .ed-more h3 { margin: 0 0 8px; font-size: 16px; } .ed-more h3:not(:first-child) { margin-top: 18px; }
+  /* the side column */
+  .ed-side-h { display: flex; align-items: center; gap: 4px; margin-bottom: 8px; font-size: 14px; font-weight: 700; letter-spacing: .04em; text-transform: uppercase; color: var(--text-soft); }
+  .ed-big { display: flex; align-items: center; gap: 14px; }
+  .ed-big > b { font-size: 60px; font-weight: 800; line-height: 1; letter-spacing: -0.05em; }
+  .ed-big > span { font-size: 16px; font-weight: 600; line-height: 1.3; }
+  .ed-big small { display: block; font-weight: 400; color: var(--text-dim); }
+  .ed-row { margin: 0 -10px; padding: 8px 10px; border-radius: 10px; display: grid; grid-template-columns: auto minmax(0, 1fr); gap: 10px; align-items: start; text-decoration: none; color: var(--text); font-size: 14.5px; line-height: 1.35; }
+  .ed-row:hover { background: var(--bg-elev-2); }
+  .ed-row b { display: block; font-weight: 600; } .ed-row small { font-size: 14px; color: var(--text-dim); }
+  .ed-row code, .ed-sig code { font-family: var(--font-mono); font-size: 13px; }
+  .ed-kind { width: 74px; padding-top: 1px; font-family: var(--font-mono); font-size: 13px; color: var(--text-mute); }
+  .ed-face { width: 28px; height: 28px; font-size: 12px; }
+  .ed-face.lg { width: 44px; height: 44px; font-size: 16px; }
+  .ed-people { display: flex; flex-wrap: wrap; gap: 8px; }
+  .ed-person { height: 36px; padding: 0 12px 0 4px; border-radius: var(--r-pill); border: 1px solid var(--line); display: inline-flex; align-items: center; gap: 8px;
+    font-size: 14.5px; font-weight: 600; color: var(--text); text-decoration: none; }
+  .ed-person:hover { border-color: var(--hover-border); }
+  /* signal: the quote and its source signature */
+  .ed-quote { padding: 0; overflow: hidden; }
+  .ed-quote blockquote { margin: 0; padding: 26px 30px 22px; border: 0; font-size: 26px; font-weight: 600; line-height: 1.35; letter-spacing: -0.01em; color: var(--text); }
+  .ed-quote blockquote > span { color: var(--accent); }
+  .ed-quote > .ed-none { padding: 22px 30px; }
+  .ed-sig { padding: 14px 30px; border-top: 1px solid var(--line-soft); background: var(--bg-elev-2); display: flex; align-items: center; gap: 14px; flex-wrap: wrap; }
+  .ed-sig.secondary { background: none; border-top: 1.5px dashed var(--edge); }
+  .ed-sig-who { display: flex; flex-direction: column; gap: 1px; min-width: 0; }
+  .ed-sig-who b { font-size: 15.5px; } .ed-sig-who small { font-size: 14px; color: var(--text-dim); }
+  .ed-open { margin-left: auto; display: inline-flex; align-items: center; gap: 8px; }
+  .ed-conv { padding: 22px 26px; display: grid; grid-template-columns: 110px minmax(0, 1fr); gap: 14px 16px; font-size: 16px; line-height: 1.65; }
+  .ed-spk { font-size: 14px; font-weight: 700; padding-top: 2px; color: var(--text); }
+  .ed-spk.mod { color: var(--text-dim); }
+  .ed-conv .dim { color: var(--text-dim); }
+  mark.ed-said { background: #FFE3D2; color: var(--text); padding: 2px 3px; border-radius: 4px; box-decoration-break: clone; -webkit-box-decoration-break: clone; }
+  .ed-stance { display: flex; flex-direction: column; gap: 8px; }
+  .ed-stance > div { display: grid; grid-template-columns: auto minmax(0, 1fr); gap: 4px 18px; align-items: baseline; }
+  .ed-stance > div > b { grid-row: span 3; font-size: 30px; font-weight: 800; letter-spacing: -0.02em; line-height: 1.1; color: var(--text); }
+  .ed-stance .st-dealbreaker, .ed-stance .st-resents, .ed-stance .st-frustrated { color: var(--accent-text); }
+  .ed-stance .st-appreciates, .ed-stance .st-relies_on, .ed-stance .st-advocates { color: #1F7A4D; }
+  .ed-stance span { font-size: 16px; } .ed-because { color: var(--text-soft); } .ed-stance small { font-size: 14px; color: var(--text-dim); }
+  /* the Signals tab, grouped by source or theme (07d-signals.js) */
+  .sg-wrap { display: flex; flex-direction: column; gap: 16px; }
+  .sg-bar { display: flex; align-items: center; gap: 12px; flex-wrap: wrap; margin-bottom: 4px; }
+  .sg-seg { margin-left: auto; display: inline-flex; align-items: center; gap: 2px; padding: 3px; border-radius: 11px; background: var(--bg-elev-2); }
+  .sg-seg > span { padding: 0 8px 0 10px; font-size: 14px; color: var(--text-dim); }
+  .sg-seg button { height: 32px; padding: 0 14px; border: 0; border-radius: 8px; background: none; font: inherit; font-size: 14px; font-weight: 600; color: var(--text-soft); cursor: pointer; }
+  .sg-seg button[aria-pressed="true"] { background: var(--bg-elev); color: var(--text); box-shadow: 0 1px 2px rgba(10,10,10,.12); }
+  .sg-group { background: var(--bg-elev); border: 1px solid var(--line); border-radius: 16px; }
+  .sg-group > :first-child { border-radius: 16px 16px 0 0; } .sg-group > :last-child { border-radius: 0 0 16px 16px; }
+  .sg-group.set-aside { opacity: .72; }
+  .sg-group.secondary { border: 1.5px dashed var(--edge); }
+  .sg-head { padding: 14px 20px; display: flex; align-items: center; gap: 14px; background: var(--bg-elev-2); }
+  .sg-group.secondary .sg-head { background: none; }
+  .sg-ico { width: 44px; height: 44px; border-radius: 12px; background: var(--text); color: var(--bg-elev); display: inline-flex; align-items: center; justify-content: center; flex: none; }
+  .sg-hl { min-width: 0; display: flex; flex-direction: column; gap: 2px; }
+  .sg-hl b { font-size: 17px; } .sg-hl small { font-size: 14px; color: var(--text-dim); }
+  .sg-hl code, .sg-src code { font-family: var(--font-mono); font-size: 13px; }
+  .sg-count { margin-left: auto; font-size: 14px; color: var(--text-dim); white-space: nowrap; }
+  .sg-open { font-size: 14px; font-weight: 600; color: var(--text); text-decoration: none; display: inline-flex; align-items: center; gap: 6px; white-space: nowrap; }
+  .sg-open:hover { color: var(--accent-text); }
+  .sg-stack { margin-left: auto; display: inline-flex; }
+  .sg-stack .face { box-shadow: 0 0 0 2px var(--bg-elev-2); } .sg-stack .face + .face { margin-left: -8px; }
+  .sg-row { display: grid; grid-template-columns: minmax(0, 1fr) auto; gap: 8px 24px; align-items: center; padding: 14px 20px; border-top: 1px solid var(--line-soft); text-decoration: none; color: var(--text); }
+  .sg-row:hover { background: var(--bg-elev-2); }
+  .sg-what { min-width: 0; display: flex; flex-direction: column; gap: 3px; }
+  .sg-what b { font-size: 16px; font-weight: 650; }
+  .sg-what span { font-size: 15px; color: var(--text-soft); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .sg-tags { display: flex; align-items: center; justify-content: flex-end; gap: 8px; flex-wrap: wrap; }
+  .sg-src { display: inline-flex; align-items: center; gap: 8px; font-size: 14px; color: var(--text-soft); white-space: nowrap; }
+  .sg-ev { font-size: 14px; color: var(--text-soft); white-space: nowrap; } .sg-ev.none { color: var(--accent-text); }
+  .sg-st.st-dealbreaker, .sg-st.st-resents, .sg-st.st-frustrated { color: var(--accent-text); }
+  .sg-st.st-appreciates, .sg-st.st-relies_on, .sg-st.st-advocates { color: #1F7A4D; }
+  .ed-face.sm { width: 22px; height: 22px; font-size: 10px; }
+  @media (max-width: 720px) { .sg-row { grid-template-columns: minmax(0, 1fr); } .sg-tags { justify-content: flex-start; } .sg-head { flex-wrap: wrap; } }
+  /* faces of participants who are not a persona: a plain filled circle, not a persona's missing photo */
+  .ed-face.is-initials, .sg-stack .face.is-initials { border: 1px solid var(--line); background: var(--bg-elev-2); }
+  .face { user-select: none; }
+  /* the signal page: theme, quote tools, translations, the conversation's speakers */
+  .ed-theme { display: inline-flex; align-items: center; gap: 8px; flex-wrap: wrap; }
+  .ed-theme-btn { cursor: pointer; font: inherit; font-size: 14px; } .ed-theme-btn svg { width: 13px; height: 13px; color: var(--text-dim); }
+  .ed-theme-add { border-color: var(--accent); color: var(--accent-text); }
+  .ed-theme-in { width: 260px; height: 34px; }
+  .ed-quote { position: relative; }
+  .ed-q-tools { position: absolute; top: 14px; right: 14px; display: flex; align-items: center; gap: 10px; }
+  .ed-quote blockquote { padding-right: 190px; }
+  .ed-copy { width: 32px; height: 32px; border: 0; border-radius: 8px; background: none; color: var(--text-dim); display: inline-flex; align-items: center; justify-content: center; cursor: pointer; }
+  .ed-copy:hover { background: var(--bg-elev-2); color: var(--text); }
+  .ed-tr { display: none; color: var(--text-soft); font-style: italic; }
+  .show-tr .ed-tr { display: block; }
+  .ed-q-tr { margin: -10px 0 0; padding: 0 30px 20px; font-size: 17px; line-height: 1.5; }
+  .ed-conv .ed-tr { margin-top: 4px; font-size: 15px; }
+  .ed-spk { display: flex; align-items: flex-start; gap: 8px; }
+  .ed-spk b { padding-top: 2px; }
+  .ed-av { width: 26px; height: 26px; flex: none; border-radius: 50%; background: var(--text); color: var(--bg-elev); display: inline-flex; align-items: center; justify-content: center; font-size: 12px; font-weight: 800; }
+  .ed-av.mod { background: none; color: var(--text-dim); border: 1.5px solid var(--edge); }
+  .ed-conv { grid-template-columns: 150px minmax(0, 1fr); }
+  .ed-turn { position: relative; padding-right: 38px; }
+  .ed-turn .ed-copy { position: absolute; top: -4px; right: 0; opacity: 0; transition: opacity .2s; }
+  .ed-turn:hover .ed-copy, .ed-turn:focus-within .ed-copy { opacity: 1; }
+  /* the theme's sources: faces that spread out under the pointer and say who they are */
+  .sg-stack { position: relative; outline: none; cursor: default; }
+  .sg-stack .face { transition: margin .35s var(--ease-out), translate .35s var(--ease-out); }
+  .sg-stack:hover .face + .face, .sg-stack:focus-visible .face + .face { margin-left: 4px; }
+  .sg-more { margin-left: 6px; align-self: center; font-size: 13px; color: var(--text-dim); }
+  .sg-stack-tip { position: absolute; top: calc(100% + 10px); right: 0; z-index: 30; min-width: 240px; padding: 12px 14px; border-radius: 12px; background: var(--text); color: #D9D5CC;
+    display: flex; flex-direction: column; gap: 6px; font-size: 13.5px; line-height: 1.35; box-shadow: 0 12px 32px rgba(10,10,10,.25);
+    opacity: 0; translate: 0 -4px; pointer-events: none; transition: opacity .2s, translate .2s; }
+  .sg-stack-tip b { color: #fff; } .sg-stack-tip > span { display: flex; align-items: center; gap: 8px; } .sg-stack-tip code { color: #A8A399; font-family: var(--font-mono); font-size: 12px; }
+  .sg-stack-tip .face { margin: 0 !important; box-shadow: none !important; }
+  .sg-stack:hover .sg-stack-tip, .sg-stack:focus-visible .sg-stack-tip { opacity: 1; translate: 0 0; }
+  /* "Open at this moment": the turn it lands on */
+  .tr-turn.tr-focus { background: #FFF1E8; border-radius: 10px; }
+  @media (prefers-reduced-motion: no-preference) {
+    @keyframes edRise { from { opacity: 0; translate: 0 12px; } }
+    .ed-main > *, .ed-side > * { animation: edRise .55s var(--ease-out) backwards; }
+    .ed-main > :nth-child(2), .ed-side > :nth-child(2) { animation-delay: 80ms; }
+    .ed-main > :nth-child(3), .ed-side > :nth-child(3) { animation-delay: 160ms; }
+    .ed-main > :nth-child(n+4) { animation-delay: 220ms; }
+  }
+  @media (max-width: 1100px) {
+    .ed-grid { grid-template-columns: minmax(0, 1fr); }
+    .ed-side { position: static; }
+    .ed-facts { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+    .ed-fact + .ed-fact { border-left: 0; }
+    .ed-figs { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  }
+  @media (max-width: 640px) {
+    .ed-figs, .ed-facts { grid-template-columns: minmax(0, 1fr); }
+    .ed-conv { grid-template-columns: minmax(0, 1fr); gap: 2px; }
+    .ed-src { grid-template-columns: 40px minmax(0, 1fr); }
+  }
   /* ── Projects — the screen you land on ───────────────────────────────────
      Not a view inside a project: a separate screen that owns the window, the
      way IA Builder's dashboard does. Built entirely on the shared tokens from
@@ -3426,6 +3783,17 @@
       transition: transform .7s var(--ease-out), translate .5s var(--ease-out), box-shadow .5s var(--ease-out), border-color .15s; }
     [data-lean]::after { content: ""; position: absolute; inset: 0; z-index: -1; border-radius: inherit; pointer-events: none; opacity: 0;
       background: radial-gradient(260px circle at var(--mx, 50%) var(--my, 50%), rgba(255,77,0,.11), transparent 68%); transition: opacity .35s; }
+    /* the net under a leaning card (leanNet, 12c-motion.js): wires from a point behind the face */
+    .lean-net { position: absolute; inset: 0; z-index: -1; width: 100%; height: 100%; pointer-events: none; overflow: visible; opacity: 0; transition: opacity .4s var(--ease-out); }
+    [data-lean]:hover > .lean-net { opacity: 1; }
+    .lean-net .w { stroke: rgba(10,10,10,.16); stroke-width: 1; fill: none; stroke-dasharray: 1; stroke-dashoffset: 1; transition: stroke-dashoffset .9s var(--ease-out) var(--d, 0ms); }
+    .lean-net .w.x { stroke: rgba(10,10,10,.09); stroke-dasharray: .02 .02; }
+    [data-lean]:hover > .lean-net .w { stroke-dashoffset: 0; }
+    [data-lean]:hover > .lean-net .w.x { stroke-dashoffset: 0; }
+    .lean-net .n { fill: var(--bg-elev); stroke: rgba(10,10,10,.35); stroke-width: 1.25; transform-box: fill-box; transform-origin: center; scale: 0; transition: scale .5s var(--ease-spring) var(--d, 0ms); }
+    .lean-net .n.big { stroke: var(--accent); stroke-width: 1.5; }
+    [data-lean]:hover > .lean-net .n { scale: 1; }
+    .lean-net .pulse { fill: var(--accent); opacity: 0; }
     .face[data-lean]::after { z-index: 2; background: radial-gradient(160px circle at var(--mx, 50%) var(--my, 50%), rgba(255,255,255,.3), transparent 66%); }
     [data-lean] .face, .face[data-lean] { transition: transform .7s var(--ease-out), translate .5s var(--ease-out), scale .65s var(--ease-spring), rotate .65s var(--ease-spring), box-shadow .4s var(--ease-out); }
 
@@ -3596,6 +3964,8 @@
             <button id="filterClear" title="Clear filter" data-i18n-title="Clear filter" aria-label="Clear filter" data-i18n-aria="Clear filter" style="display:none">✕</button>
           </label>
           <div class="view-toggle" role="group" aria-label="View">
+            <button id="viewFoldersBtn" title="Folders by topic" data-i18n-title="Folders by topic" style="display:none"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 4h4l3 3h7a2 2 0 0 1 2 2v8a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2"/></svg></button>
+            <button id="viewSourcesBtn" title="Grouped by source or theme" data-i18n-title="Grouped by source or theme" style="display:none"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="5" rx="1.5"/><path d="M7 13h14M7 17h14M7 21h10"/></svg></button>
             <button id="viewCardsBtn" title="Card grid" data-i18n-title="Card grid"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/></svg></button>
             <button id="viewListBtn" title="Single column" data-i18n-title="Single column"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="8" y1="6" x2="21" y2="6"/><line x1="8" y1="12" x2="21" y2="12"/><line x1="8" y1="18" x2="21" y2="18"/><line x1="3" y1="6" x2="3.01" y2="6"/><line x1="3" y1="12" x2="3.01" y2="12"/><line x1="3" y1="18" x2="3.01" y2="18"/></svg></button>
             <button id="viewTableBtn" title="Table view" data-i18n-title="Table view"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="18" height="18" rx="2" ry="2"/><line x1="3" y1="9" x2="21" y2="9"/><line x1="3" y1="15" x2="21" y2="15"/><line x1="9" y1="3" x2="9" y2="21"/></svg></button>
@@ -7064,9 +7434,16 @@ function section(body, h){
   const re = new RegExp('(?:^|\\n)##\\s*'+h.replace(/[.*+?^${}()|[\]\\]/g,'\\$&')+'\\s*\\n([\\s\\S]*?)(?=\\n##\\s|\\n#\\s|$)','i');
   const mm = body.match(re); return mm ? mm[1].trim() : '';
 }
+/* A Polish project writes its labels in Polish (**Kiedy:** for **When:**), so
+   each English label is also read under the names a Polish file gives it. */
+const LABEL_ALIASES = { 'If': ['Jeśli', 'Jeżeli'], 'By': ['Poprzez', 'Przez'], 'Will': ['To'], 'Because': ['Ponieważ', 'Bo'],
+  'For': ['Dla'], 'Instead of': ['Zamiast'], 'When': ['Kiedy'], 'I want': ['Chcę'], 'So that': ['Żeby', 'Aby'] };
 function afterLabel(body, label){
-  const re = new RegExp('\\*\\*'+label+':\\*\\*\\s*(.+)','i');
-  const mm = body.match(re); return mm ? mm[1].trim() : '';
+  for(const l of [label, ...(LABEL_ALIASES[label] || [])]){
+    const mm = body.match(new RegExp('\\*\\*'+l+':\\*\\*\\s*(.+)','i'));
+    if(mm) return mm[1].trim();
+  }
+  return '';
 }
 function firstQuote(body){ const mm = body.match(/^>\s?(.+)/m); return mm ? mm[1].trim() : ''; }
 function stripLinks(s){ return s.replace(HL_RE,'$1').replace(MD_LINK,'$1').replace(/[*`_]/g,'').trim(); }
@@ -8040,6 +8417,62 @@ const PL = {
   'Fresh research': 'Świeże badania',
   'Actions': 'Akcje',
   'Topic': 'Temat',
+  /* evidence folders */
+  'Folders by topic':
+    'Teczki według tematu',
+  'Other topics':
+    'Pozostałe tematy',
+  'Strength':
+    'Siła',
+  'How strong is a piece of evidence?':
+    'Jak mocny jest dowód?',
+  'The Signals — your own interviews and tests — that cite it, and how many different participants stand behind them. Ten signals from one person are still one person. Counted from the links, never typed in; a session the researcher set aside confirms nothing.':
+    'Sygnały — Twoje własne wywiady i testy — które go cytują, i ilu różnych uczestników za nimi stoi. Dziesięć sygnałów od jednej osoby to wciąż jedna osoba. Liczone z powiązań, nigdy wpisywane ręcznie; sesja odłożona przez badacza niczego nie potwierdza.',
+  'Every piece of evidence in this view':
+    'Każdy dowód w tym widoku',
+  'Single source':
+    'Jedno źródło',
+  'Confirmed by one participant only — worth a second source before a decision leans on it':
+    'Potwierdza go tylko jeden uczestnik — warto mieć drugie źródło, zanim oprze się na nim decyzja',
+  'Unconfirmed':
+    'Niepotwierdzony',
+  'Nobody we interviewed backs it yet — desk research, or a secondary source only':
+    'Nie potwierdza go nikt z naszych rozmówców — desk research albo tylko źródło wtórne',
+  'Not confirmed in interviews': 'Nie potwierdzone w wywiadach', 'Source for': 'Źródło dla', 'Confirmed': 'Potwierdzony',
+  'The number is the Signals that cite it. Under it, how many different participants of your own interviews and tests stand behind them: ten signals from one person are still one person, and a secondary source adds nobody. Counted from the links, never typed in.':
+    'Liczba to sygnały, które go cytują. Pod nią: ilu różnych uczestników Twoich własnych wywiadów i testów za nimi stoi — dziesięć sygnałów od jednej osoby to wciąż jedna osoba, a źródło wtórne nie dodaje nikogo. Liczone z powiązań, nigdy wpisywane ręcznie.',
+  'No Signal cites it — desk research nobody has heard in an interview yet':
+    'Żaden sygnał go nie cytuje — desk research, którego nikt jeszcze nie usłyszał w wywiadzie',
+  'No persona yet':
+    'Bez persony',
+  'No persona stands on it — link it, or let it go':
+    'Żadna persona na nim nie stoi — podepnij go albo odpuść',
+  'Out of date':
+    'Przeterminowany',
+  'Retrieved more than three months ago — re-check before relying on it':
+    'Pobrany ponad trzy miesiące temu — sprawdź ponownie, zanim się na nim oprzesz',
+  'Close the folder':
+    'Zamknij teczkę',
+  'strongest first':
+    'najmocniejsze najpierw',
+  'Nothing in this folder matches the filter.':
+    'Nic w tej teczce nie pasuje do filtra.',
+  'every piece confirmed twice or more':
+    'każdy dowód potwierdzony co najmniej dwa razy',
+  '{s} of your own Signals cite it, heard from {p} different participants':
+    'Cytuje go {s} Twoich sygnałów, usłyszanych od {p} różnych uczestników',
+  'No Signal cites it yet':
+    'Żaden sygnał go jeszcze nie cytuje',
+  'no persona yet':
+    'jeszcze bez persony',
+  'retrieved':
+    'pobrano',
+  'Corroborated':
+    'Potwierdzony',
+  'Show':
+    'Pokaż',
+  'Confirmed by':
+    'Potwierdzają',
   'Promote to Idea': 'Awansuj na Pomysł',
   'Ready to promote to an Idea': 'Gotowa do awansu na Pomysł',
   'A live bet — L1 assumption, no evidence yet': 'Żywy zakład — założenie L1, jeszcze bez dowodów',
@@ -8964,7 +9397,129 @@ const PL = {
   'Write permission denied': 'Brak zgody na zapis',
   'Order ideas by votes (request board) or A–Z': 'Sortuj pomysły wg głosów (tablica zgłoszeń) albo A–Z',
 
-  'Stopped — that folder is enormous': 'Przerwano — ten folder jest ogromny'
+  'Stopped — that folder is enormous': 'Przerwano — ten folder jest ogromny',
+
+  /* ---- evidence and signal pages, grouped signals (09e, 07d) ---- */
+  'Go to the quote': 'Przejdź do cytatu',
+  'Add a theme': 'Dodaj temat',
+  'groups it with similar signals': 'połączy go z podobnymi sygnałami',
+  'Change the theme': 'Zmień temat',
+  'Show translation': 'Pokaż tłumaczenie',
+  'Hide translation': 'Ukryj tłumaczenie',
+  'Copy': 'Kopiuj',
+  'Theme, e.g. Pricing & value': 'Temat, np. Cena i wartość',
+  'Theme saved ✓': 'Temat zapisany ✓',
+  'Theme removed': 'Temat usunięty',
+  'Sources behind this theme': 'Źródła w tym temacie',
+  'About the source': 'O źródle',
+  'Add a figure': 'Dodaj liczbę',
+  'Asked': 'Zapytani',
+  'Asked directly, so the attitude is real but how much it matters may be inflated.': 'Pytanie padło wprost, więc postawa jest prawdziwa, ale to, jak bardzo jest ważna, może być zawyżone.',
+  'Backed by interviews': 'Potwierdzone w wywiadach',
+  'Checked today': 'Sprawdzone dziś',
+  'Confirms': 'Potwierdza',
+  'Delete this figure': 'Usuń tę liczbę',
+  'Edit this figure': 'Edytuj tę liczbę',
+  'Every number with who it is about and where it comes from, one row each in the file, so a number is never quoted without its population.': 'Każda liczba z tym, kogo dotyczy i skąd pochodzi — po jednym wierszu w pliku, żeby liczby nigdy nie cytować bez populacji.',
+  'Grounds': 'Jest podstawą dla',
+  'Group by': 'Grupuj',
+  'Grouped by source or theme': 'Pogrupowane według źródła lub tematu',
+  'How many signals from your own interviews and tests back this piece, and how many different people said them. Ten signals from one person are still one person, and a secondary source adds nobody. Counted from the links, never typed in.': 'Ile sygnałów z Twoich własnych wywiadów i testów potwierdza ten dowód i ile różnych osób je wypowiedziało. Dziesięć sygnałów od jednej osoby to wciąż jedna osoba, a źródło wtórne nie dodaje nikogo. Liczone z powiązań, nigdy wpisywane ręcznie.',
+  'In one sentence': 'W jednym zdaniu',
+  'In the conversation': 'W rozmowie',
+  'Key figures': 'Kluczowe liczby',
+  'Last checked': 'Ostatnio sprawdzone',
+  'Link the transcript in the signal’s ## Transcript section': 'Podlinkuj transkrypcję w sekcji ## Transcript sygnału',
+  'Mark as read': 'Oznacz jako przeczytane',
+  'More in the file': 'Więcej w pliku',
+  'No evidence linked yet.': 'Brak podlinkowanych dowodów.',
+  'No evidence yet': 'Bez dowodu',
+  'No quote in this signal — an observation.': 'Ten sygnał nie ma cytatu — to obserwacja.',
+  'No signal cites it yet.': 'Żaden sygnał go jeszcze nie cytuje.',
+  'No source linked': 'Bez podlinkowanego źródła',
+  'No theme yet': 'Jeszcze bez tematu',
+  'Not written yet.': 'Jeszcze nie wpisano.',
+  'Nothing matches this filter.': 'Nic nie pasuje do tego filtra.',
+  'Number': 'Liczba',
+  'Open transcript': 'Otwórz transkrypcję',
+  'Personas standing on it': 'Persony, które się na nim opierają',
+  'Read in the original': 'Przeczytane w oryginale',
+  'Same source also said': 'To samo źródło powiedziało też',
+  'Same theme': 'Ten sam temat',
+  'Secondary source — not our conversation': 'Źródło wtórne — nie nasza rozmowa',
+  'Secondary sources': 'Źródła wtórne',
+  'Set aside — not counted': 'Odłożona — nie liczy się',
+  'Source': 'Źródło',
+  'Source date': 'Data źródła',
+  'Source not linked': 'Źródło niepodlinkowane',
+  'Stance': 'Postawa',
+  'Supported quotes': 'Cytaty ze źródła',
+  'The honest limit every piece needs: what this source cannot tell you, e.g. stated intent rather than behaviour, another market, an old sample.': 'Uczciwa granica, której potrzebuje każdy dowód: czego to źródło nie powie, np. deklaracje zamiast zachowań, inny rynek, stara próba.',
+  'Theme': 'Temat',
+  'Type of source': 'Rodzaj źródła',
+  'Type: survey, report, statistics, analytics, study, community or press. Who was studied: the people the numbers are about. Source date: when the report itself came out, not when you found it. Read in the original: whether the figures were checked in the report itself rather than in articles about it. Last checked: when someone last opened the source. A dashed slot is not filled in yet.': 'Rodzaj: ankieta, raport, statystyka, analityka, badanie, społeczność lub prasa. Kogo badano: ludzie, których dotyczą liczby. Data źródła: kiedy ukazał się sam raport, a nie kiedy go znalazłeś. Przeczytane w oryginale: czy liczby sprawdzono w samym raporcie, a nie w artykułach o nim. Ostatnio sprawdzone: kiedy ktoś ostatnio otworzył źródło. Przerywane pole nie jest jeszcze wypełnione.',
+  'Volunteered': 'Sami z siebie',
+  'What it does not settle': 'Czego nie rozstrzyga',
+  'What it measures': 'Co mierzy',
+  'What the source itself says, with the passages your team marked. Select a passage to highlight it, like in a Word document. Highlights are the team’s emphasis: the AI cites them first and never adds or removes one.': 'Co mówi samo źródło, z fragmentami zaznaczonymi przez zespół. Zaznacz fragment, żeby go wyróżnić, jak w dokumencie Word. Wyróżnienia to akcenty zespołu: AI cytuje je w pierwszej kolejności i nigdy ich nie dodaje ani nie usuwa.',
+  'What this evidence says, in one plain sentence (claim: in the file). The AI reads it first when it decides which evidence to open.': 'Co mówi ten dowód, w jednym prostym zdaniu (claim: w pliku). AI czyta je jako pierwsze, gdy decyduje, który dowód otworzyć.',
+  'Who it is about': 'Kogo dotyczy',
+  'Who was studied': 'Kogo badano',
+  'Write it': 'Wpisz',
+  'Write the number first': 'Najpierw wpisz liczbę',
+  'Yes': 'Tak',
+  'asked by the moderator': 'zapytany przez moderatora',
+  'asked, and did not care': 'zapytany i było mu to obojętne',
+  'assumes up front it won’t work': 'z góry zakłada, że nie zadziała',
+  'because': 'bo',
+  'e.g. 2,000 US adults': 'np. 2000 dorosłych w USA',
+  'e.g. 2,000 US adults, online panel': 'np. 2000 dorosłych w USA, panel online',
+  'e.g. 43%': 'np. 43%',
+  'e.g. Price is the most common reason people cancel a subscription': 'np. Cena to najczęstszy powód rezygnacji z subskrypcji',
+  'e.g. dot.LA': 'np. dot.LA',
+  'e.g. would cancel a “too costly” subscription': 'np. zrezygnowaliby ze „zbyt drogiej” subskrypcji',
+  'genuinely both ways at once': 'naprawdę jedno i drugie naraz',
+  'interested, has not used it': 'zainteresowany, nie używał',
+  'it annoys them, they live with it': 'irytuje, ale z tym żyje',
+  'likes it, would not fight for it': 'lubi, ale nie walczyłby o to',
+  'never encountered it': 'nigdy się z tym nie zetknął',
+  'no evidence yet': 'bez dowodu',
+  'no source': 'bez źródła',
+  'part of the routine, would notice it gone': 'część codzienności, zauważyłby brak',
+  'recommends it unprompted': 'poleca sam z siebie',
+  'returns to it unprompted, with anger': 'wraca do tego sam, ze złością',
+  'said they would leave over it': 'powiedział, że odejdzie z tego powodu',
+  'secondary source': 'źródło wtórne',
+  'survey, report, statistics…': 'ankieta, raport, statystyka…',
+  'volunteered': 'sam z siebie',
+  'when the report came out': 'kiedy ukazał się raport',
+  'Key figures saved ✓': 'Kluczowe liczby zapisane ✓',
+  'Figure removed': 'Liczba usunięta',
+  'Saved ✓': 'Zapisano ✓',
+  'Marked as checked today ✓': 'Oznaczono jako sprawdzone dziś ✓',
+  'Not recorded': 'Nie zapisano',
+  'Not yet': 'Jeszcze nie',
+  'out of date': 'nieaktualne',
+  /* ---- hypotheses panel (07c-hypotheses.js), evidence folders (07b-evidence.js) ---- */
+  'Previous hypothesis': 'Poprzednia hipoteza', 'Next hypothesis': 'Następna hipoteza',
+  'Unsorted': 'Nieposortowane', 'in no topic folder yet': 'jeszcze bez teczki tematycznej',
+  'Delete the evidence “{name}”?': 'Usunąć dowód „{name}”?', 'Evidence deleted': 'Dowód usunięty', 'Evidence restored ✓': 'Dowód przywrócony ✓',
+  'Open the file': 'Otwórz plik',
+  'Instead of': 'Zamiast',
+  '— the persona this bet is about (optional)': '— persona, której dotyczy zakład (opcjonalnie)',
+  'nobody in particular': 'nikt konkretny',
+  '— what we compare it with (optional)': '— z czym to porównujemy (opcjonalnie)',
+  'asking listeners to clean their history by hand': 'proszenie słuchaczy o ręczne czyszczenie historii',
+  'listeners who never share their account distrust Discover Weekly just as much': 'słuchacze, którzy nigdy nie dzielą konta, tak samo nie ufają Discover Weekly',
+  'Argument against this hypothesis': 'Argument przeciw tej hipotezie',
+  '(optional — what would show that it is wrong)': '(opcjonalnie — co by pokazało, że jest błędna)',
+  'What would show that this is wrong? e.g. listeners who never share their account distrust the mixes just as much': 'Co by pokazało, że to nieprawda? np. słuchacze, którzy nie dzielą konta, tak samo nie ufają składankom',
+  'Argument saved ✓': 'Argument zapisany ✓', 'Argument removed': 'Argument usunięty',
+  'Edit hypothesis': 'Edytuj hipotezę',
+  'Write at least If and Will: what we would do, and what should happen.': 'Wpisz co najmniej „Jeśli” i „To”: co zrobimy i co ma się wtedy stać.',
+  'Hypothesis saved ✓ — a bet to test, not a finding': 'Hipoteza zapisana ✓ — zakład do sprawdzenia, nie odkrycie',
+  'Hypothesis draft saved in this browser ✓': 'Szkic hipotezy zapisany w tej przeglądarce ✓',
+  'Linked evidence': 'Powiązane dowody', 'None yet — that is what makes it a hypothesis.': 'Jeszcze żadnych — właśnie dlatego to hipoteza.'
 };
 
 /* Polish counts three ways where English counts two — 1 plik, 2–4 pliki,
@@ -9217,6 +9772,7 @@ function updatePageHead(){
    only together with re-tuning those files. */
 function hideGalleryChrome(){   // bars are siblings of the grid; pages that replace the grid must hide them
   ['ideaBar','hypoBar','compBar','newBar','freshBar','filterBar'].forEach(id=>{ const el=document.getElementById(id); if(el) el.style.display='none'; });
+  hyClose();
   const ss=document.getElementById('sampleStat'); if(ss) ss.innerHTML='';
 }
 function syncLinTheme(){
@@ -9253,21 +9809,22 @@ function sorted(){
 }
 let VIEW = store.get('at-view') || 'cards';
 /* Each tab allows only the views that fit its data — one view = no toggle at
-   all. The global VIEW preference persists; effView() resolves it per tab. */
+   all. Each tab remembers the view you picked there (effView). */
 const TYPE_VIEWS = {
   All:      ['cards'],
   Persona:  ['cards'],
   Archetype:['list'],
-  Signal:   ['cards','list','table','affinity'],
-  Evidence: ['cards'],
+  Signal:   ['sources','table','affinity'],   // grouped by where they came from (07d-signals.js)
+  Evidence: ['folders','table'],   // folders by topic (07b-evidence.js) hold the cards
   Hypothesis: ['table'],
   IdeaForImprovement: ['list'],
   Competitor: ['map','list','compare'],
   Transcript: ['cards','list','table','hl']
 };
-const VIEW_BTN = { cards:'viewCardsBtn', list:'viewListBtn', table:'viewTableBtn', map:'viewMapBtn', compare:'viewCompareBtn', affinity:'viewAffinityBtn', hl:'viewHlBtn' };
+const VIEW_BTN = { folders:'viewFoldersBtn', cards:'viewCardsBtn', list:'viewListBtn', table:'viewTableBtn', map:'viewMapBtn', compare:'viewCompareBtn', affinity:'viewAffinityBtn', hl:'viewHlBtn', sources:'viewSourcesBtn' };
 function viewsFor(t){ return TYPE_VIEWS[t] || ['cards']; }
-function effView(){ const a = viewsFor(activeType); return a.includes(VIEW) ? VIEW : a[0]; }
+/* each tab remembers its own view; a tab you have not set opens on its first one */
+function effView(){ const a = viewsFor(activeType), own = store.get('at-view-' + activeType); return a.includes(own) ? own : a[0]; }
 function syncViewButtons(V){
   const allowed = viewsFor(activeType);
   Object.entries(VIEW_BTN).forEach(([mode,id])=>{
@@ -9280,7 +9837,7 @@ function syncViewButtons(V){
   document.querySelector('.view-toggle').style.display = allowed.length>1 ? '' : 'none';
 }
 function setView(v){
-  VIEW = v; store.set('at-view', v);
+  VIEW = v; store.set('at-view', v); store.set('at-view-' + activeType, v);
   renderGrid(searchInput.value);
 }
 /* Strength among the people we actually talked to: DISTINCT transcripts naming this
@@ -9999,6 +10556,8 @@ function participantsChip(e){
   return `<span class="tag"${off?` title="${esc(tr('Excluded transcripts stay on disk but count toward nothing until you turn them back on'))}"`:''}>${main}${off?' · '+tr('+{n} excluded').replace('{n}',off):''}</span>`;
 }
 const demoCell = e => e.fm.demo ? '<span class="demo-badge">Demo</span>' : '';
+/* the ⋯ menu's Delete, for any row whose type deleteEntity (08) knows */
+const delItem = id => `<button type="button" role="menuitem" class="danger" data-del="${id}">${FI('<polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6"/><path d="M10 11v6M14 11v6"/><path d="M9 6V4a1 1 0 0 1 1-1h4a1 1 0 0 1 1 1v2"/>')}${tr('Delete')}</button>`;
 const titleCell = e => {
   const av = e.type==='Persona' ? faceHtml(e, '', e.title) : (e.type==='Archetype' ? archIconHtml(e,'sm') : (e.type==='Competitor' ? compTileHtml(e,26) : ''));
   return `<span class="td-title">${av}${esc(e.title)}</span>`;
@@ -10013,7 +10572,7 @@ const TABLE_COLS = {
     ['Evidences', e=>{ const ev=Array.isArray(e.fm.evidences)?e.fm.evidences:(e.fm.evidences?[e.fm.evidences]:[]); return ev.length? ev.map(x=>`<span class="tag">${esc(x)}</span>`).join(' ') : '<span class="muted">—</span>'; }, 220], ['', demoCell, 90]
   ],
   Hypothesis: [
-    ['Hypothesis', titleCell, 440],   // If / Will live in the file (and its card) — as columns they were mostly empty
+    ['Hypothesis', titleCell, 440],   // If / Will live in the file (and its side panel) — as columns they were mostly empty
     ['Topic', e=> e.fm.feature? `<span class="tag">${esc(e.fm.feature)}</span>` : '<span class="muted">—</span>', 130, 'fit'],
     ['Author', authorChip, 130, 'fit'],
     ['Status', hypoStatusChip, 110, 'fit'],
@@ -10022,8 +10581,16 @@ const TABLE_COLS = {
       return demoCell(e) + rowMenuHtml('rm-'+e.id, [
         canPromote && `<button type="button" role="menuitem" data-promote="${e.id}" title="${esc(tr('Has {what} — make it a grounded Idea').replace('{what}', g.detail))}">${FI('<line x1="12" y1="19" x2="12" y2="5"/><polyline points="5 12 12 5 19 12"/>')}${tr('Promote to Idea')}</button>`,
         `<button type="button" role="menuitem" data-hedit="${e.id}">${FI('<path d="M12 20h9"/><path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5z"/>')}${tr('Edit')}</button>`,
-        `<button type="button" role="menuitem" class="danger" data-hdel="${e.id}">${FI('<polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6"/><path d="M10 11v6M14 11v6"/><path d="M9 6V4a1 1 0 0 1 1-1h4a1 1 0 0 1 1 1v2"/>')}${tr('Delete')}</button>`,
+        delItem(e.id),
       ], canPromote ? tr('Ready to promote to an Idea') : ''); }, 64, 'fit']
+  ],
+  Evidence: [   // strongest first by clicking "Confirmed by" — the cell leads with the number of confirming signals
+    ['Evidence', titleCell, 380],
+    ['Topic', e=> [].concat(e.fm.tags||[]).length ? [].concat(e.fm.tags).slice(0, 2).map(t=> `<span class="tag">${esc(t)}</span>`).join(' ') : '<span class="muted">—</span>', 160, 'fit'],
+    ['Confirmed by', evStrengthCell, 150, 'fit'],
+    ['Personas', e=>{ const p = [...evOf(e).personas].map(id=> ENTITIES[id]).filter(Boolean); return p.length ? esc(p.map(x=> x.title.split(/\s+[—–-]\s+/)[0]).join(', ')) : '<span class="muted">—</span>'; }, 180],
+    ['Retrieved', e=> e.fm.retrieved ? `<span${evStale(e) ? ' class="ev-stale" title="'+esc(tr('Retrieved more than three months ago — re-check before relying on it'))+'"' : ''}>${esc(e.fm.retrieved)}</span>` : '<span class="muted">—</span>', 120, 'fit'],
+    ['', e=> demoCell(e) + rowMenuHtml('rm-'+e.id, [delItem(e.id)]), 90, 'fit']
   ],
   Transcript: [
     ['Transcript', titleCell, 180],
@@ -10077,6 +10644,10 @@ const COL_ICONS = {
   'Quote / observation': FI('<path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/>'),
   'Interview': FI('<rect x="3" y="4" width="18" height="18" rx="2" ry="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/>'),
   'Evidences': ICONS.Evidence,
+  'Evidence': ICONS.Evidence,
+  'Confirmed by': ICONS.Signal,
+  'Personas': ICONS.Persona,
+  'Retrieved': FI('<rect x="3" y="4" width="18" height="18" rx="2" ry="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/>'),
   'Participant': ICONS.Persona,
   'Method': FI('<path d="M12 1a3 3 0 0 0-3 3v8a3 3 0 0 0 6 0V4a3 3 0 0 0-3-3z"/><path d="M19 10v2a7 7 0 0 1-14 0v-2"/><line x1="12" y1="19" x2="12" y2="23"/><line x1="8" y1="23" x2="16" y2="23"/>'),
   'Date': FI('<rect x="3" y="4" width="18" height="18" rx="2" ry="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/>'),
@@ -10110,11 +10681,14 @@ function renderTable(list){
   html += '</tbody></table>';
   grid.innerHTML = html;
   // the row opens its entity — except from its ⋯ menu, whose clicks bubble through the row
-  grid.querySelectorAll('tr[data-goto]').forEach(tr=> tr.onclick = ev=>{ if(!ev.target.closest('.row-menu')) location.hash = '#'+tr.dataset.goto; });
+  grid.querySelectorAll('tr[data-goto]').forEach(tr=> tr.onclick = ev=>{
+    if(ev.target.closest('.row-menu')) return;
+    if(type==='Hypothesis') hyOpen(tr.dataset.goto); else location.hash = '#'+tr.dataset.goto;   // a bet opens in the side panel
+  });
   wireVotes(grid);
   grid.querySelectorAll('[data-promote]').forEach(b=> b.onclick = ev=>{ ev.stopPropagation(); promoteHypothesis(b.dataset.promote); });
   grid.querySelectorAll('[data-hedit]').forEach(b=> b.onclick = ev=>{ ev.stopPropagation(); editHypothesis(b.dataset.hedit); });
-  grid.querySelectorAll('[data-hdel]').forEach(b=> b.onclick = ev=>{ ev.stopPropagation(); deleteHypothesis(b.dataset.hdel); });
+  grid.querySelectorAll('[data-del]').forEach(b=> b.onclick = ev=>{ ev.stopPropagation(); b.closest('[popover]')?.hidePopover(); deleteEntity(b.dataset.del); });
   grid.querySelectorAll('th.th-sortable').forEach(th=> th.onclick = ev=>{
     if(ev.target.closest('.col-resize')) return;          // resizing, not sorting
     const ci = +th.dataset.sci;
@@ -10395,6 +10969,8 @@ function renderGrid(filter=""){
   const list = filteredList(filter);
   const n = list.length;
   const V = effView();
+  if(activeType==='Evidence') EV_IDX = evidenceIndex();   // confirmations, once per render (07b-evidence.js)
+  if(activeType!=='Hypothesis') hyClose();
   syncViewButtons(V);
   syncFilterBar(filter, n);
   syncLinTheme();
@@ -10428,6 +11004,12 @@ function renderGrid(filter=""){
     grid.className = ''; renderCompare();
   } else if(V==='list' && activeType==='Competitor' && n){
     grid.className = 'comp-list'; renderCompList(list);
+  } else if(V==='folders' && activeType==='Evidence' && n){
+    grid.className = ''; renderEvFolders(list);
+  } else if(V==='sources' && activeType==='Signal' && n){
+    renderSignalGroups(list);   // by source or by theme (07d-signals.js)
+  } else if(activeType==='Hypothesis' && n){
+    renderHypotheses(list);   // the table; a row opens the side panel (07c-hypotheses.js)
   } else if(V==='table' && n){
     grid.className = 'tableview'; renderTable(list);
   } else if(activeType==='All' && n){
@@ -10572,9 +11154,9 @@ function card(e){
     const g = ideaGrounding(e);
     const open = hypoStatus(e)==='open';
     inner += `<div class="idea-card-top"><div class="name">${esc(e.title)}</div>${hypoStatusChip(e)}</div>
-      <div class="kv"><b>If</b> — ${esc(trim(stripLinks(afterLabel(e.body,'If')),80))}</div>
-      <div class="kv"><b>Will</b> — ${esc(trim(stripLinks(afterLabel(e.body,'Will')),80))}</div>
-      <div class="kv"><b>${tr('Because')}</b> — ${esc(trim(stripLinks(afterLabel(e.body,'Because')),80))}</div>
+      <div class="kv"><b>${tr('If')}</b> — ${esc(trim(hyPart(e,'if'),80))}</div>
+      <div class="kv"><b>${tr('Will')}</b> — ${esc(trim(hyPart(e,'will'),80))}</div>
+      <div class="kv"><b>${tr('Because')}</b> — ${esc(trim(hyPart(e,'because'),80))}</div>
       ${e.fm.feature?`<div class="tags"><span class="tag">${esc(e.fm.feature)}</span></div>`:''}
       ${open && g.level>0
         ? `<button type="button" class="hypo-promote" data-promote="${e.id}" title="${esc(tr('This bet has research behind it — turn it into a grounded Idea'))}">↑ ${tr('Has {what} — promote to Idea').replace('{what}', esc(g.detail))}</button>`
@@ -10582,8 +11164,8 @@ function card(e){
   } else if(e.type==='IdeaForImprovement'){
     const g = ideaGrounding(e);
     inner += `<div class="idea-card-top"><div class="name">${esc(e.title.replace(/^Idea:\s*/,'Idea: '))}</div>${votePillHtml(e)}</div>
-      <div class="kv"><b>When</b> — ${esc(trim(stripLinks(afterLabel(e.body,'When')),80))}</div>
-      <div class="kv"><b>I want</b> — ${esc(trim(stripLinks(afterLabel(e.body,'I want')),80))}</div>
+      <div class="kv"><b>${tr('When')}</b> — ${esc(trim(stripLinks(afterLabel(e.body,'When')),80))}</div>
+      <div class="kv"><b>${tr('I want')}</b> — ${esc(trim(stripLinks(afterLabel(e.body,'I want')),80))}</div>
       <div class="kv"><b>${tr('So that')}</b> — ${esc(trim(stripLinks(afterLabel(e.body,'So that')),80))}</div>
       <div class="ground-row">${barsHtml(g)}${esc(g.word)}${g.detail?` · ${esc(g.detail)}`:''}</div>`;
   } else if(e.type==='Transcript'){
@@ -10710,6 +11292,337 @@ async function toggleVote(e){
   }
 }
 
+/* ---------- Evidence: confirmations and folders (styles: 10c-evidence.css) ----------
+   A piece of evidence is as strong as what confirms it: the Signals — our own
+   interviews and tests — that cite it (their `evidences:` or a link either
+   way), and the different participants behind those Signals. Counted, never
+   typed in; a session the researcher set aside confirms nothing.
+   Folders are topics: a tag two or more pieces share is a folder (a piece can
+   sit in several). Pieces in no folder — loose finds, often added by hand —
+   lie first, in "Unsorted": a pile, not a folder. A folder sits closed, opens
+   a little under the pointer, and a click spreads its sheets out below,
+   strongest first, under a bar of what the folder is made of. */
+let EV_IDX = new Map(), EV_OPEN = null, EV_FILTER = 'all';
+const evLinkIds = body => [...String(body||'').matchAll(MD_LINK)]
+  .filter(m=> !/^https?:/.test(m[2])).map(m=> resolveRef(m[2])).filter(id=> id && ENTITIES[id]);
+const evPeopleOf = sig => evLinkIds(sig.body).map(id=> ENTITIES[id])
+  .filter(t=> t.type==='Transcript' && !isExcluded(t)).map(participantGroupId);
+/* one pass over the workspace: evidence id → { sig, people, personas } */
+function evidenceIndex(){
+  const evs = wsEntities().filter(e=> e.type==='Evidence');
+  const idx = new Map(evs.map(e=> [e.id, { sig: new Set(), people: new Set(), personas: new Set() }]));
+  const byTitle = new Map(evs.map(e=> [String(e.title).toLowerCase(), e.id]));
+  const confirm = (eid, sig)=>{ const r = idx.get(eid); if(!r || r.sig.has(sig.id)) return; r.sig.add(sig.id); evPeopleOf(sig).forEach(p=> r.people.add(p)); };
+  wsEntities().forEach(x=>{
+    if(x.type==='Signal'){
+      [].concat(x.fm.evidences||[]).forEach(t=> confirm(byTitle.get(String(t).toLowerCase()), x));
+      evLinkIds(x.body).forEach(id=> confirm(id, x));
+    } else if(x.type==='Persona'){
+      evLinkIds(x.body).forEach(id=> idx.has(id) && idx.get(id).personas.add(x.id));
+    }
+  });
+  evs.forEach(e=> evLinkIds(e.body).forEach(id=>{ if(ENTITIES[id].type==='Signal') confirm(e.id, ENTITIES[id]); }));
+  return idx;
+}
+const evOf = e => EV_IDX.get(e.id) || { sig: new Set(), people: new Set(), personas: new Set() };
+const evStale = e => { const d = parseAnyDate(e.fm.retrieved); return !!d && (graphNow() - d.getTime()) / 86400000 > 92; };
+const evSigWord = n => trn(n, 'confirming signal', 'confirming signals', 'potwierdzający sygnał', 'potwierdzające sygnały', 'potwierdzających sygnałów');
+const evFromPeople = n => trn(n, 'from {n} person', 'from {n} people', 'od {n} osoby', 'od {n} osób', 'od {n} osób');
+/* who stands behind a piece: our own participants only — a Signal from a
+   secondary source cites it but adds nobody. Graded for the folder's bar. */
+const evPeopleLine = n => n ? evFromPeople(n) : tr('Not confirmed in interviews');
+const evGrade = e => { const n = evOf(e).people.size; return !n ? 'zero' : n === 1 ? 'single' : 'ok'; };
+const EV_GRADES = { ok: 'Confirmed', single: 'Single source', zero: 'Not confirmed in interviews' };
+/* the table's "Confirmed by" cell: the number leads, so the column sorts as numbers */
+function evStrengthCell(e){
+  const r = evOf(e);
+  return `<span class="ev-cell"><b>${r.sig.size}</b><span class="ev-lv">${esc(evPeopleLine(r.people.size))}</span></span>`;
+}
+const EV_FILTERS = [
+  ['all', 'All', 'Every piece of evidence in this view', ()=> true],
+  ['single', 'Single source', 'Confirmed by one participant only — worth a second source before a decision leans on it', (e, r)=> r.people.size === 1],
+  ['zero', 'Unconfirmed', 'Nobody we interviewed backs it yet — desk research, or a secondary source only', (e, r)=> r.people.size === 0],
+  ['orphan', 'No persona yet', 'No persona stands on it — link it, or let it go', (e, r)=> !r.personas.size],
+  ['stale', 'Out of date', 'Retrieved more than three months ago — re-check before relying on it', e=> evStale(e)],
+];
+function evTakeaway(e){
+  const t = (section(e.body, 'Takeaways') || '').split('\n').map(l=> l.replace(/^\s*[-*]\s*/, '').trim()).find(l=> l && !l.startsWith('<!--'));
+  return stripLinks(t || e.fm.description || (section(e.body, 'Content') || '').split('\n').find(l=> l.trim() && !l.startsWith('<!--')) || '');
+}
+function evFolders(list){
+  const n = {}; list.forEach(e=> [].concat(e.fm.tags||[]).forEach(t=> n[t] = (n[t]||0) + 1));
+  const name = t => { const s = String(t).replace(/[-_]+/g, ' '); return s.charAt(0).toUpperCase() + s.slice(1); };
+  const fs = Object.keys(n).filter(t=> n[t] > 1).sort((a,b)=> n[b]-n[a] || a.localeCompare(b))
+    .map(t=> ({ id: 'tag:'+t, name: name(t), items: list.filter(e=> [].concat(e.fm.tags||[]).includes(t)) }));
+  const loose = list.filter(e=> ![].concat(e.fm.tags||[]).some(t=> n[t] > 1));
+  if(loose.length) fs.unshift({ id: 'other', name: tr('Unsorted'), loose: true, items: loose });
+  return fs;
+}
+function renderEvFolders(list){
+  const all = [...list].sort((a,b)=> a.title.localeCompare(b.title));
+  const no = new Map(all.map((e,i)=> [e.id, 'E-'+String(i+1).padStart(2,'0')]));
+  const keep = EV_FILTERS.find(f=> f[0]===EV_FILTER)[3];
+  const folders = evFolders(list);
+  if(EV_OPEN && !folders.some(f=> f.id===EV_OPEN)) EV_OPEN = null;
+  const folderHtml = f=>{
+    const sig = new Set(), ppl = new Set(); f.items.forEach(e=>{ const r = evOf(e); r.sig.forEach(s=> sig.add(s)); r.people.forEach(p=> ppl.add(p)); });
+    const single = f.items.filter(e=> evOf(e).people.size === 1).length;
+    const open = EV_OPEN === f.id;
+    return `<button type="button" class="ev-fold${open ? ' open' : ''}${f.loose ? ' loose' : ''}" data-f="${esc(f.id)}" aria-expanded="${open}">
+        <i class="ev-back" aria-hidden="true"></i>
+        <i class="ev-paper p1" aria-hidden="true"></i><i class="ev-paper p2" aria-hidden="true"></i>
+        <span class="ev-paper p3" aria-hidden="true">${esc(f.items[0] ? f.items[0].title : '')}</span>
+        <span class="ev-front">
+          <span class="ev-fold-h"><b>${esc(f.name)}</b><span>${esc(trn(f.items.length, '{n} piece', '{n} pieces', '{n} dowód', '{n} dowody', '{n} dowodów'))}</span></span>
+          <span class="ev-fold-n"><b>${sig.size}</b><span>${esc(evSigWord(sig.size))}<small>${esc(evFromPeople(ppl.size))}</small></span></span>
+          <span class="ev-warn${f.loose ? ' loose' : single ? '' : ' ok'}">${esc(f.loose ? tr('in no topic folder yet') : single ? trn(single, '{n} on a single source', '{n} on a single source', '{n} z jednego źródła', '{n} z jednego źródła', '{n} z jednego źródła') : tr('every piece confirmed twice or more'))}</span>
+        </span>
+      </button>`;
+  };
+  const sheet = (e, i)=>{
+    const r = evOf(e);
+    const pers = [...r.personas].map(id=> ENTITIES[id]).filter(Boolean);
+    return `<article class="ev-sheet has-card-link" style="--i:${i}">
+        <div class="ev-sheet-main">
+          <span class="ev-no">${no.get(e.id)}${[].concat(e.fm.tags||[]).length ? ' · ' + esc([].concat(e.fm.tags).join(' · ')) : ''}</span>
+          <a class="card-link ev-title" href="#${esc(e.id)}">${esc(e.title)}</a>
+          ${evTakeaway(e) ? `<p>${esc(trim(evTakeaway(e), 220))}</p>` : ''}
+        </div>
+        <div class="ev-strength${r.sig.size ? '' : ' zero'}">
+          <b>${r.sig.size}</b><span>${esc(evSigWord(r.sig.size))}</span><small class="${r.people.size ? '' : 'none'}">${esc(evPeopleLine(r.people.size))}</small>
+        </div>
+        <div class="ev-foot">
+          <span>${ICONS.Persona}<span>${pers.length ? `<span class="ev-foot-k">${esc(tr('Source for'))}</span> ` + pers.map(p=> `<a href="#${esc(p.id)}">${esc(p.title.split(/\s+[—–-]\s+/)[0])}</a>`).join(', ') : esc(tr('no persona yet'))}</span></span>
+          ${e.fm.retrieved ? `<span>${ICONS.Evidence}${esc(tr('retrieved'))} ${esc(e.fm.retrieved)}</span>` : ''}
+          ${evStale(e) ? `<span class="ev-flag warn">${esc(tr('Out of date'))}</span>` : '<span class="dx-spacer"></span>'}${rowMenuHtml('evm-'+e.id, [delItem(e.id)])}
+        </div>
+      </article>`;
+  };
+  const open = folders.find(f=> f.id===EV_OPEN);
+  /* what the open folder is made of: one bar, a segment per grade, strongest first */
+  const mix = open ? ['ok', 'single', 'zero'].map(k=> [k, open.items.filter(e=> evGrade(e) === k).length]).filter(x=> x[1]) : [];
+  const sheets = open ? open.items.filter(e=> keep(e, evOf(e))).sort((a,b)=> evOf(b).sig.size - evOf(a).sig.size || evOf(b).people.size - evOf(a).people.size || a.title.localeCompare(b.title)) : [];
+  grid.innerHTML = `<div class="ev-wrap">
+      <div class="ev-chips" role="group" aria-label="${esc(tr('Show'))}">
+        ${EV_FILTERS.map(([id, label, why, fn])=> `<button type="button" class="map-chip${EV_FILTER===id ? ' on' : ''}" data-ef="${id}" title="${esc(tr(why))}">${esc(tr(label))} <span class="ev-chip-n">${list.filter(e=> fn(e, evOf(e))).length}</span></button>`).join('')}
+        <span class="dx-fl ev-how">${tr('Strength')}${dxTip(tr('How strong is a piece of evidence?'), esc(tr('The number is the Signals that cite it. Under it, how many different participants of your own interviews and tests stand behind them: ten signals from one person are still one person, and a secondary source adds nobody. Counted from the links, never typed in.')), 'right')}</span>
+      </div>
+      <div class="ev-folders">${folders.map(folderHtml).join('')}</div>
+      ${open ? `<section class="ev-drawer" aria-label="${esc(open.name)}">
+        <div class="ev-drawer-h"><button type="button" class="ev-close" aria-label="${esc(tr('Close the folder'))}">✕</button><h2>${esc(open.name)}</h2>
+          <span>${esc(trn(open.items.length, '{n} piece', '{n} pieces', '{n} dowód', '{n} dowody', '{n} dowodów'))}</span><span class="dx-spacer"></span><span class="ev-sort">${tr('strongest first')}</span></div>
+        <div class="ev-mix" role="img" aria-label="${esc(mix.map(([k, n])=> n + ' ' + tr(EV_GRADES[k])).join(', '))}">
+          <div class="ev-mix-bar">${mix.map(([k, n], i)=> `<i class="${k}" style="flex-grow:${n};--i:${i}"></i>`).join('')}</div>
+          <div class="ev-mix-key">${mix.map(([k, n])=> `<span><i class="${k}"></i><b>${n}</b>${esc(tr(EV_GRADES[k]))}</span>`).join('')}</div>
+        </div>
+        ${sheets.length ? `<div class="ev-sheets">${sheets.map(sheet).join('')}</div>` : `<p class="ev-none">${tr('Nothing in this folder matches the filter.')}</p>`}
+      </section>` : ''}
+    </div>`;
+  const again = ()=> renderEvFolders(list);
+  grid.querySelectorAll('.ev-fold').forEach(b=> b.onclick = ()=>{
+    EV_OPEN = EV_OPEN === b.dataset.f ? null : b.dataset.f; again();
+    if(EV_OPEN) requestAnimationFrame(()=> grid.querySelector('.ev-drawer')?.scrollIntoView({ behavior: MO_STILL.matches ? 'auto' : 'smooth', block: 'nearest' }));
+  });
+  grid.querySelectorAll('[data-ef]').forEach(b=> b.onclick = ()=>{ EV_FILTER = b.dataset.ef; again(); });
+  grid.querySelectorAll('[data-del]').forEach(b=> b.onclick = ev=>{ ev.preventDefault(); b.closest('[popover]')?.hidePopover(); deleteEntity(b.dataset.del); });
+  const x = grid.querySelector('.ev-close'); if(x) x.onclick = ()=>{ EV_OPEN = null; again(); };
+}
+/* ---------- Hypotheses: the side panel (styles: 10d-hypotheses.css) ----------
+   A row of the table (06) opens one bet in the backlog's side panel: the bet
+   itself (For · If · By · Instead of · Will · Because), an optional argument
+   against it — what would show it is wrong, written in the file as
+   "**We're wrong if:**" and asked for only on a click — and the Signals and
+   Evidence linked to it. A hypothesis stays Level 1 whatever this shows. */
+let HY_OPEN = null, HY_ORDER = [], HY_ARG = false;
+/* The bet's parts as a file writes them. The repo ships English labels, a
+   Polish project writes Polish ones (**Jeśli / Poprzez / To / Ponieważ**), and
+   a file keeps whichever it has — read in any of them, written back in its own. */
+const HY_PARTS = {
+  for:     ['For', 'Dla'],
+  if:      ['If', 'Jeśli', 'Jeżeli'],
+  by:      ['By', 'Poprzez', 'Przez'],
+  instead: ['Instead of', 'Zamiast'],
+  will:    ['Will', 'To', 'Wtedy'],
+  because: ['Because', 'Ponieważ', 'Bo'],
+  wrong:   ['We’re wrong if', 'Mylimy się, jeśli', "We're wrong if", 'Argument przeciw'],
+};
+const HY_KEYS = Object.keys(HY_PARTS);
+const reEsc = s => s.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+function hyPartLine(text, k){   // -> [line, label, value] of the part's bullet, or null
+  for(const l of HY_PARTS[k]){
+    const m = text.match(new RegExp('^[ \\t]*(?:-[ \\t]*)?\\*\\*(' + reEsc(l) + '):\\*\\*[ \\t]*(.*)$', 'mi'));
+    if(m) return m;
+  }
+  return null;
+}
+const hyPartRaw = (e, k) => { const m = hyPartLine(e.body, k); return m ? m[2].trim() : ''; };
+const hyPart = (e, k) => stripLinks(hyPartRaw(e, k)).replace(/[.,;]\s*$/, '').trim();
+const hyPolish = text => /\*\*(Jeśli|Poprzez|Ponieważ|Dla):\*\*/.test(text);
+const HY_PREFIX = /^(Hypothesis|Hipoteza):\s*/i;
+const hyName = e => e.title.replace(HY_PREFIX, '').trim();
+const hyWrongIf = e => hyPart(e, 'wrong');
+const hyNo = e => (e.file.split('/').pop().match(/^H\d+/i) || [''])[0].toUpperCase();
+/* Write some parts into a hypothesis file and leave everything else as it was:
+   a part the edit did not change keeps its line (links and bold included), an
+   emptied optional part loses its line, a new one goes in after the part
+   before it, labelled in the file's own language (`pl` for a new file).
+   `vals`: key -> new text. */
+function hyApplyParts(md, vals, pl = hyPolish(md)){
+  HY_KEYS.forEach((k, i)=>{
+    if(!(k in vals)) return;
+    const v = String(vals[k] || '').trim().replace(/[.,;]\s*$/, ''), m = hyPartLine(md, k);
+    const end = k === 'because' || k === 'wrong' ? '.' : ',';
+    if(m){
+      if(stripLinks(m[2]).replace(/[.,;]\s*$/, '').trim() === v) return;   // untouched: keep the original line
+      md = v ? md.replace(m[0], `- **${m[1]}:** ${v}${end}`) : md.replace(new RegExp(reEsc(m[0]) + '\\n?(\\s*\\n)?'), '');
+      return;
+    }
+    if(!v) return;
+    const line = `- **${HY_PARTS[k][pl ? 1 : 0]}:** ${v}${end}`;
+    const before = HY_KEYS.slice(0, i).reverse().map(x=> hyPartLine(md, x)).find(Boolean);
+    const after = HY_KEYS.slice(i + 1).map(x=> hyPartLine(md, x)).find(Boolean);
+    if(before) md = md.replace(before[0], before[0] + '\n\n' + line);
+    else if(after) md = md.replace(after[0], line + '\n\n' + after[0]);
+    else md = md.replace(/^(# .*)$/m, '$1\n\n' + line);
+  });
+  return md.replace(/\n{3,}/g, '\n\n');
+}
+
+function renderHypotheses(list){
+  HY_ORDER = list.map(e=> e.id);
+  grid.className = 'tableview'; renderTable(list);
+  hyPanel();
+}
+
+/* the argument against: its own line in the file, under Because; empty removes it */
+async function hySaveArgument(id, text){
+  let e = ENTITIES[id]; if(!e) return;
+  e = await ensureWritable(e); if(!e) return;
+  const t = text.trim(), md = hyApplyParts(e.md, { wrong: t });
+  if(md === e.md){ HY_ARG = false; hyPanel(); return; }
+  HY_ARG = false;
+  if(await saveEntityText(e, md)) toast(tr(t ? 'Argument saved ✓' : 'Argument removed'), { label: tr('Undo'), fn: async ()=>{ await undoLastSave(); renderGrid(searchInput.value); } });
+}
+
+function hyOpen(id){ if(HY_OPEN !== id) HY_ARG = false; HY_OPEN = id; hyPanel(); }
+function hyClose(){ if(!HY_OPEN) return; HY_OPEN = null; HY_ARG = false; hyPanel(); }
+function hyPanel(){
+  let host = document.getElementById('hyPanel');
+  const e = HY_OPEN && ENTITIES[HY_OPEN];
+  if(!e || e.type !== 'Hypothesis' || activeType !== 'Hypothesis'){ HY_OPEN = null; if(host) host.remove(); document.querySelectorAll('tr.hy-on').forEach(r=> r.classList.remove('hy-on')); return; }
+  if(!host){ host = document.createElement('div'); host.id = 'hyPanel'; document.body.appendChild(host); }
+  document.querySelectorAll('tr[data-goto]').forEach(r=> r.classList.toggle('hy-on', r.dataset.goto === e.id));
+  const pos = HY_ORDER.indexOf(e.id), w = hyWrongIf(e), st = hypoStatus(e), linked = hypoSourceIds(e);
+  const forL = hyPartRaw(e, 'for'), forM = forL.match(/\[([^\]]+)\]\(([^)]+)\)/), forId = forM && resolveRef(forM[2]);
+  const step = (d, ico, lab, off) => `<button class="bl-icon" data-hstep="${d}"${off ? ' disabled' : ''} title="${esc(tr(lab))}" aria-label="${esc(tr(lab))}">${ico}</button>`;
+  const prop = (ico, label, val) => `<div class="bl-prop"><span class="bl-prop-l">${ico}${esc(tr(label))}</span><span class="bl-prop-v">${val}</span></div>`;
+  const bet = [['For', forId ? `<a href="#${esc(forId)}">${esc(forM[1])}</a>` : esc(hyPart(e, 'for'))], ['If', esc(hyPart(e, 'if'))], ['By', esc(hyPart(e, 'by'))],
+               ['Instead of', esc(hyPart(e, 'instead'))], ['Will', esc(hyPart(e, 'will'))], ['Because', esc(hyPart(e, 'because'))]].filter(x=> x[1]);
+  const ARG = 'Argument against this hypothesis';
+  const arg = HY_ARG
+    ? `<div class="hy-arg edit"><label for="hyArgIn">${esc(tr(ARG))}</label>
+        <textarea id="hyArgIn" class="set-input" rows="3" placeholder="${esc(tr('What would show that this is wrong? e.g. listeners who never share their account distrust the mixes just as much'))}">${esc(w)}</textarea>
+        <span class="hy-arg-acts"><button class="btn btn-primary btn-sm" data-hact="argsave">${esc(tr('Save'))}</button><button class="btn btn-ghost btn-sm" data-hact="argcancel">${esc(tr('Cancel'))}</button></span></div>`
+    : w ? `<div class="hy-arg"><span class="hy-arg-h">${esc(tr(ARG))}<button class="hy-plain" data-hact="arg">${esc(tr('Edit'))}</button></span><p>${esc(w)}</p></div>`
+    : `<button class="hy-arg-add" data-hact="arg">+ ${esc(tr(ARG))}</button>`;
+  host.innerHTML = `<aside class="bl-panel hy-panel" role="dialog" aria-modal="false" aria-label="${esc(tr('Hypothesis'))}">
+    <div class="bl-p-top">${step(-1, BL_ICONS.left, 'Previous hypothesis', pos <= 0)}<span class="bl-p-kick">${pos < 0 ? '' : tr('{n} of {m}').replace('{n}', pos + 1).replace('{m}', HY_ORDER.length)}</span>${step(1, BL_ICONS.right, 'Next hypothesis', pos < 0 || pos >= HY_ORDER.length - 1)}
+      <span class="bl-p-gap"></span>
+      ${st === 'open' && linked.length ? `<button class="btn btn-outline btn-sm" data-hact="promote" title="${esc(tr('Has {what} — make it a grounded Idea').replace('{what}', ideaGrounding(e).detail))}">↑ <span class="bl-hide-sm">${esc(tr('Promote to Idea'))}</span></button>` : ''}
+      <button class="bl-icon" data-hact="close" title="${esc(tr('Close'))}" aria-label="${esc(tr('Close'))}">${BL_ICONS.x}</button></div>
+    <div class="bl-p-body">
+      <div class="hy-p-head"><span>${hyNo(e) ? `<span class="hy-no">${esc(hyNo(e))}</span>` : ''}${hypoStatusChip(e)}</span><h2 class="bl-p-h">${esc(hyName(e))}</h2></div>
+      <dl class="hy-bet-dl">${bet.map(([k, v])=> `<dt>${esc(k === 'For' && LANG === 'pl' ? 'Dla' : tr(k))}</dt><dd>${v}</dd>`).join('')}</dl>
+      ${arg}
+      <div class="bl-props">
+        ${e.fm.feature ? prop(BL_ICONS.source, 'Topic', esc(e.fm.feature)) : ''}
+        ${prop(BL_ICONS.user, 'Author', authorChip(e))}
+      </div>
+      <div class="bl-p-sec"><h3>${esc(tr('Linked evidence'))} <span class="hy-cnt">${linked.length}</span></h3>
+        ${linked.map(id=> `<a class="hy-link" href="#${esc(id)}"><span>${esc(tr(ENTITIES[id].meta.singular))}</span>${esc(trim(ENTITIES[id].title, 90))}</a>`).join('')
+          || `<p class="bl-sugg">${esc(tr('None yet — that is what makes it a hypothesis.'))}</p>`}</div>
+    </div>
+    <div class="bl-p-foot"><button class="btn btn-outline" data-hact="edit">${esc(tr('Edit'))}</button><a class="btn btn-ghost" href="#${esc(e.id)}">${esc(tr('Open the file'))}</a></div>
+  </aside>`;
+  host.querySelectorAll('[data-hstep]').forEach(b=> b.onclick = ()=> hyOpen(HY_ORDER[pos + (+b.dataset.hstep)]));
+  host.querySelectorAll('[data-hact]').forEach(b=> b.onclick = ()=>{
+    const a = b.dataset.hact;
+    if(a === 'close') hyClose(); else if(a === 'edit') editHypothesis(e.id); else if(a === 'promote') promoteHypothesis(e.id);
+    else if(a === 'arg'){ HY_ARG = true; hyPanel(); host.querySelector('#hyArgIn')?.focus(); }
+    else if(a === 'argcancel'){ HY_ARG = false; hyPanel(); }
+    else if(a === 'argsave') hySaveArgument(e.id, host.querySelector('#hyArgIn').value);
+  });
+}
+addEventListener('hashchange', hyClose);
+document.addEventListener('keydown', ev=>{ if(ev.key === 'Escape' && HY_OPEN && !modalOpen()) hyClose(); });
+/* ---------- Signals: grouped by where they came from (styles: 10e-detail-ed.css) ----------
+   The Signals tab opens on its signals grouped by source — one block per
+   conversation, its person, session, method and date on top — or by theme
+   (the affinity group), with chips that narrow the list. Each row says what
+   the signal is (title, quote, stance) and where it came from (volunteered or
+   asked, a secondary source, the evidence it confirms). */
+let SG_GROUP = store.get('at-sg-group') === 'theme' ? 'theme' : 'source', SG_FILTER = 'all';
+const SG_FILTERS = [
+  ['all', 'All', ()=> true],
+  ['vol', 'Volunteered', x=> x.fm.sentiment && String(x.fm.sentiment.unprompted) === 'true'],
+  ['ask', 'Asked', x=> x.fm.sentiment && String(x.fm.sentiment.unprompted) === 'false'],
+  ['noev', 'No evidence yet', x=> !sgEvidence(x).length],
+  ['sec', 'Secondary sources', x=> edSignalSource(x).secondary],
+];
+function sgEvidence(x){
+  return [...new Set([...[].concat(x.fm.evidences || []).map(String), ...peLinks(x.body).filter(l=> l.e.type === 'Evidence').map(l=> l.e.title)])];
+}
+function sgRow(x, withSource){
+  const s = edSignalSource(x), q = edQuote(x), st = x.fm.sentiment && typeof x.fm.sentiment === 'object' ? x.fm.sentiment : null;
+  const unp = st && String(st.unprompted), ev = sgEvidence(x).length;
+  return `<a class="sg-row" href="#${esc(x.id)}">
+    <span class="sg-what"><b>${esc(x.title)}</b>${q ? `<span>“${esc(q)}”</span>` : ''}</span>
+    <span class="sg-tags">
+      ${withSource ? `<span class="sg-src">${s.t ? edFace(s.t, 'ed-face sm') : ''}${esc(s.secondary ? tr('secondary source') : edWho(s.t) || tr('no source'))}${s.t ? ` · <code>${esc(edTid(s.t))}</code>` : ''}</span>` : ''}
+      ${st && st.stance ? `<span class="ed-chip"><b class="sg-st st-${esc(String(st.stance))}">${esc(String(st.stance).replace(/_/g, ' '))}</b>${st.feature ? ` ${esc(tr('on'))} ${esc(String(st.feature))}` : ''}</span>` : ''}
+      ${unp === 'true' ? `<span class="ed-chip ink">${esc(tr('volunteered'))}</span>` : unp === 'false' ? `<span class="ed-chip">${esc(tr('asked'))}</span>` : ''}
+      <span class="sg-ev${ev ? '' : ' none'}">${esc(ev ? trn(ev, '{n} evidence', '{n} evidence', '{n} dowód', '{n} dowody', '{n} dowodów') : tr('no evidence yet'))}</span>
+    </span></a>`;
+}
+function renderSignalGroups(list){
+  const keep = SG_FILTERS.find(f=> f[0] === SG_FILTER)[2];
+  const shown = list.filter(keep).sort((a, b)=> a.title.localeCompare(b.title));
+  const groups = new Map();
+  shown.forEach(x=>{
+    const s = edSignalSource(x), k = SG_GROUP === 'theme' ? (signalAffinity(x) || '') : (s.t ? s.t.id : '');
+    if(!groups.has(k)) groups.set(k, []); groups.get(k).push(x);
+  });
+  const head = (k, xs)=>{
+    if(SG_GROUP === 'theme'){
+      const ts = [...new Set(xs.map(x=> edSignalSource(x).t).filter(Boolean))];
+      return `<header class="sg-head"><span class="sg-ico">${ICONS.Signal}</span><span class="sg-hl"><b>${esc(k || tr('No theme yet'))}</b><small>${esc(trn(xs.length, '{n} signal', '{n} signals', '{n} sygnał', '{n} sygnały', '{n} sygnałów'))} · ${esc(trn(ts.length, 'from {n} source', 'from {n} sources', 'z {n} źródła', 'z {n} źródeł', 'z {n} źródeł'))}</small></span>
+        <span class="sg-stack" tabindex="0" aria-label="${esc(tr('Sources behind this theme'))}">${ts.slice(0, 6).map(t=> edFace(t, 'ed-face')).join('')}${ts.length > 6 ? `<span class="sg-more">+${ts.length - 6}</span>` : ''}
+          <span class="sg-stack-tip" role="tooltip"><b>${esc(tr('Sources behind this theme'))}</b>${ts.map(t=> `<span>${edFace(t, 'ed-face sm')}${esc(edSignalSource(xs.find(x=> edSignalSource(x).t === t)).secondary ? t.title.replace(/^\S+\s*/, '') : edWho(t))} <code>${esc(edTid(t))}</code></span>`).join('')}</span></span></header>`;
+    }
+    const t = ENTITIES[k], sec = xs.every(x=> edSignalSource(x).secondary);
+    if(!t) return `<header class="sg-head"><span class="sg-hl"><b>${esc(tr('No source linked'))}</b><small>${esc(tr('Link the transcript in the signal’s ## Transcript section'))}</small></span></header>`;
+    return `<header class="sg-head${sec ? ' secondary' : ''}">${edFace(t, 'ed-face lg')}
+      <span class="sg-hl"><b>${esc(sec ? t.title.replace(/^\S+\s*/, '') : String(t.fm.participant || t.title))}</b>
+        <small><code>${esc(edTid(t))}</code> · ${esc(sec ? tr('Secondary source — not our conversation') : String(t.fm.method || ''))}${t.fm.date ? ' · ' + esc(String(t.fm.date)) : ''}</small></span>
+      ${isExcluded(t) ? `<span class="demo-badge exc-badge">${esc(tr('Set aside — not counted'))}</span>` : ''}
+      <span class="sg-count">${esc(trn(xs.length, '{n} signal', '{n} signals', '{n} sygnał', '{n} sygnały', '{n} sygnałów'))}</span>
+      <a class="sg-open" href="#${esc(t.id)}">${esc(tr('Open transcript'))}${ED_ICO.arrow}</a></header>`;
+  };
+  const order = [...groups.keys()].sort((a, b)=> SG_GROUP === 'theme'
+    ? (groups.get(b).length - groups.get(a).length) || a.localeCompare(b)
+    : (!a) - (!b) || String(ENTITIES[a]?.title || '').localeCompare(String(ENTITIES[b]?.title || '')));
+  grid.className = '';
+  grid.innerHTML = `<div class="sg-wrap">
+    <div class="sg-bar">
+      <div class="ev-chips">${SG_FILTERS.map(([id, label, fn])=> `<button type="button" class="map-chip${SG_FILTER === id ? ' on' : ''}" data-sgf="${id}" aria-pressed="${SG_FILTER === id}">${esc(tr(label))} <span class="ev-chip-n">${list.filter(fn).length}</span></button>`).join('')}</div>
+      <div class="sg-seg" role="group" aria-label="${esc(tr('Group by'))}"><span>${esc(tr('Group by'))}</span>${[['source', 'Source'], ['theme', 'Theme']].map(([k, l])=> `<button type="button" data-sgg="${k}" aria-pressed="${SG_GROUP === k}">${esc(tr(l))}</button>`).join('')}</div>
+    </div>
+    ${order.map(k=>{ const xs = groups.get(k), t = ENTITIES[k]; return `<section class="sg-group${SG_GROUP === 'source' && t && isExcluded(t) ? ' set-aside' : ''}${SG_GROUP === 'source' && t && xs.every(x=> edSignalSource(x).secondary) ? ' secondary' : ''}">${head(k, xs)}${xs.map(x=> sgRow(x, SG_GROUP === 'theme')).join('')}</section>`; }).join('')
+      || `<p class="ev-none">${esc(tr('Nothing matches this filter.'))}</p>`}
+  </div>`;
+  grid.querySelectorAll('[data-sgf]').forEach(b=> b.onclick = ()=>{ SG_FILTER = b.dataset.sgf; renderSignalGroups(list); });
+  grid.querySelectorAll('[data-sgg]').forEach(b=> b.onclick = ()=>{ SG_GROUP = b.dataset.sgg; store.set('at-sg-group', SG_GROUP); renderSignalGroups(list); });
+}
 /* ---------- Transcript highlights + tags (Dovetail-style) ----------
    A highlight is ==fragment=={tag1, tag2} inline in the transcript .md —
    researcher-curated emphasis the AI reads as prioritized evidence. The app
@@ -10795,7 +11708,7 @@ async function removeHighlight(e, hln){
 }
 function hlAllTagNames(){
   const s=new Set();
-  wsEntities().filter(x=>x.type==='Transcript').forEach(x=> entityHighlights(x).forEach(h=> h.tags.forEach(t=>s.add(t))));
+  wsEntities().filter(x=>x.type==='Transcript' || x.type==='Evidence').forEach(x=> entityHighlights(x).forEach(h=> h.tags.forEach(t=>s.add(t))));
   return [...s].sort((a,b)=>a.localeCompare(b));
 }
 /* Rename a tag across every transcript (newName '' = delete the tag; rename
@@ -10848,10 +11761,10 @@ function hypoSourceIds(e){
 function hypoToIdeaPrefill(e){
   const clean = s => stripLinks(s).replace(/[,.\s]+$/,'').trim();
   return {
-    name:   e.title.replace(/^Hypothesis:\s*/i,'').trim(),
-    when:   clean(afterLabel(e.body,'If')),
-    want:   clean(afterLabel(e.body,'By')),
-    sothat: clean(afterLabel(e.body,'Will')),
+    name:   hyName(e),
+    when:   clean(hyPartRaw(e,'if')),
+    want:   clean(hyPartRaw(e,'by')),
+    sothat: clean(hyPartRaw(e,'will')),
     sourceIds: hypoSourceIds(e)
   };
 }
@@ -10896,10 +11809,19 @@ function authorChip(e){
   const label = ai ? (model || 'AI') : a.replace(/\s*<[^>]*>/, '').split(/\s+[—–-]\s+/)[0];
   return `<span class="tag author-chip" title="${esc(a)}">${ai?'🤖':'👤'} ${esc(trim(label, 24))}</span>`;
 }
-async function deleteHypothesis(id){
-  let e = ENTITIES[id]; if(!e || e.type!=='Hypothesis') return;
+/* Delete a hypothesis or a piece of evidence — the file goes, Undo brings it
+   back. Evidence that Signals cite says so first: their links to it would break. */
+const DEL_WORDS = {
+  Hypothesis: ['Delete the hypothesis “{name}”?', 'Hypothesis deleted', 'Hypothesis restored ✓'],
+  Evidence:   ['Delete the evidence “{name}”?', 'Evidence deleted', 'Evidence restored ✓'],
+};
+async function deleteEntity(id){
+  let e = ENTITIES[id]; if(!e || !DEL_WORDS[e.type]) return;
   const w = await ensureWritable(e); if(!w) return; e = w;
-  if(!confirm(tr('Delete the hypothesis “{name}”?').replace('{name}', e.title.replace(/^Hypothesis:\s*/,''))
+  const words = DEL_WORDS[e.type];
+  const cited = e.type==='Evidence' ? (evidenceIndex().get(id)?.sig.size || 0) : 0;
+  if(!confirm(tr(words[0]).replace('{name}', e.title.replace(HY_PREFIX,''))
+      + (cited ? '\n' + trn(cited, '{n} Signal cites it — its link to it will stop working.', '{n} Signals cite it — their links to it will stop working.', 'Cytuje go {n} Sygnał — jego link przestanie działać.', 'Cytują go {n} Sygnały — ich linki przestaną działać.', 'Cytuje go {n} Sygnałów — ich linki przestaną działać.') : '')
       + '\n' + tr(e.draft ? 'It is a local draft — this cannot be undone later.'
                 : e.handle ? 'The .md file will be removed from disk.'
                 : '(Demo sandbox — Reset demo can always bring it back.)'))) return;
@@ -10919,12 +11841,12 @@ async function deleteHypothesis(id){
   delete ENTITIES[id]; reindex();
   if(CURRENT===id){ location.hash=''; }
   renderWsMenu(); renderTabs(); renderGrid(searchInput.value);
-  toast(tr('Hypothesis deleted'), {label:tr('Undo'), fn: async ()=>{
+  toast(tr(words[1]), {label:tr('Undo'), fn: async ()=>{
     if(trash.hadHandle){ await writeRepoFile(trash.file, trash.md); const fh=await getFileHandleFor(trash.file); const ne=parseEntity(trash.md, trash.file); ne.id=id; ne.handle=fh; ne.ws=trash.ws; ENTITIES[id]=ne; }
     else if(trash.wasDraft){ const ne=parseEntity(trash.md, trash.file); ne.id=id; ne.draft=true; ne.ws=trash.ws; ENTITIES[id]=ne; persistDraft(trash.file, trash.md, trash.ws); }
     else { const m=loadDemoOverlay(); delete m[trash.file]; saveDemoOverlay(m); if(EMBEDDED_DEMO[id]) ENTITIES[id]=EMBEDDED_DEMO[id]; }
     reindex(); renderWsMenu(); renderTabs(); renderGrid(searchInput.value);
-    toast(tr('Hypothesis restored ✓'));
+    toast(tr(words[2]));
   }});
 }
 async function editHypothesis(id){
@@ -11030,23 +11952,27 @@ let HYPO = null;
 function openHypoForm(editEnt){
   HYPO = editEnt
     ? { editId: editEnt.id,
-        name: editEnt.title.replace(/^Hypothesis:\s*/i,'').trim(),
+        name: hyName(editEnt),
         feature: String(editEnt.fm.feature||''),
-        if_: stripLinks(afterLabel(editEnt.body,'If')).replace(/,\s*$/,''),
-        by: stripLinks(afterLabel(editEnt.body,'By')).replace(/,\s*$/,''),
-        will: stripLinks(afterLabel(editEnt.body,'Will')).replace(/,\s*$/,''),
-        because: stripLinks(afterLabel(editEnt.body,'Because')).replace(/[.,]\s*$/,''),
+        if_: hyPart(editEnt,'if'), by: hyPart(editEnt,'by'), will: hyPart(editEnt,'will'), because: hyPart(editEnt,'because'),
+        for_: resolveRef((hyPartRaw(editEnt,'for').match(/\]\(([^)]+)\)/)||[])[1]||'') || '',
+        instead: hyPart(editEnt,'instead'), wrong: hyWrongIf(editEnt),
         sel: hypoSourceIds(editEnt) }
-    : { name:'', feature:'', if_:'', by:'', will:'', because:'', sel:[] };
+    : { name:'', feature:'', if_:'', by:'', will:'', because:'', for_:'', instead:'', wrong:'', sel:[] };
+  const personas = wsEntities().filter(x=> x.type==='Persona').sort((a,b)=> a.title.localeCompare(b.title));
   document.getElementById('hypoModal').showModal();
-  document.querySelector('#hypoModal .modal-head h2').textContent = editEnt ? 'Edit hypothesis' : 'New hypothesis';
+  document.querySelector('#hypoModal .modal-head h2').textContent = tr(editEnt ? 'Edit hypothesis' : 'New hypothesis');
   document.getElementById('hypoBody').innerHTML = `
     <div class="idea-field"><label>${tr('Hypothesis name')}</label><input id="hfName" value="${esc(HYPO.name)}" placeholder="${esc(tr('e.g. Guest mode protects recommendations'))}" autocomplete="off"></div>
     <div class="idea-field"><label>${tr('Feature it concerns')} <span class="muted">${tr('(optional)')}</span></label><input id="hfFeature" value="${esc(HYPO.feature)}" placeholder="${esc(tr('e.g. listening-profiles'))}" autocomplete="off"></div>
+    <div class="idea-field"><label>${LANG==='pl' ? 'Dla' : 'For'} <span class="muted">${tr('— the persona this bet is about (optional)')}</span></label>
+      <select id="hfFor" class="set-input"><option value="">${tr('nobody in particular')}</option>${personas.map(x=> `<option value="${x.id}"${HYPO.for_===x.id?' selected':''}>${esc(x.title)}</option>`).join('')}</select></div>
     <div class="idea-field"><label>${tr('If')} <span class="muted">${tr('— we do X')}</span></label><textarea id="hfIf" placeholder="${esc(tr('we add a one-tap guest mode'))}">${esc(HYPO.if_)}</textarea></div>
     <div class="idea-field"><label>${tr('By')} <span class="muted">${tr('— the mechanism')}</span></label><textarea id="hfBy" placeholder="${esc(tr('excluding guest playback from taste modeling'))}">${esc(HYPO.by)}</textarea></div>
+    <div class="idea-field"><label>${tr('Instead of')} <span class="muted">${tr('— what we compare it with (optional)')}</span></label><textarea id="hfInstead" placeholder="${esc(tr('asking listeners to clean their history by hand'))}">${esc(HYPO.instead)}</textarea></div>
     <div class="idea-field"><label>${tr('Will')} <span class="muted">${tr('— the checkable outcome')}</span></label><textarea id="hfWill" placeholder="${esc(tr('trust in Discover Weekly recovers'))}">${esc(HYPO.will)}</textarea></div>
     <div class="idea-field"><label>${tr('Because')} <span class="muted">${tr('— the assumption this bet rests on')}</span></label><textarea id="hfBecause" placeholder="${esc(tr('we assume distrust comes from polluting sessions, not the recommender'))}">${esc(HYPO.because)}</textarea></div>
+    <div class="idea-field"><label>${tr('Argument against this hypothesis')} <span class="muted">${tr('(optional — what would show that it is wrong)')}</span></label><textarea id="hfWrong" placeholder="${esc(tr('listeners who never share their account distrust Discover Weekly just as much'))}">${esc(HYPO.wrong)}</textarea></div>
     <div class="idea-field">
       <label>${tr('Hints')} <span class="muted">${tr('(optional — a hypothesis needs NO grounding; link a quote/signal only if one inspired it)')}</span></label>
       <div class="idea-pick">
@@ -11054,9 +11980,11 @@ function openHypoForm(editEnt){
         <div class="idea-pick-list" id="hfList"></div>
       </div>
     </div>
-    ${DIRHANDLE ? '' : `<div class="idea-draft-note">📝 No folder connected — saved as a local draft in this browser.</div>`}`;
+    ${DIRHANDLE ? '' : `<div class="idea-draft-note">📝 ${tr('No folder connected — saved as a local draft in this browser.')}</div>`}`;
   const bind=(fid,key)=>{ const el=document.getElementById(fid); el.oninput=()=>{ HYPO[key]=el.value; validateHypo(); }; };
   bind('hfName','name'); bind('hfFeature','feature'); bind('hfIf','if_'); bind('hfBy','by'); bind('hfWill','will'); bind('hfBecause','because');
+  bind('hfInstead','instead'); bind('hfWrong','wrong');
+  document.getElementById('hfFor').onchange = ev=>{ HYPO.for_ = ev.target.value; };
   document.getElementById('hfSearch').oninput=()=> renderHypoPickList(document.getElementById('hfSearch').value);
   renderHypoPickList(''); validateHypo();
   document.getElementById('hfName').focus();
@@ -11076,46 +12004,57 @@ function validateHypo(){
   const msg=document.getElementById('hypoValid'), btn=document.getElementById('hypoCreate');
   let err='';
   if(!HYPO.name.trim()) err='Name required.';
-  else if(!HYPO.if_.trim()||!HYPO.by.trim()||!HYPO.will.trim()||!HYPO.because.trim()) err='All four parts (If / By / Will / Because) are required — that\'s what makes it testable.';
-  msg.textContent=err; btn.disabled=!!err;
+  else if(!HYPO.if_.trim() || !HYPO.will.trim()) err='Write at least If and Will: what we would do, and what should happen.';
+  msg.textContent=tr(err); btn.disabled=!!err;
   return !err;
 }
+/* The file for the form. Editing changes only what the form holds — the
+   title, the feature, the bet's parts and the linked hints — and leaves every
+   other line, section, note and front-matter field as it was. A new file is
+   written in the app's language (English or Polish labels). */
 function hypoMarkdown(base){
-  // base = the existing entity when editing: status/source/author/idea/demo/tags
-  // survive an edit untouched; only the form fields are rewritten.
-  const name=HYPO.name.trim();
-  const keep = base ? base.fm : {};
-  const links = HYPO.sel.map(id=>{ const e=ENTITIES[id]; return `- [${e.title}](${ideaLink(e)})`; }).join('\n');
-  const promoted = base && base.body.match(/^\*\*Promoted to:\*\*.*$/m);
+  const name = HYPO.name.trim().replace(/'/g,'’'), who = ENTITIES[HYPO.for_];
+  const forVal = who ? `[${who.title.split(/\s+[—–-]\s+/)[0]}](${ideaLink(who)})` : '';
+  const vals = { if: HYPO.if_, by: HYPO.by, instead: HYPO.instead, will: HYPO.will, because: HYPO.because, wrong: HYPO.wrong };
+  const linkLine = id => `- [${ENTITIES[id].title}](${ideaLink(ENTITIES[id])})`;
+  if(base){
+    let md = base.md;
+    const prefix = (base.title.match(HY_PREFIX) || [])[1] || 'Hypothesis';
+    if(name !== hyName(base)){
+      md = setFmField(md, 'title', `'${prefix}: ${name}'`);
+      md = md.replace(/^(---\n[\s\S]*?\n---[\s\S]*?)^# .*$/m, `$1# ${prefix}: ${name}`);
+    }
+    if(HYPO.feature.trim() !== String(base.fm.feature||'').trim()) md = setFmField(md, 'feature', HYPO.feature.trim() ? `'${HYPO.feature.trim().replace(/'/g,'’')}'` : null);
+    const forNow = resolveRef((hyPartRaw(base,'for').match(/\]\(([^)]+)\)/)||[])[1]||'') || '';
+    if(forNow !== (HYPO.for_ || '')) vals.for = forVal;
+    md = hyApplyParts(md, vals);
+    /* hints: a newly ticked one is added to the links section, an unticked one loses its bullet */
+    const had = hypoSourceIds(base);
+    had.filter(id=> !HYPO.sel.includes(id)).forEach(id=>{
+      md = md.split('\n').filter(l=> !(/^\s*-\s/.test(l) && [...l.matchAll(MD_LINK)].some(m=> resolveRef(m[2])===id))).join('\n');
+    });
+    const add = HYPO.sel.filter(id=> !had.includes(id)).map(linkLine);
+    if(add.length){
+      const h = md.match(/^##\s+(Possible links|Możliwe powiązania).*$/mi);
+      md = h ? md.replace(h[0], h[0] + '\n\n' + add.join('\n'))
+             : md.replace(/\n*$/, '\n\n## ' + (hyPolish(md) ? 'Możliwe powiązania' : 'Possible links (optional)') + '\n\n' + add.join('\n') + '\n');
+    }
+    return md.replace(/\n{3,}/g, '\n\n');
+  }
+  const pl = LANG === 'pl', prefix = pl ? 'Hipoteza' : 'Hypothesis';
   const fm = [
     "type: 'Hypothesis'",
-    `title: 'Hypothesis: ${name.replace(/'/g,'')}'`,
-    ...(keep.demo ? ['demo: true'] : []),
-    ...(HYPO.feature.trim() ? [`feature: '${HYPO.feature.trim().replace(/'/g,'')}'`] : []),
-    `tags: [${Array.isArray(keep.tags)? keep.tags.join(', ') : ''}]`,
-    `status: ${keep.status || 'open'}`,
-    `source: '${String(keep.source || 'created in the app').replace(/'/g,'')}'`,
-    `author: '${String(keep.author || hypoAuthor()).replace(/'/g,'')}'`,
-    ...(keep.idea ? [`idea: '${String(keep.idea).replace(/'/g,'')}'`] : []),
+    `title: '${prefix}: ${name}'`,
+    ...(HYPO.feature.trim() ? [`feature: '${HYPO.feature.trim().replace(/'/g,'’')}'`] : []),
+    `created: ${blToday()}`,   // the day it was made, never the day of an edit
+    'tags: []',
+    'status: open',
+    `source: '${pl ? 'utworzone w aplikacji' : 'created in the app'}'`,
+    `author: '${hypoAuthor().replace(/'/g,'’')}'`,
   ].join('\n');
-  return `---
-${fm}
----
-
-# Hypothesis: ${name}
-
-- **If:** ${HYPO.if_.trim()},
-
-- **By:** ${HYPO.by.trim()},
-
-- **Will:** ${HYPO.will.trim()},
-
-- **Because:** ${HYPO.because.trim()}.
-
-## Possible links (optional)
-
-${links || '<!-- pure assumption — no research linked yet -->'}
-${promoted ? '\n'+promoted[0]+'\n' : ''}`;
+  const links = HYPO.sel.map(linkLine).join('\n');
+  const body = hyApplyParts(`# ${prefix}: ${name}\n`, { for: forVal, ...vals }, pl).replace(/^# .*\n/, '');
+  return `---\n${fm}\n---\n\n# ${prefix}: ${name}\n\n${body.trim()}\n\n## ${pl ? 'Możliwe powiązania' : 'Possible links (optional)'}\n\n${links || '<!-- ' + (pl ? 'czyste przypuszczenie — nic jeszcze nie podlinkowano' : 'pure assumption — no research linked yet') + ' -->'}\n`;
 }
 async function createHypothesis(){
   if(!validateHypo()) return;
@@ -11124,8 +12063,7 @@ async function createHypothesis(){
     const md = hypoMarkdown(e);
     if(await saveEntityText(e, md)){
       closeHypoForm();
-      location.hash='#'+e.id;
-      if(CURRENT===e.id) openDetail(e.id);
+      if(HY_OPEN!==e.id){ location.hash='#'+e.id; if(CURRENT===e.id) openDetail(e.id); }   // edited from the side panel: stay on the list
       toast(tr('Hypothesis updated ✓')+(e.handle?' — '+tr('saved to')+' '+e.file:e.draft?' ('+tr('draft')+')':' ('+tr('demo sandbox')+')'));
     }
     return;
@@ -11147,7 +12085,7 @@ async function createHypothesis(){
   }
   closeHypoForm(); renderTabs();
   location.hash='#'+idFor(file);
-  toast(DIRHANDLE ? 'Hypothesis saved ✓ — a bet to test, not a finding' : 'Hypothesis draft saved in this browser ✓');
+  toast(tr(DIRHANDLE ? 'Hypothesis saved ✓ — a bet to test, not a finding' : 'Hypothesis draft saved in this browser ✓'));
 }
 function closeHypoForm(){ document.getElementById('hypoModal').close(); HYPO=null; }
 function barsHtml(g){
@@ -11395,7 +12333,8 @@ function openDetail(id){
      the three working tables), then the rest of the file with a sticky section menu. */
   const dcard = document.querySelector('.detail-card');
   dcard.classList.toggle('persona-detail', e.type==='Persona');
-  document.querySelector('.detail-wrap').classList.toggle('detail-wide', e.type==='Persona' || e.type==='Transcript');
+  dcard.classList.toggle('ed-detail', e.type==='Evidence' || e.type==='Signal');
+  document.querySelector('.detail-wrap').classList.toggle('detail-wide', /^(Persona|Transcript|Evidence|Signal)$/.test(e.type));
   dcard.classList.toggle('tr-detail', e.type==='Transcript');
   const pHero = document.getElementById('pHero');
   let peFooter = '';
@@ -11404,6 +12343,11 @@ function openDetail(id){
     pHero.innerHTML = pe.top; peFooter = pe.footer;
     pHero.style.display='';
     personaEditorialWire(pHero, e);
+  } else if(e.type==='Evidence' || e.type==='Signal'){   // their own page (09e-evidence-signal-detail.js)
+    if(!same) ED_FIG = null;
+    pHero.innerHTML = e.type==='Evidence' ? edEvidenceHtml(e) : edSignalHtml(e);
+    pHero.style.display='';
+    if(e.type==='Evidence') edEvidenceWire(pHero, e); else edSignalWire(pHero);
   } else { pHero.style.display='none'; }
   const ctl = document.getElementById('dIconCtl');
   if(e.type==='Competitor'){
@@ -11436,7 +12380,7 @@ function openDetail(id){
     dg.classList.add('on');
     const pb=document.getElementById('dPromote'); if(pb) pb.onclick=()=> promoteHypothesis(e.id);
     document.getElementById('dHypoEdit').onclick=()=> editHypothesis(e.id);
-    document.getElementById('dHypoDel').onclick=()=> deleteHypothesis(e.id);
+    document.getElementById('dHypoDel').onclick=()=> deleteEntity(e.id);
     dg.querySelectorAll('a.xref[data-goto]').forEach(a=> a.onclick=()=>{ location.hash='#'+a.dataset.goto; });
   } else if(e.type==='IdeaForImprovement'){
     const g = ideaGrounding(e);
@@ -12487,6 +13431,8 @@ function transcriptWorkspace(e){
       t = n; }
     if(!t && s.quote){ const head = trNorm(s.quote).split(' ').slice(0,6).join(' '); t = turns.find(x=> trNorm(x.textContent).includes(head)) || null; }
     s.turn = t; s.i = i;
+    // "Open at this moment" on a signal: once the turn it lands on is the one on screen (a page can render twice)
+    if(t && TR_FOCUS === s.x.id) setTimeout(()=>{ if(!t.isConnected || TR_FOCUS !== s.x.id) return; TR_FOCUS = null; t.scrollIntoView({ block: "center" }); t.classList.add("tr-focus"); }, 60);
     if(t){
       t.dataset.sig = (t.dataset.sig ? t.dataset.sig+' ' : '') + i;
       let row = t.querySelector('.tr-sigs'); if(!row){ row = document.createElement('div'); row.className = 'tr-sigs'; t.querySelector('.tr-txt').appendChild(row); }
@@ -12650,6 +13596,333 @@ const ICONS_TR = {
   hash: '<svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 9h14M5 15h14M11 4 7 20M17 4l-4 16"/></svg>',
   spark: '<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 3v4M12 17v4M3 12h4M17 12h4M6 6l2.5 2.5M15.5 15.5 18 18M6 18l2.5-2.5M15.5 8.5 18 6"/></svg>',
 };
+/* ---------- Evidence and Signal pages (styles: 10e-detail-ed.css) ----------
+   Both replace the plain file view with a page that answers two questions at
+   a glance: what this is, and where it came from. Everything is read from the
+   file and the links around it; the few things the page writes (a key figure,
+   a source field, a highlight) go back into the file with Undo. The Edit
+   button still opens the whole file.
+   Evidence: one sentence, the source's facts, key figures, the passages the
+   team marked, takeaways, what it does not settle, sources; at the side, the
+   interviews that back it and the personas standing on it.
+   Signal: the quote with its source under it, where in the conversation it
+   was said, the stance; at the side, what it confirms and grounds, the same
+   theme, and what the same person said too. */
+const ED_ICO = {
+  folder: '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 4h4l3 3h7a2 2 0 0 1 2 2v8a2 2 0 0 1 -2 2h-14a2 2 0 0 1 -2 -2v-11a2 2 0 0 1 2 -2"/></svg>',
+  pen: '<svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 20h4l10.5 -10.5a2.828 2.828 0 1 0 -4 -4l-10.5 10.5v4"/><path d="M13.5 6.5l4 4"/></svg>',
+  x: '<svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" aria-hidden="true"><path d="M18 6l-12 12M6 6l12 12"/></svg>',
+  plus: '<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" aria-hidden="true"><path d="M12 5v14M5 12h14"/></svg>',
+  ext: '<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 6h-6a2 2 0 0 0 -2 2v10a2 2 0 0 0 2 2h10a2 2 0 0 0 2 -2v-6"/><path d="M11 13l9 -9"/><path d="M15 4h5v5"/></svg>',
+  arrow: '<svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 12h14M13 6l6 6-6 6"/></svg>',
+};
+const edSecHead = (title, tip) => `<h2 class="ed-h">${esc(tr(title))}${tip ? dxTip(tr(title), esc(tr(tip)), 'right') : ''}</h2>`;
+const edLabel = (title, tip) => `<div class="ed-label"><i class="ed-ember" aria-hidden="true"></i>${esc(tr(title))}${tip ? dxTip(tr(title), esc(tr(tip)), 'right') : ''}</div>`;
+const edBullets = body => (body || '').split('\n').map(l=> l.match(/^\s*[-*]\s+(.*)$/)).filter(Boolean).map(m=> m[1].trim()).filter(t=> t && !t.startsWith('<!--'));
+/* the persona whose interviews a transcript is — for its face */
+function edPersonOf(t){ return t && wsEntities().find(p=> p.type==='Persona' && personaTranscriptIds(p).has(t.id)) || null; }
+function edFace(t, cls){
+  const p = edPersonOf(t), who = t ? String(t.fm.participant || t.title).split(/[,—–(]/)[0].trim() : '?';
+  return faceHtml(p, cls, p ? null : who);
+}
+const edWho = t => t ? String(t.fm.participant || '').split(',')[0].trim() || t.title : '';
+const edTid = t => t ? t.title.split(/\s+/)[0] : '';
+/* a signal's source: the transcript it links, and whether it is our conversation */
+function edSignalSource(x){
+  const l = peLinks(x.body).find(l=> l.e.type==='Transcript');
+  const secondary = [].concat(x.fm.tags || []).some(t=> /źródło-wtórne|secondary-source/i.test(t)) || /^>\s*⚠️?.*(wtórn|secondary)/im.test(x.body);
+  return { t: l ? l.e : null, anchor: l ? l.anchor : '', secondary };
+}
+/* a quote's translation, as the files write it: a line in brackets right under the original */
+const edTrLine = l => { const m = stripLinks(l.replace(/^[>\s]+/, '')).replace(/\*+/g, '').trim().match(/^\((.+)\)$/s); return m ? m[1].trim() : ''; };
+function edQuoteTr(x){
+  for(const m of x.body.matchAll(/^>[ \t]?(.+)$/gm)){ const t = edTrLine(m[1]); if(t) return t; }
+  return '';
+}
+function edQuote(x){
+  const qs = [...x.body.matchAll(/^>[ \t]?(.+)$/gm)].map(m=> stripLinks(m[1]).replace(/\*+/g, '').trim()).filter(q=> q && !/^⚠/.test(q) && !/^\(.*\)$/.test(q));
+  return (qs.find(q=> /^["“„«']/.test(q)) || qs[0] || '').replace(/^["“”„«']+|["“”«»']+$/g, '');
+}
+function edLinksIn(id){ return wsEntities().filter(x=> x.id !== id && peLinks(x.body).some(l=> l.e.id === id)); }
+
+/* ---- evidence: key figures live in the file as a table under "## Key figures" ---- */
+function edFigures(e){
+  const sec = section(e.body, 'Key figures'); if(!sec) return [];
+  return sec.split('\n').filter(l=> /^\s*\|/.test(l) && !/^\s*\|[\s:|-]+\|\s*$/.test(l)).slice(1)
+    .map(l=> l.trim().replace(/^\||\|$/g, '').split('|').map(c=> c.trim()))
+    .filter(c=> c.some(Boolean) && !/^<.*>$/.test(c[1] || ''))
+    .map(c=> ({ what: c[0] || '', value: c[1] || '', who: c[2] || '', src: c[3] || '' }));
+}
+function edWithFigures(md, figs){
+  const cell = s => String(s || '').replace(/\|/g, '/').replace(/\s*\n\s*/g, ' ').trim();
+  const table = ['| Figure | Value | Who | Source |', '|---|---|---|---|', ...figs.map(f=> `| ${cell(f.what)} | ${cell(f.value)} | ${cell(f.who)} | ${cell(f.src)} |`)].join('\n');
+  const re = /(^|\n)##\s*Key figures\s*\n[\s\S]*?(?=\n##\s|$)/i;
+  if(re.test(md)) return md.replace(re, `$1## Key figures\n\n${table}\n`);
+  const at = md.search(/\n##\s/);   // before the first section, after the title
+  return at < 0 ? md.replace(/\n*$/, `\n\n## Key figures\n\n${table}\n`) : md.slice(0, at) + `\n\n## Key figures\n\n${table}\n` + md.slice(at);
+}
+let ED_FIG = null;   // the figure being edited: an index, 'new', or null
+async function edSaveFile(e, md, msg){
+  const w = await ensureWritable(e); if(!w) return false;
+  if(await saveEntityText(w, md)){ openDetail(w.id); toast(tr(msg), { label: tr('Undo'), fn: async ()=>{ await undoLastSave(); openDetail(w.id); } }); return true; }
+  return false;
+}
+
+function edEvidenceHtml(e){
+  const r = evidenceIndex().get(e.id) || { sig: new Set(), people: new Set(), personas: new Set() };
+  const fm = e.fm, figs = edFigures(e);
+  const slot = (key, hint) => `<button type="button" class="ed-add" data-fm="${key}">${ED_ICO.plus}${esc(tr('Add'))}</button>${hint ? `<span class="ed-hint">${esc(tr(hint))}</span>` : ''}`;
+  const val = (key, hint) => fm[key] != null && String(fm[key]).trim() !== '' ? `<b>${esc(String(fm[key]))}</b><button type="button" class="ed-mini" data-fm="${key}" aria-label="${esc(tr('Edit'))}">${ED_ICO.pen}</button>` : slot(key, hint);
+  const kind = fm.source_kind || (fm.source === 'web-research' ? 'web research' : fm.source || '');
+  const primary = String(fm.primary_checked).trim();
+  const stale = evStale(e);
+  const cell = (label, inner) => `<div class="ed-fact"><span class="ed-fk">${esc(tr(label))}</span>${inner}</div>`;
+  const figTile = (f, i) => ED_FIG === i ? edFigForm(f) : `<div class="ed-fig">
+      <span class="ed-fig-acts"><button type="button" data-fig-edit="${i}" aria-label="${esc(tr('Edit this figure'))}" title="${esc(tr('Edit'))}">${ED_ICO.pen}</button><button type="button" data-fig-del="${i}" aria-label="${esc(tr('Delete this figure'))}" title="${esc(tr('Delete'))}">${ED_ICO.x}</button></span>
+      <b>${esc(f.value)}</b><span>${esc(f.what)}</span><small>${esc([f.who, f.src].filter(Boolean).join(' · '))}</small></div>`;
+  const content = section(e.body, 'Content'), take = edBullets(section(e.body, 'Takeaways')), limits = edBullets(section(e.body, 'Does not settle'));
+  const sources = edBullets(section(e.body, 'Sources')).map(s=>{
+    const m = s.match(/^\[([^\]]+)\]\(([^)]+)\)\s*[—–-]?\s*(.*)$/), url = m ? m[2] : '';
+    const host = /^https?:/.test(url) ? url.replace(/^https?:\/\/(www\.)?/, '').split('/')[0] : '';
+    return { title: m ? m[1] : stripLinks(s), url, host, note: m ? stripLinks(m[3]) : '' };
+  });
+  const known = /^(key figures|content|takeaways|does not settle|sources)$/i;
+  const others = [...e.body.matchAll(/^##\s+(.+)$/gm)].map(m=> m[1].trim()).filter(h=> !known.test(h));
+  const sigs = [...r.sig].map(id=> ENTITIES[id]).filter(Boolean);
+  const pers = [...r.personas].map(id=> ENTITIES[id]).filter(Boolean);
+  const tags = [].concat(fm.tags || []);
+  return `<div class="ed">
+    <div class="ed-head">
+      <div class="ed-kick"><span class="ed-type">${ICONS.Evidence}${esc(LANG === 'pl' ? 'Dowód' : 'Evidence')}</span>${tags.map(t=> `<span class="ed-chip">${ED_ICO.folder}${esc(t)}</span>`).join('')}${fm.demo ? `<span class="demo-badge">${esc(tr('Demo'))}</span>` : ''}</div>
+      <h1 class="ed-title">${esc(e.title)}<span class="ed-stop">.</span></h1>
+    </div>
+    <div class="ed-grid">
+      <div class="ed-main">
+        <section class="ed-sec">
+          ${edLabel('In one sentence', 'What this evidence says, in one plain sentence (claim: in the file). The AI reads it first when it decides which evidence to open.')}
+          ${fm.claim ? `<p class="ed-claim">${esc(String(fm.claim))}<button type="button" class="ed-mini" data-fm="claim" aria-label="${esc(tr('Edit'))}">${ED_ICO.pen}</button></p>` : `<div>${slot('claim', 'e.g. Price is the most common reason people cancel a subscription')}</div>`}
+          ${edLabel('About the source', 'Type: survey, report, statistics, analytics, study, community or press. Who was studied: the people the numbers are about. Source date: when the report itself came out, not when you found it. Read in the original: whether the figures were checked in the report itself rather than in articles about it. Last checked: when someone last opened the source. A dashed slot is not filled in yet.')}
+          <div class="ed-facts">
+            ${cell('Type of source', kind ? `<b>${esc(kind)}</b><button type="button" class="ed-mini" data-fm="source_kind" aria-label="${esc(tr('Edit'))}">${ED_ICO.pen}</button>` : slot('source_kind', 'survey, report, statistics…'))}
+            ${cell('Who was studied', val('population', 'e.g. 2,000 US adults, online panel'))}
+            ${cell('Source date', val('published', 'when the report came out'))}
+            ${cell('Read in the original', primary === 'true' ? `<b class="ok">${esc(tr('Yes'))}</b><button type="button" class="ed-link" data-primary="false">${esc(tr('Undo'))}</button>`
+              : `<b class="warn">${esc(tr(primary === 'false' ? 'Not yet' : 'Not recorded'))}</b><button type="button" class="ed-link" data-primary="true">${esc(tr('Mark as read'))}</button>`)}
+            ${cell('Last checked', fm.retrieved ? `<b>${esc(String(fm.retrieved))}</b><span class="${stale ? 'warn' : 'ok'}">${esc(tr(stale ? 'out of date' : 'fresh'))}</span><button type="button" class="ed-link" data-checked="1">${esc(tr('Checked today'))}</button>` : slot('retrieved'))}
+          </div>
+        </section>
+
+        <section class="ed-sec">
+          ${edSecHead('Key figures', 'Every number with who it is about and where it comes from, one row each in the file, so a number is never quoted without its population.')}
+          <div class="ed-figs">${figs.map(figTile).join('')}${ED_FIG === 'new' ? edFigForm({}) : `<button type="button" class="ed-fig-add" data-fig-add="1">${ED_ICO.plus}${esc(tr('Add a figure'))}</button>`}</div>
+        </section>
+
+        ${content ? `<section class="ed-sec">
+          ${edSecHead('Supported quotes', 'What the source itself says, with the passages your team marked. Select a passage to highlight it, like in a Word document. Highlights are the team’s emphasis: the AI cites them first and never adds or removes one.')}
+          <div class="ed-card ed-quotes hl-zone">${mdToHtml(content)}</div>
+        </section>` : ''}
+
+        ${take.length ? `<section class="ed-sec">${edSecHead('Takeaways')}<ol class="ed-take">${take.map((t, i)=> `<li><span>${String(i + 1).padStart(2, '0')}</span><div>${inline(t)}</div></li>`).join('')}</ol></section>` : ''}
+
+        <section class="ed-limits">
+          ${edLabel('What it does not settle', 'The honest limit every piece needs: what this source cannot tell you, e.g. stated intent rather than behaviour, another market, an old sample.')}
+          ${limits.length ? `<ul>${limits.map(l=> `<li>${inline(l)}</li>`).join('')}</ul>` : `<p class="ed-none">${esc(tr('Not written yet.'))} <button type="button" class="ed-link" data-edit-file="1">${esc(tr('Write it'))}</button></p>`}
+        </section>
+
+        ${sources.length ? `<section class="ed-sec">${edSecHead('Sources')}<div class="ed-card ed-srcs">${sources.map(s=> `<${s.url ? `a href="${esc(s.url)}" target="_blank" rel="noopener"` : 'div'} class="ed-src"><span class="ed-src-tile">${esc((s.host || s.title).replace(/[^A-Za-z0-9]/g, '').slice(0, 2) || '·')}</span><span><b>${esc(s.title)}</b>${s.host ? `<small>${esc(s.host)}</small>` : ''}</span>${s.note ? `<span class="ed-chip">${esc(s.note)}</span>` : '<span></span>'}${s.url ? ED_ICO.ext : ''}</${s.url ? 'a' : 'div'}>`).join('')}</div></section>` : ''}
+
+        ${others.length ? `<section class="ed-sec">${edSecHead('More in the file')}<div class="ed-card ed-more">${others.map(h=> `<h3>${esc(h)}</h3>${mdToHtml(section(e.body, h))}`).join('')}</div></section>` : ''}
+      </div>
+
+      <aside class="ed-side">
+        <div class="ed-card ed-strength">
+          <span class="ed-side-h">${esc(tr('Strength'))}${dxTip(tr('Strength'), esc(tr('How many signals from your own interviews and tests back this piece, and how many different people said them. Ten signals from one person are still one person, and a secondary source adds nobody. Counted from the links, never typed in.')), 'right')}</span>
+          <div class="ed-big"><b>${r.sig.size}</b><span>${esc(trn(r.sig.size, 'signal', 'signals', 'sygnał', 'sygnały', 'sygnałów'))}<small class="${r.people.size ? '' : 'warn'}">${esc(evPeopleLine(r.people.size))}</small></span></div>
+        </div>
+        <div class="ed-card">
+          <span class="ed-side-h">${esc(tr('Backed by interviews'))}</span>
+          ${sigs.length ? sigs.map(x=>{ const s = edSignalSource(x); return `<a class="ed-row" href="#${esc(x.id)}">${edFace(s.t, 'ed-face')}<span><b>${esc(x.title)}</b><small>${esc(s.secondary ? tr('secondary source') : edWho(s.t))}${s.t ? ` · <code>${esc(edTid(s.t))}</code>` : ''}</small></span></a>`; }).join('')
+            : `<p class="ed-none">${esc(tr('No signal cites it yet.'))}</p>`}
+        </div>
+        <div class="ed-card">
+          <span class="ed-side-h">${esc(tr('Personas standing on it'))}</span>
+          <div class="ed-people">${pers.length ? pers.map(p=> `<a class="ed-person" href="#${esc(p.id)}">${faceHtml(p, 'ed-face')}${esc(p.title.split(/\s+[—–-]\s+/)[0])}</a>`).join('') : `<p class="ed-none">${esc(tr('no persona yet'))}</p>`}</div>
+        </div>
+      </aside>
+    </div>
+  </div>`;
+}
+function edFigForm(f){
+  const inp = (k, label, ph) => `<label>${esc(tr(label))}<input class="set-input" data-ff="${k}" value="${esc(f[k] || '')}" placeholder="${esc(tr(ph))}"></label>`;
+  return `<div class="ed-fig ed-fig-form">${inp('value', 'Number', 'e.g. 43%')}${inp('what', 'What it measures', 'e.g. would cancel a “too costly” subscription')}${inp('who', 'Who it is about', 'e.g. 2,000 US adults')}${inp('src', 'Source', 'e.g. dot.LA')}
+    <span class="ed-fig-btns"><button type="button" class="btn btn-primary btn-sm" data-fig-save="1">${esc(tr('Save'))}</button><button type="button" class="btn btn-ghost btn-sm" data-fig-cancel="1">${esc(tr('Cancel'))}</button></span></div>`;
+}
+function edEvidenceWire(root, e){
+  const figs = edFigures(e);
+  root.querySelectorAll('[data-fig-add]').forEach(b=> b.onclick = ()=>{ ED_FIG = 'new'; openDetail(e.id); root.querySelector('[data-ff="value"]')?.focus(); });
+  root.querySelectorAll('[data-fig-edit]').forEach(b=> b.onclick = ()=>{ ED_FIG = +b.dataset.figEdit; openDetail(e.id); });
+  root.querySelectorAll('[data-fig-cancel]').forEach(b=> b.onclick = ()=>{ ED_FIG = null; openDetail(e.id); });
+  root.querySelectorAll('[data-fig-save]').forEach(b=> b.onclick = ()=>{
+    const f = {}; root.querySelectorAll('[data-ff]').forEach(i=> f[i.dataset.ff] = i.value.trim());
+    if(!f.value){ toast(tr('Write the number first')); return; }
+    const next = ED_FIG === 'new' ? [...figs, f] : figs.map((x, i)=> i === ED_FIG ? f : x);
+    ED_FIG = null; edSaveFile(e, edWithFigures(e.md, next), 'Key figures saved ✓');
+  });
+  root.querySelectorAll('[data-fig-del]').forEach(b=> b.onclick = ()=> edSaveFile(e, edWithFigures(e.md, figs.filter((_, i)=> i !== +b.dataset.figDel)), 'Figure removed'));
+  /* a source field: a small inline field in place of the slot */
+  root.querySelectorAll('[data-fm]').forEach(b=> b.onclick = ()=>{
+    const k = b.dataset.fm, host = b.closest('.ed-fact') || b.closest('.ed-claim') || b.parentElement;
+    host.innerHTML = `<input class="set-input ed-inline" value="${esc(String(e.fm[k] ?? ''))}" aria-label="${esc(k)}"><span class="ed-fig-btns"><button type="button" class="btn btn-primary btn-sm">${esc(tr('Save'))}</button><button type="button" class="btn btn-ghost btn-sm">${esc(tr('Cancel'))}</button></span>`;
+    const inp = host.querySelector('input'), [ok, no] = host.querySelectorAll('button');
+    inp.focus();
+    const save = ()=>{ const v = inp.value.trim().replace(/'/g, '’'); edSaveFile(e, setFmField(e.md, k, v ? (k === 'retrieved' || k === 'published' ? v : `'${v}'`) : null), 'Saved ✓'); };
+    ok.onclick = save; no.onclick = ()=> openDetail(e.id);
+    inp.onkeydown = ev=>{ if(ev.key === 'Enter') save(); if(ev.key === 'Escape'){ ev.stopPropagation(); openDetail(e.id); } };
+  });
+  root.querySelectorAll('[data-primary]').forEach(b=> b.onclick = ()=> edSaveFile(e, setFmField(e.md, 'primary_checked', b.dataset.primary), 'Saved ✓'));
+  root.querySelectorAll('[data-checked]').forEach(b=> b.onclick = ()=> edSaveFile(e, setFmField(e.md, 'retrieved', blToday()), 'Marked as checked today ✓'));
+  root.querySelectorAll('[data-edit-file]').forEach(b=> b.onclick = ()=> document.getElementById('editBtn').click());
+  root.querySelectorAll('.hl-zone mark.hl').forEach(mk=> mk.onclick = async ev=>{   // a team highlight: edit its tags or remove it
+    ev.stopPropagation();
+    const w = await ensureWritable(e); if(!w) return;
+    const h = entityHighlights(w)[+mk.dataset.hln]; if(!h) return;
+    const r = mk.getBoundingClientRect();
+    openHlPop(r.left + window.scrollX, r.bottom + window.scrollY, { mode: 'edit', e: w, hln: +mk.dataset.hln, text: h.text, tags: h.tags });
+  });
+}
+
+/* ---- signal ---- */
+const ED_STANCE = { dealbreaker: 'said they would leave over it', resents: 'returns to it unprompted, with anger', frustrated: 'it annoys them, they live with it',
+  wary: 'assumes up front it won’t work', indifferent: 'asked, and did not care', unaware: 'never encountered it', curious: 'interested, has not used it',
+  appreciates: 'likes it, would not fight for it', relies_on: 'part of the routine, would notice it gone', advocates: 'recommends it unprompted', mixed: 'genuinely both ways at once' };
+/* where in the conversation: the participant's turn that holds the quote (or follows the anchor), with up to two turns before it */
+function edConversation(t, anchor, quote){
+  if(!t) return [];
+  const blocks = t.body.split(/\n\s*\n/).map(b=> b.trim()).filter(Boolean);
+  const turnOf = b => { const m = b.match(/^\*\*([^*]{1,40}?):\*\*\s*([\s\S]*)$/); if(!m) return null;
+    const lines = m[2].split('\n'), trl = lines.find(l=> /^\s*>/.test(l) && edTrLine(l.replace(/^\s*>\s?/, '')));
+    return { who: m[1].trim(), text: lines.filter(l=> l !== trl).join(' ').trim(), trans: trl ? edTrLine(trl.replace(/^\s*>\s?/, '')) : '' }; };
+  const isMod = w => /^(m|moderator|mod|interviewer|r|researcher)\b/i.test(w);
+  let at = -1;
+  if(anchor){ const a = blocks.findIndex(b=> new RegExp('<!--\\s*anchor:\\s*' + anchor.replace(/[.*+?^${}()|[\]\\]/g, '\\$&') + '\\s*-->').test(b));
+    if(a >= 0) for(let i = a; i < blocks.length; i++){ const tt = turnOf(blocks[i].replace(/^<!--.*?-->\s*/, '')); if(tt && !isMod(tt.who)){ at = i; break; } } }
+  if(at < 0 && quote){ const head = trNorm(quote).split(' ').slice(0, 6).join(' '); at = blocks.findIndex(b=> turnOf(b) && trNorm(stripLinks(b)).includes(head)); }
+  if(at < 0) return [];
+  const out = [];
+  for(let i = at; i >= 0 && out.length < 3; i--){ const tt = turnOf(blocks[i].replace(/^<!--.*?-->\s*/, '')); if(tt) out.unshift({ ...tt, mod: isMod(tt.who), main: i === at }); }
+  return out;
+}
+let ED_TR = false;   // translations shown on the signal page (one switch for the quote and the conversation)
+const ED_COPY = '<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M7 9.667a2.667 2.667 0 0 1 2.667 -2.667h8.666a2.667 2.667 0 0 1 2.667 2.667v8.666a2.667 2.667 0 0 1 -2.667 2.667h-8.666a2.667 2.667 0 0 1 -2.667 -2.667z"/><path d="M4.012 16.737a2.005 2.005 0 0 1 -1.012 -1.737v-10c0 -1.1 .9 -2 2 -2h10c.75 0 1.158 .385 1.5 1"/></svg>';
+const edCopyBtn = (text) => `<button type="button" class="ed-copy" data-copy="${esc(text)}" title="${esc(tr('Copy'))}" aria-label="${esc(tr('Copy'))}">${ED_COPY}</button>`;
+function edSignalHtml(x){
+  const s = edSignalSource(x), t = s.t, q = edQuote(x), qt = edQuoteTr(x), st = x.fm.sentiment && typeof x.fm.sentiment === 'object' ? x.fm.sentiment : null;
+  const summary = (x.body.replace(/^#\s+.*\n/, '').split(/\n\s*\n/).map(b=> b.trim()).find(b=> b && !/^[>#<|-]/.test(b) && !/^\*\*/.test(b)) || '');
+  const unp = st && String(st.unprompted);
+  const conv = edConversation(t, s.anchor, q);
+  const hasTr = !!qt || conv.some(tt=> tt.trans);
+  const who = t ? (s.secondary ? t.title.replace(/^\S+\s*/, '') : edWho(t)) : '';
+  /* the quoted words, marked inside the turn they were said in */
+  const turnHtml = tt => {
+    const plain = esc(stripLinks(tt.text.replace(HL_RE, '$1')).replace(/\*+/g, ''));
+    if(!tt.main || !q) return plain;
+    const a = plain.indexOf(esc(q.slice(0, 30))), tail = esc(q.slice(-20)), b = a < 0 ? -1 : plain.indexOf(tail, a);
+    return b < 0 ? plain : plain.slice(0, a) + '<mark class="ed-said">' + plain.slice(a, b + tail.length) + '</mark>' + plain.slice(b + tail.length);
+  };
+  const spkName = tt => tt.mod ? tr('Moderator') : /^(p|participant)$/i.test(tt.who) ? edWho(t) : tt.who.replace(/\s*\((p|participant)\)$/i, '');
+  const avatar = tt => tt.mod ? `<span class="ed-av mod" aria-hidden="true">M</span>`
+    : (()=>{ const p = edPersonOf(t); return p ? faceHtml(p, 'ed-face sm') : `<span class="ed-av" aria-hidden="true">${esc(initialsFor(spkName(tt)).slice(0, 1) || '?')}</span>`; })();
+  const evid = [...new Set([...[].concat(x.fm.evidences || []).map(ti=> byBasename[String(ti).toLowerCase()] || Object.values(ENTITIES).find(z=> z.type === 'Evidence' && z.title === ti)?.id), ...peLinks(x.body).filter(l=> l.e.type === 'Evidence').map(l=> l.e.id)])].map(id=> ENTITIES[id]).filter(Boolean);
+  const grounds = edLinksIn(x.id).filter(z=> /^(Persona|Archetype|Competitor|IdeaForImprovement|Hypothesis)$/.test(z.type));
+  const theme = signalAffinity(x);
+  const themes = [...new Set(wsEntities().filter(z=> z.type === 'Signal').map(signalAffinity).filter(Boolean))].sort();
+  const same = theme ? wsEntities().filter(z=> z.type === 'Signal' && z.id !== x.id && signalAffinity(z) === theme) : [];
+  const also = t ? wsEntities().filter(z=> z.type === 'Signal' && z.id !== x.id && edSignalSource(z).t === t) : [];
+  const row = (z, sub) => `<a class="ed-row" href="#${esc(z.id)}"><span class="ed-kind">${esc(tr(z.meta.singular))}</span><span><b>${esc(z.title)}</b>${sub ? `<small>${esc(sub)}</small>` : ''}</span></a>`;
+  return `<div class="ed${ED_TR ? ' show-tr' : ''}">
+    <div class="ed-head">
+      <div class="ed-kick"><span class="ed-type">${ICONS.Signal}${esc(tr('Signal'))}</span>
+        <span class="ed-theme">${theme ? `<button type="button" class="ed-chip ed-theme-btn" data-theme-edit="1" title="${esc(tr('Change the theme'))}">${esc(theme)}${ED_ICO.pen}</button>`
+          : `<button type="button" class="ed-add ed-theme-add" data-theme-edit="1">${ED_ICO.plus}${esc(tr('Add a theme'))}</button><span class="ed-hint">${esc(tr('groups it with similar signals'))}</span>`}
+          <datalist id="edThemes">${themes.map(n=> `<option value="${esc(n)}">`).join('')}</datalist></span>
+        ${x.fm.demo ? `<span class="demo-badge">${esc(tr('Demo'))}</span>` : ''}</div>
+      <h1 class="ed-title">${esc(x.title)}<span class="ed-stop">.</span></h1>
+      ${summary ? `<p class="ed-summary">${inline(summary)}</p>` : ''}
+    </div>
+    <div class="ed-grid">
+      <div class="ed-main">
+        <section class="ed-card ed-quote">
+          ${q ? `<div class="ed-q-tools">${hasTr ? `<button type="button" class="ed-link" data-tr-toggle="1">${esc(tr(ED_TR ? 'Hide translation' : 'Show translation'))}</button>` : ''}${edCopyBtn(`“${q}”${who ? ' — ' + who : ''}`)}</div>
+            <blockquote><span>“</span>${esc(q)}<span>”</span></blockquote>${qt ? `<p class="ed-tr ed-q-tr">${esc(qt)}</p>` : ''}`
+            : `<p class="ed-none">${esc(tr('No quote in this signal — an observation.'))}</p>`}
+          <div class="ed-sig${s.secondary ? ' secondary' : ''}">
+            ${t ? edFace(t, 'ed-face lg') : ''}
+            <span class="ed-sig-who"><b>${esc(s.secondary ? tr('Secondary source — not our conversation') : (t ? String(t.fm.participant || t.title) : tr('Source not linked')))}</b>
+              ${t ? `<small><code>${esc(edTid(t))}</code> · ${esc(s.secondary ? t.title.replace(/^\S+\s*/, '') : String(t.fm.method || ''))}${t.fm.date ? ' · ' + esc(String(t.fm.date)) : ''}</small>` : ''}</span>
+            ${unp === 'true' ? `<span class="ed-chip ink">${esc(tr('volunteered'))}</span>` : unp === 'false' ? `<span class="ed-chip">${esc(tr('asked by the moderator'))}</span>` : ''}
+            ${t ? `<button type="button" class="btn btn-primary btn-sm ed-open" data-open-moment="${esc(t.id)}">${esc(tr('Go to the quote'))}${ED_ICO.arrow}</button>` : ''}
+          </div>
+        </section>
+
+        ${conv.length ? `<section class="ed-sec">${edSecHead('In the conversation')}<div class="ed-card ed-conv">${conv.map(tt=> `<span class="ed-spk${tt.mod ? ' mod' : ''}">${avatar(tt)}<b>${esc(spkName(tt))}</b></span>
+          <span class="ed-turn${tt.main ? '' : ' dim'}">${turnHtml(tt)}${tt.trans ? `<span class="ed-tr">${esc(tt.trans)}</span>` : ''}${tt.mod ? '' : edCopyBtn(`${stripLinks(tt.text).replace(/\*+/g, '').trim()} — ${spkName(tt)}`)}</span>`).join('')}</div></section>` : ''}
+
+        ${st && st.stance ? `<section class="ed-card ed-stance">
+          <span class="ed-fk">${esc(tr('Stance'))}</span>
+          <div><b class="st-${esc(String(st.stance))}">${esc(String(st.stance).replace(/_/g, ' '))}</b><span>${st.feature ? `${esc(tr('on'))} <b>${esc(String(st.feature))}</b> — ` : ''}${esc(tr(ED_STANCE[st.stance] || ''))}</span>
+            ${st.because ? `<span class="ed-because">${esc(tr('because'))} ${esc(String(st.because))}</span>` : ''}
+            ${unp === 'false' ? `<small>${esc(tr('Asked directly, so the attitude is real but how much it matters may be inflated.'))}</small>` : ''}</div>
+        </section>` : ''}
+      </div>
+      <aside class="ed-side">
+        <div class="ed-card"><span class="ed-side-h">${esc(tr('Confirms'))}</span>${evid.length ? evid.map(z=>{ const r = evidenceIndex().get(z.id); return row(z, r ? `${r.sig.size} ${evSigWord(r.sig.size)} · ${evPeopleLine(r.people.size)}` : ''); }).join('') : `<p class="ed-none">${esc(tr('No evidence linked yet.'))}</p>`}</div>
+        ${grounds.length ? `<div class="ed-card"><span class="ed-side-h">${esc(tr('Grounds'))}</span>${grounds.map(z=> row(z)).join('')}</div>` : ''}
+        ${same.length ? `<div class="ed-card"><span class="ed-side-h">${esc(tr('Same theme'))}</span>${same.map(z=> row(z, edWho(edSignalSource(z).t))).join('')}</div>` : ''}
+        ${also.length ? `<div class="ed-card"><span class="ed-side-h">${esc(tr('Same source also said'))}</span>${also.map(z=> row(z)).join('')}</div>` : ''}
+      </aside>
+    </div>
+  </div>`;
+}
+/* copy a quote: the words and who said them, nothing else */
+function edCopy(text){
+  const done = ()=> toast(tr('Quote copied ✓'));
+  if(navigator.clipboard && navigator.clipboard.writeText) navigator.clipboard.writeText(text).then(done, ()=> fallbackCopy(text, done)); else fallbackCopy(text, done);
+}
+function edSignalWire(root){
+  const x = ENTITIES[CURRENT];
+  root.querySelectorAll('[data-open-moment]').forEach(b=> b.onclick = ()=>{ TR_FOCUS = CURRENT; location.hash = '#' + b.dataset.openMoment; });
+  root.querySelectorAll('[data-copy]').forEach(b=> b.onclick = ()=> edCopy(b.dataset.copy));
+  root.querySelectorAll('[data-tr-toggle]').forEach(b=> b.onclick = ()=>{ ED_TR = !ED_TR; root.querySelector('.ed').classList.toggle('show-tr', ED_TR); b.textContent = tr(ED_TR ? 'Hide translation' : 'Show translation'); });
+  /* the theme: a researcher's pick, so it is written locked (affinity_lock) and no AI regrouping moves it */
+  root.querySelectorAll('[data-theme-edit]').forEach(b=> b.onclick = ()=>{
+    const host = b.closest('.ed-theme');
+    host.innerHTML = `<input class="set-input ed-theme-in" list="edThemes" value="${esc(signalAffinity(x))}" placeholder="${esc(tr('Theme, e.g. Pricing & value'))}" aria-label="${esc(tr('Theme'))}"><button type="button" class="btn btn-primary btn-sm">${esc(tr('Save'))}</button><button type="button" class="btn btn-ghost btn-sm">${esc(tr('Cancel'))}</button>${host.querySelector('datalist').outerHTML}`;
+    const inp = host.querySelector('input'), [ok, no] = host.querySelectorAll('button');
+    inp.focus();
+    const save = ()=>{ const v = inp.value.trim().replace(/'/g, '’'); let md = setFmField(x.md, 'affinity', `'${v}'`); md = setFmField(md, 'affinity_lock', v ? 'true' : null); edSaveFile(x, md, v ? 'Theme saved ✓' : 'Theme removed'); };
+    ok.onclick = save; no.onclick = ()=> openDetail(x.id);
+    inp.onkeydown = ev=>{ if(ev.key === 'Enter') save(); if(ev.key === 'Escape'){ ev.stopPropagation(); openDetail(x.id); } };
+  });
+}
+let TR_FOCUS = null;   // a signal to scroll to once its transcript opens (09d)
+
+/* highlights in the evidence text: the transcript's selection flow, on this page's text */
+document.addEventListener('mouseup', ev=>{
+  const zone = ev.target.closest && ev.target.closest('.hl-zone'); if(!zone) return;
+  setTimeout(()=>{
+    const e = ENTITIES[CURRENT]; if(!e || e.type !== 'Evidence' || EDITING) return;
+    if(hlPopEl && hlPopEl.style.display !== 'none') return;
+    const sel = window.getSelection(); if(!sel || sel.isCollapsed || !sel.rangeCount) return;
+    const range = sel.getRangeAt(0); if(!zone.contains(range.commonAncestorContainer)) return;
+    const norm = sel.toString().replace(/\s+/g, ' ').trim(); if(norm.length < 3) return;
+    const pre = document.createRange(); pre.selectNodeContents(zone); pre.setEnd(range.startContainer, range.startOffset);
+    const pat = new RegExp(norm.replace(/[.*+?^${}()|[\]\\]/g, '\\$&').replace(/ /g, '\\s+'), 'g');
+    const before = stripLinks(e.body.split(/\n##\s*Content\s*\n/i)[0] || '');   // matches above the text count too
+    const occ = (pre.toString().match(pat) || []).length + (before.match(pat) || []).length;
+    const r = range.getBoundingClientRect();
+    openHlPop(r.left + window.scrollX, r.bottom + window.scrollY, { mode: 'new', e, selText: norm, occ, tags: [] });
+  }, 0);
+});
 /* ---------- Help & guide ---------- */
 const HELP = [
  { id:"getting-started", label:"Getting started", items:[
@@ -12675,7 +13948,7 @@ const HELP = [
  { id:"claude-commands", label:"AI commands &amp; skills", items:[
   ["Not using Claude Code?", "<p>Everything below works with <b>any</b> AI agent — Qwen, Codex, Gemini, Copilot, Cline. The <code>/slash-commands</code> are just shortcuts Claude Code adds; each one is a plain instruction file at <code>.claude/skills/&lt;name&gt;/SKILL.md</code> (the folder name is historical, not a scope). In another tool, say what you want in your own words and point it at the matching file — same steps, same result. Start it with: <i>“Read AGENTS.md, then CLAUDE.md, then .claude/skills/INDEX.md.”</i></p>"],
   ["Talking &amp; asking", "<p><code>/persona-talk</code> — interview a persona in character (bring several for a panel, or show a mockup for a reaction). <code>/persona-query</code> — a quick “would they…?” with most- and least-likely and an edge case. <code>/persona-voice</code> gives them an ElevenLabs voice; <code>/persona-avatar</code>, a face.</p>"],
-  ["Building the graph", "<p><code>/persona-workshop</code> — build a persona from nothing, one question at a time. <code>/extract-findings</code> — turn transcripts into Signals and Evidence, with a PII scrub first. <code>/researcher</code> — desk research from the web, always filed as Evidence.</p>"],
+  ["Building the graph", "<p><code>/persona-workshop</code> — build a persona from nothing, one question at a time. <code>/extract-findings</code> — turn transcripts into Signals and Evidence, with a PII scrub first. <code>/researcher</code> — desk research from the web, always filed as Evidence. <code>/catalog</code> — sort what you already have: themes for signals, folders for evidence, translations of foreign-language quotes.</p>"],
   ["Keeping it honest", "<p><code>/graph-lint</code> — dead links, orphans, stale data (it never rewires without your nod). <code>/contradictions</code> — where the data argues with itself. <code>/backlog</code> — tidy the open questions. <code>/interview-guide</code> — turn gaps into a guide for real interviews.</p>"],
   ["Shipping the work", "<p><code>/feature-panel</code> — one feature across every persona, cited. <code>/prioritize</code> — RICE, with confidence drawn from grounding, not gut. <code>/prd</code> — a spec whose Why is fully cited. <code>/opportunity-tree</code>, <code>/journey-map</code>, <code>/export</code> — trees, maps, one-pagers, tickets.</p>"],
   ["Bringing in sources", "<p><code>/dovetail-sync</code> — Dovetail, read-only. <code>/source-sync</code> — call recordings (Grain, Fireflies, Otter, tl;dv, Zoom), Notion, Confluence, Capacities, usability tools. <code>/analytics-sync</code> — Mixpanel, GA4 or Amplitude, filed as clearly-labelled internal Evidence.</p>"],
@@ -14895,13 +16168,68 @@ const motionStraighten = el=> el && ['--rx','--ry'].forEach(v=> el.style.removeP
 document.addEventListener('pointermove', ev=>{
   if(ev.pointerType !== 'mouse' || MO_STILL.matches) return;
   const el = ev.target.closest ? ev.target.closest('[data-lean]') : null;
-  if(MO_LEAN !== el){ motionStraighten(MO_LEAN); MO_LEAN = el; }
+  if(MO_LEAN !== el){ motionStraighten(MO_LEAN); leanNet(MO_LEAN, false); MO_LEAN = el; leanNet(el, true); }
   if(!el) return;
   const deg = +el.dataset.lean || 4, r = el.getBoundingClientRect(), x = (ev.clientX - r.left) / r.width, y = (ev.clientY - r.top) / r.height;
+  el._px = x - .5; el._py = y - .5;   // the net under the card drifts a little toward the pointer
   el.style.setProperty('--mx', (x*100).toFixed(1)+'%'); el.style.setProperty('--my', (y*100).toFixed(1)+'%');
   el.style.setProperty('--ry', ((x-.5)*2*deg).toFixed(2)+'deg'); el.style.setProperty('--rx', ((.5-y)*1.5*deg).toFixed(2)+'deg');
 });
-document.addEventListener('pointerleave', ()=>{ motionStraighten(MO_LEAN); MO_LEAN = null; });
+document.addEventListener('pointerleave', ()=>{ motionStraighten(MO_LEAN); leanNet(MO_LEAN, false); MO_LEAN = null; });
+
+/* the net — under a leaning card that holds a face: a few nodes wired to one
+   point behind the avatar, drawing in on hover, drifting slowly, a pulse now
+   and then running out along a wire. A hint of connections, not the graph:
+   the layout is a schematic, made once per card from its size. */
+const NET_NS = 'http://www.w3.org/2000/svg';
+function leanNet(el, on){
+  if(!el || el.matches('.face')) return;
+  const face = el.querySelector('.face'); if(!face) return;
+  if(!on){ clearTimeout(el._netOff); el._netOff = setTimeout(()=>{ cancelAnimationFrame(el._netRaf); el._netRaf = 0; }, 600); return; }
+  clearTimeout(el._netOff);
+  let svg = el.querySelector(':scope > .lean-net');
+  if(!svg){
+    const r = el.getBoundingClientRect(), f = face.getBoundingClientRect();
+    const W = r.width, H = r.height, hx = f.left - r.left + f.width / 2, hy = f.top - r.top + f.height / 2, fr = f.width / 2;
+    let seed = Math.round(W * 7 + H * 13);   // the same card draws the same net every time
+    const rnd = ()=> (seed = (seed * 9301 + 49297) % 233280) / 233280;
+    /* nodes go where this card has room: of 24 directions from the hub, the
+       ones that reach furthest before the card's edge, at least 34° apart */
+    const reach = a=>{ const c = Math.cos(a), s = Math.sin(a), lim = [c > 0 ? (W - 14 - hx) / c : c < 0 ? (14 - hx) / c : 1e9, s > 0 ? (H - 14 - hy) / s : s < 0 ? (14 - hy) / s : 1e9]; return Math.min(...lim); };
+    const dirs = Array.from({ length: 24 }, (_, i)=> (i * 15 + rnd() * 8) * Math.PI / 180).map(a=> ({ a, free: reach(a) })).filter(o=> o.free > fr + 40).sort((p, q)=> q.free - p.free);
+    const pick = [];
+    dirs.forEach(o=>{ if(pick.length < 8 && pick.every(p=> Math.abs(Math.atan2(Math.sin(p.a - o.a), Math.cos(p.a - o.a))) > .6)) pick.push(o); });
+    const nodes = pick.sort((p, q)=> p.a - q.a).map((o, i)=>{
+      const d = fr + 30 + rnd() * Math.min(150, o.free - fr - 36);
+      return { x: hx + Math.cos(o.a) * d, y: hy + Math.sin(o.a) * d, p: rnd() * 6.28, w: .5 + rnd() * .6, big: i % 3 === 1 };
+    });
+    const links = [[1, 2], [4, 5], [6, 7]].filter(([a, b])=> nodes[a] && nodes[b]);
+    if(nodes.length < 3) return;   // a card with no room around its face gets no net
+    svg = document.createElementNS(NET_NS, 'svg');
+    svg.setAttribute('class', 'lean-net'); svg.setAttribute('aria-hidden', 'true'); svg.setAttribute('viewBox', `0 0 ${W} ${H}`);
+    const wires = nodes.map((n, i)=> `<line class="w" pathLength="1" style="--d:${i * 45}ms" x1="${hx}" y1="${hy}" x2="${n.x}" y2="${n.y}"/>`).join('')
+      + links.map(([a, b], i)=> `<line class="w x" pathLength="1" style="--d:${360 + i * 60}ms" x1="${nodes[a].x}" y1="${nodes[a].y}" x2="${nodes[b].x}" y2="${nodes[b].y}"/>`).join('');
+    svg.innerHTML = wires + nodes.map((n, i)=> `<circle class="n${n.big ? ' big' : ''}" style="--d:${200 + i * 45}ms" r="${n.big ? 4.5 : 3}" cx="${n.x}" cy="${n.y}"/>`).join('') + '<circle class="pulse" r="2.5"/><circle class="pulse" r="2.5"/>';
+    el.prepend(svg);
+    el._net = { nodes, links, hx, hy, ls: [...svg.querySelectorAll('line')], cs: [...svg.querySelectorAll('circle.n')], ps: [...svg.querySelectorAll('circle.pulse')] };
+  }
+  if(el._netRaf) return;
+  const N = el._net, t0 = performance.now();
+  const step = now=>{
+    const t = (now - t0) / 1000, mx = (el._px || 0) * 14, my = (el._py || 0) * 10;
+    const at = N.nodes.map(n=> [n.x + Math.sin(t * n.w + n.p) * 5 + mx * n.w, n.y + Math.cos(t * n.w * .8 + n.p) * 4 + my * n.w]);
+    N.nodes.forEach((n, i)=>{ N.cs[i].setAttribute('cx', at[i][0].toFixed(1)); N.cs[i].setAttribute('cy', at[i][1].toFixed(1));
+      N.ls[i].setAttribute('x2', at[i][0].toFixed(1)); N.ls[i].setAttribute('y2', at[i][1].toFixed(1)); });
+    N.links.forEach(([a, b], i)=>{ const l = N.ls[N.nodes.length + i]; l.setAttribute('x1', at[a][0].toFixed(1)); l.setAttribute('y1', at[a][1].toFixed(1)); l.setAttribute('x2', at[b][0].toFixed(1)); l.setAttribute('y2', at[b][1].toFixed(1)); });
+    N.ps.forEach((p, k)=>{   // a pulse leaves the hub along one wire, then the next
+      const per = 2.4, ph = ((t + k * per / 2) % per) / per, wi = (Math.floor((t + k * per / 2) / per) * 3 + k * 5) % N.nodes.length, e = ph * ph * (3 - 2 * ph);
+      p.setAttribute('cx', (N.hx + (at[wi][0] - N.hx) * e).toFixed(1)); p.setAttribute('cy', (N.hy + (at[wi][1] - N.hy) * e).toFixed(1));
+      p.style.opacity = (Math.sin(ph * Math.PI) * .9).toFixed(2);
+    });
+    el._netRaf = requestAnimationFrame(step);
+  };
+  el._netRaf = requestAnimationFrame(step);
+}
 
 /* a number counts up from zero (ease-out expo) — only the leading integer of
    its first text node, so "6/6", "83%" and the unit beside it stay as written */
@@ -14945,7 +16273,7 @@ function motionPage(){
   }
   if(HELP_ACTIVE){ motionReveal(grid, all(grid, '.help-nav, .help-main > *:not(#helpList), #helpList > *')); return; }
   if(SETTINGS_ACTIVE){ const sw = document.querySelector('.set-wrap'); motionReveal(sw, all(sw, ':scope > *')); return; }
-  motionReveal(grid, all(grid, ':scope > *'));   // the gallery of any type
+  motionReveal(grid, all(grid, ':scope > *:not(.ev-wrap), .ev-chips, .ev-fold'));   // the gallery of any type; Evidence folders rise one by one
   // the Personas tab: its head arrives the way a persona's name does (16-motion.css)
   const head = document.querySelector('.content > .page-head');
   if(!head) return;
@@ -17771,10 +19099,12 @@ sideSearch.addEventListener('keydown', ev=>{ if(ev.key==='Escape'){ sideSearch.v
 document.addEventListener('keydown', ev=>{
   if((ev.metaKey || ev.ctrlKey) && !ev.altKey && ev.key.toLowerCase()==='k'){ ev.preventDefault(); sideSearch.focus(); sideSearch.select(); }
 });
+document.getElementById('viewFoldersBtn').onclick = ()=> setView('folders');
 document.getElementById('viewCardsBtn').onclick = ()=> setView('cards');
 document.getElementById('viewListBtn').onclick = ()=> setView('list');
 document.getElementById('viewTableBtn').onclick = ()=> setView('table');
 document.getElementById('viewMapBtn').onclick = ()=> setView('map');
+document.getElementById('viewSourcesBtn').onclick = ()=> setView('sources');
 document.getElementById('viewCompareBtn').onclick = ()=> setView('compare');
 document.getElementById('viewAffinityBtn').onclick = ()=> setView('affinity');
 document.getElementById('viewHlBtn').onclick = ()=> setView('hl');

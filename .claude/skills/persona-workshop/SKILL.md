@@ -77,7 +77,7 @@ Goal: anchor the archetype in market data / big data.
 
 **Questions:** "Do you have data about this group — reports, statistics, big data?" · "How large is this group?" · "What external factors affect it?"
 
-Each hard fact → a separate `Evidence/<Title>.md` (Content → Takeaways → Sources), with a real, linkable source. Tag `desk-research`.
+Each hard fact → a separate `Evidence/<Title>.md` (`Evidence/_template.md`: `claim:` + the source fields, Key figures, Content, Takeaways, Does not settle, Sources), with a real, linkable source. Tag `desk-research`.
 
 ---
 

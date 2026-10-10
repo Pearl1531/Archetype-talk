@@ -232,7 +232,8 @@ function openDetail(id){
      the three working tables), then the rest of the file with a sticky section menu. */
   const dcard = document.querySelector('.detail-card');
   dcard.classList.toggle('persona-detail', e.type==='Persona');
-  document.querySelector('.detail-wrap').classList.toggle('detail-wide', e.type==='Persona' || e.type==='Transcript');
+  dcard.classList.toggle('ed-detail', e.type==='Evidence' || e.type==='Signal');
+  document.querySelector('.detail-wrap').classList.toggle('detail-wide', /^(Persona|Transcript|Evidence|Signal)$/.test(e.type));
   dcard.classList.toggle('tr-detail', e.type==='Transcript');
   const pHero = document.getElementById('pHero');
   let peFooter = '';
@@ -241,6 +242,11 @@ function openDetail(id){
     pHero.innerHTML = pe.top; peFooter = pe.footer;
     pHero.style.display='';
     personaEditorialWire(pHero, e);
+  } else if(e.type==='Evidence' || e.type==='Signal'){   // their own page (09e-evidence-signal-detail.js)
+    if(!same) ED_FIG = null;
+    pHero.innerHTML = e.type==='Evidence' ? edEvidenceHtml(e) : edSignalHtml(e);
+    pHero.style.display='';
+    if(e.type==='Evidence') edEvidenceWire(pHero, e); else edSignalWire(pHero);
   } else { pHero.style.display='none'; }
   const ctl = document.getElementById('dIconCtl');
   if(e.type==='Competitor'){
@@ -273,7 +279,7 @@ function openDetail(id){
     dg.classList.add('on');
     const pb=document.getElementById('dPromote'); if(pb) pb.onclick=()=> promoteHypothesis(e.id);
     document.getElementById('dHypoEdit').onclick=()=> editHypothesis(e.id);
-    document.getElementById('dHypoDel').onclick=()=> deleteHypothesis(e.id);
+    document.getElementById('dHypoDel').onclick=()=> deleteEntity(e.id);
     dg.querySelectorAll('a.xref[data-goto]').forEach(a=> a.onclick=()=>{ location.hash='#'+a.dataset.goto; });
   } else if(e.type==='IdeaForImprovement'){
     const g = ideaGrounding(e);

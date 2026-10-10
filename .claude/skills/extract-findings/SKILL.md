@@ -7,7 +7,7 @@ description: Turn raw interview/test transcripts into typed Evidence and Signals
 
 Turn raw interview/test transcripts into typed `Evidence/` and `Signals/` files, then report how they wire into a Persona. Replaces the old single `findings.md` with first-class, linkable entities.
 
-**Language:** adapt to the user's language in your replies, but keep verbatim participant quotes in their original language — they are data, never translate or paraphrase them.
+**Language:** adapt to the user's language in your replies, but keep verbatim participant quotes in their original language — they are data, never translate or paraphrase them **in place**. When a quote's language differs from the project's, add a translation on its own bracketed blockquote line right under the original (format in [/catalog](../catalog/SKILL.md#quote-translations--the-one-format-the-app-reads)); the app shows it behind *Show translation*.
 
 ## Trigger
 
@@ -69,19 +69,24 @@ Read every transcript for the project. Note participant code, date, and profile.
 ### 2. Extract observations → Signals
 Create one `Signals/<Title>.md` per meaningful observation:
 - a vivid verbatim quote, a moment of friction, an unprompted complaint, an observed behaviour
-- put the quote in a `>` blockquote, add **Interview date** and a **Transcript** link
+- put the quote in a `>` blockquote (plus its translation line when needed), add **Interview date** and a **Transcript** link — with the `#anchor` of the moment when the transcript has one, so the app's *Go to the quote* lands on it
+- one plain sentence under the quote saying what the signal is, in the project's language
 - skip vague filler ("it's ok", "I guess")
+- if the project already has themes (`affinity:` on other signals), give the new signal the one it belongs to; with no themes yet, leave it empty — grouping is `/catalog`'s job
 
 Signal frontmatter:
 ```yaml
 type: 'Signal'
 title: <short observation title>
 tags: []
+affinity: ''    # the theme, if the project has them; never on a signal a human locked
 evidences: []   # titles of Evidence this observation confirms
 ```
 
+Extraction ends at writing findings. Sorting them — themes, evidence folders, missing translations, the evidence fields — is [/catalog](../catalog/SKILL.md); offer it at the end of the run instead of doing it inline.
+
 ### 3. Extract / confirm hard data → Evidence
-If the transcript cites a number, survey, or report, create `Evidence/<Title>.md` (Content → Takeaways → Sources). More often, an interview **confirms** existing Evidence — in that case add the Evidence title to the Signal's `evidences:` list and tag both `validated`.
+If the transcript cites a number, survey, or report, create `Evidence/<Title>.md` (`Evidence/_template.md`: `claim:` + the source fields, Key figures, Content, Takeaways, Does not settle, Sources); a number someone only said aloud stays in the Signal (rule 7). More often, an interview **confirms** existing Evidence — in that case add the Evidence title to the Signal's `evidences:` list and tag both `validated`.
 
 ### 4. Assign source tags
 - 1 participant → `interview ×1`

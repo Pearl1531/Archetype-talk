@@ -8,21 +8,22 @@ function sorted(){
 }
 let VIEW = store.get('at-view') || 'cards';
 /* Each tab allows only the views that fit its data — one view = no toggle at
-   all. The global VIEW preference persists; effView() resolves it per tab. */
+   all. Each tab remembers the view you picked there (effView). */
 const TYPE_VIEWS = {
   All:      ['cards'],
   Persona:  ['cards'],
   Archetype:['list'],
-  Signal:   ['cards','list','table','affinity'],
-  Evidence: ['cards'],
+  Signal:   ['sources','table','affinity'],   // grouped by where they came from (07d-signals.js)
+  Evidence: ['folders','table'],   // folders by topic (07b-evidence.js) hold the cards
   Hypothesis: ['table'],
   IdeaForImprovement: ['list'],
   Competitor: ['map','list','compare'],
   Transcript: ['cards','list','table','hl']
 };
-const VIEW_BTN = { cards:'viewCardsBtn', list:'viewListBtn', table:'viewTableBtn', map:'viewMapBtn', compare:'viewCompareBtn', affinity:'viewAffinityBtn', hl:'viewHlBtn' };
+const VIEW_BTN = { folders:'viewFoldersBtn', cards:'viewCardsBtn', list:'viewListBtn', table:'viewTableBtn', map:'viewMapBtn', compare:'viewCompareBtn', affinity:'viewAffinityBtn', hl:'viewHlBtn', sources:'viewSourcesBtn' };
 function viewsFor(t){ return TYPE_VIEWS[t] || ['cards']; }
-function effView(){ const a = viewsFor(activeType); return a.includes(VIEW) ? VIEW : a[0]; }
+/* each tab remembers its own view; a tab you have not set opens on its first one */
+function effView(){ const a = viewsFor(activeType), own = store.get('at-view-' + activeType); return a.includes(own) ? own : a[0]; }
 function syncViewButtons(V){
   const allowed = viewsFor(activeType);
   Object.entries(VIEW_BTN).forEach(([mode,id])=>{
@@ -35,7 +36,7 @@ function syncViewButtons(V){
   document.querySelector('.view-toggle').style.display = allowed.length>1 ? '' : 'none';
 }
 function setView(v){
-  VIEW = v; store.set('at-view', v);
+  VIEW = v; store.set('at-view', v); store.set('at-view-' + activeType, v);
   renderGrid(searchInput.value);
 }
 /* Strength among the people we actually talked to: DISTINCT transcripts naming this

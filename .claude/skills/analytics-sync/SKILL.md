@@ -46,9 +46,12 @@ Mixpanel / GA4 (source)  ──read-only──▶  our graph (canonical)
                         one targeted query per Evidence entry (e.g. "search vs. browse split",
                         "skip rate in first 5s", "DAU/WAU for feature X").
 3. Query              → use only the read tools listed in the reference file.
-4. Draft Evidence     → Content = the actual numbers + what was measured; Takeaways = what it
-                        implies; Sources = see the labeling rule below (this is internal data,
-                        not a public link).
+4. Draft Evidence     → `Evidence/_template.md`: `claim:` in one sentence, `source_kind: analytics`,
+                        `population:` = the segment and date range queried, `primary_checked: true`
+                        (you read the data itself); Key figures = one row per number; Content =
+                        what was measured; Takeaways = what it implies; Does not settle = what
+                        the metric cannot show (usually *why*); Sources = see the labeling rule
+                        below (this is internal data, not a public link).
 5. Confirm            → show the draft, get a yes, before writing.
 6. Write + wire       → create the file; offer to link it under the relevant Persona's
                         `## Evidences` and/or `Product Context.md`.

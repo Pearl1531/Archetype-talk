@@ -160,6 +160,7 @@ function updatePageHead(){
    only together with re-tuning those files. */
 function hideGalleryChrome(){   // bars are siblings of the grid; pages that replace the grid must hide them
   ['ideaBar','hypoBar','compBar','newBar','freshBar','filterBar'].forEach(id=>{ const el=document.getElementById(id); if(el) el.style.display='none'; });
+  hyClose();
   const ss=document.getElementById('sampleStat'); if(ss) ss.innerHTML='';
 }
 function syncLinTheme(){

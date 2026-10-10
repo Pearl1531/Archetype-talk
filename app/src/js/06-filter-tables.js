@@ -98,6 +98,8 @@ function participantsChip(e){
   return `<span class="tag"${off?` title="${esc(tr('Excluded transcripts stay on disk but count toward nothing until you turn them back on'))}"`:''}>${main}${off?' · '+tr('+{n} excluded').replace('{n}',off):''}</span>`;
 }
 const demoCell = e => e.fm.demo ? '<span class="demo-badge">Demo</span>' : '';
+/* the ⋯ menu's Delete, for any row whose type deleteEntity (08) knows */
+const delItem = id => `<button type="button" role="menuitem" class="danger" data-del="${id}">${FI('<polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6"/><path d="M10 11v6M14 11v6"/><path d="M9 6V4a1 1 0 0 1 1-1h4a1 1 0 0 1 1 1v2"/>')}${tr('Delete')}</button>`;
 const titleCell = e => {
   const av = e.type==='Persona' ? faceHtml(e, '', e.title) : (e.type==='Archetype' ? archIconHtml(e,'sm') : (e.type==='Competitor' ? compTileHtml(e,26) : ''));
   return `<span class="td-title">${av}${esc(e.title)}</span>`;
@@ -112,7 +114,7 @@ const TABLE_COLS = {
     ['Evidences', e=>{ const ev=Array.isArray(e.fm.evidences)?e.fm.evidences:(e.fm.evidences?[e.fm.evidences]:[]); return ev.length? ev.map(x=>`<span class="tag">${esc(x)}</span>`).join(' ') : '<span class="muted">—</span>'; }, 220], ['', demoCell, 90]
   ],
   Hypothesis: [
-    ['Hypothesis', titleCell, 440],   // If / Will live in the file (and its card) — as columns they were mostly empty
+    ['Hypothesis', titleCell, 440],   // If / Will live in the file (and its side panel) — as columns they were mostly empty
     ['Topic', e=> e.fm.feature? `<span class="tag">${esc(e.fm.feature)}</span>` : '<span class="muted">—</span>', 130, 'fit'],
     ['Author', authorChip, 130, 'fit'],
     ['Status', hypoStatusChip, 110, 'fit'],
@@ -121,8 +123,16 @@ const TABLE_COLS = {
       return demoCell(e) + rowMenuHtml('rm-'+e.id, [
         canPromote && `<button type="button" role="menuitem" data-promote="${e.id}" title="${esc(tr('Has {what} — make it a grounded Idea').replace('{what}', g.detail))}">${FI('<line x1="12" y1="19" x2="12" y2="5"/><polyline points="5 12 12 5 19 12"/>')}${tr('Promote to Idea')}</button>`,
         `<button type="button" role="menuitem" data-hedit="${e.id}">${FI('<path d="M12 20h9"/><path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5z"/>')}${tr('Edit')}</button>`,
-        `<button type="button" role="menuitem" class="danger" data-hdel="${e.id}">${FI('<polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6"/><path d="M10 11v6M14 11v6"/><path d="M9 6V4a1 1 0 0 1 1-1h4a1 1 0 0 1 1 1v2"/>')}${tr('Delete')}</button>`,
+        delItem(e.id),
       ], canPromote ? tr('Ready to promote to an Idea') : ''); }, 64, 'fit']
+  ],
+  Evidence: [   // strongest first by clicking "Confirmed by" — the cell leads with the number of confirming signals
+    ['Evidence', titleCell, 380],
+    ['Topic', e=> [].concat(e.fm.tags||[]).length ? [].concat(e.fm.tags).slice(0, 2).map(t=> `<span class="tag">${esc(t)}</span>`).join(' ') : '<span class="muted">—</span>', 160, 'fit'],
+    ['Confirmed by', evStrengthCell, 150, 'fit'],
+    ['Personas', e=>{ const p = [...evOf(e).personas].map(id=> ENTITIES[id]).filter(Boolean); return p.length ? esc(p.map(x=> x.title.split(/\s+[—–-]\s+/)[0]).join(', ')) : '<span class="muted">—</span>'; }, 180],
+    ['Retrieved', e=> e.fm.retrieved ? `<span${evStale(e) ? ' class="ev-stale" title="'+esc(tr('Retrieved more than three months ago — re-check before relying on it'))+'"' : ''}>${esc(e.fm.retrieved)}</span>` : '<span class="muted">—</span>', 120, 'fit'],
+    ['', e=> demoCell(e) + rowMenuHtml('rm-'+e.id, [delItem(e.id)]), 90, 'fit']
   ],
   Transcript: [
     ['Transcript', titleCell, 180],
@@ -176,6 +186,10 @@ const COL_ICONS = {
   'Quote / observation': FI('<path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/>'),
   'Interview': FI('<rect x="3" y="4" width="18" height="18" rx="2" ry="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/>'),
   'Evidences': ICONS.Evidence,
+  'Evidence': ICONS.Evidence,
+  'Confirmed by': ICONS.Signal,
+  'Personas': ICONS.Persona,
+  'Retrieved': FI('<rect x="3" y="4" width="18" height="18" rx="2" ry="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/>'),
   'Participant': ICONS.Persona,
   'Method': FI('<path d="M12 1a3 3 0 0 0-3 3v8a3 3 0 0 0 6 0V4a3 3 0 0 0-3-3z"/><path d="M19 10v2a7 7 0 0 1-14 0v-2"/><line x1="12" y1="19" x2="12" y2="23"/><line x1="8" y1="23" x2="16" y2="23"/>'),
   'Date': FI('<rect x="3" y="4" width="18" height="18" rx="2" ry="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/>'),
@@ -209,11 +223,14 @@ function renderTable(list){
   html += '</tbody></table>';
   grid.innerHTML = html;
   // the row opens its entity — except from its ⋯ menu, whose clicks bubble through the row
-  grid.querySelectorAll('tr[data-goto]').forEach(tr=> tr.onclick = ev=>{ if(!ev.target.closest('.row-menu')) location.hash = '#'+tr.dataset.goto; });
+  grid.querySelectorAll('tr[data-goto]').forEach(tr=> tr.onclick = ev=>{
+    if(ev.target.closest('.row-menu')) return;
+    if(type==='Hypothesis') hyOpen(tr.dataset.goto); else location.hash = '#'+tr.dataset.goto;   // a bet opens in the side panel
+  });
   wireVotes(grid);
   grid.querySelectorAll('[data-promote]').forEach(b=> b.onclick = ev=>{ ev.stopPropagation(); promoteHypothesis(b.dataset.promote); });
   grid.querySelectorAll('[data-hedit]').forEach(b=> b.onclick = ev=>{ ev.stopPropagation(); editHypothesis(b.dataset.hedit); });
-  grid.querySelectorAll('[data-hdel]').forEach(b=> b.onclick = ev=>{ ev.stopPropagation(); deleteHypothesis(b.dataset.hdel); });
+  grid.querySelectorAll('[data-del]').forEach(b=> b.onclick = ev=>{ ev.stopPropagation(); b.closest('[popover]')?.hidePopover(); deleteEntity(b.dataset.del); });
   grid.querySelectorAll('th.th-sortable').forEach(th=> th.onclick = ev=>{
     if(ev.target.closest('.col-resize')) return;          // resizing, not sorting
     const ci = +th.dataset.sci;

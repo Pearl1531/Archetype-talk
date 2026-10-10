@@ -11,7 +11,7 @@ Build and manage UX personas grounded in real research, organised as a linked kn
 
 | Folder | Type | What it holds |
 |--------|------|---------------|
-| `Evidence/` | `Evidence` | Hard data — big data, surveys, reports. Sections: Content → Takeaways → Sources. |
+| `Evidence/` | `Evidence` | Hard data — big data, surveys, reports. Front matter `claim:` + source fields; sections Key figures → Content → Takeaways → Does not settle → Sources (`Evidence/_template.md`). |
 | `Signals/` | `Signal` | A single observation from a test/interview that flags a problem, usually with a user quote. Links up to Evidence via `evidences:`. |
 | `Archetypes/` | `Archetype` | A behaviour pattern (a *type*, not a person). Sections: Short description, Link to persona, Core pain. |
 | `Personas/` | `Persona` | The embodiment: JTBD, Pains, Gains, Quotes, Pain Relievers, Evidences, Ideas, Correlations, Metadata. |

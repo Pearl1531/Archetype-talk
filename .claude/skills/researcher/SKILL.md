@@ -42,7 +42,13 @@ This project's grounding model draws a hard line: **`Signal` = an observation fr
    - Cross-check a surprising number against a second source when one exists.
 
 3. **Draft candidate Evidence entries.**
-   - One `Evidence/<Title>.md` per distinct finding, using `Evidence/_template.md` exactly (Content → Takeaways → Sources), `retrieved:` = today.
+   - One `Evidence/<Title>.md` per distinct finding, using `Evidence/_template.md` exactly, `retrieved:` = today. Fill what the AI needs first:
+     - `claim:` — the finding in one plain sentence;
+     - `source_kind:`, `published:` (the source's own date), `population:` (who, where, how many) — **empty when the source does not say, never guessed**;
+     - `primary_checked: true` only when you read the figure in the original report or dataset (rule 7); press coverage alone is `false`, and say so;
+     - **Key figures**: one row per number with its population and source — no figure without who it is about;
+     - **Does not settle**: at least one honest line on what the source cannot tell you (rule 8).
+   - Content and Takeaways stay readable prose for people. Never add `==highlights==` — they are the team's emphasis.
    - **Never invent a statistic or quote to fill a thin result.** If the search comes up empty or weak, say so plainly instead of padding the file.
 
 4. **Check for duplicates.**

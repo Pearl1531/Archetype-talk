@@ -84,6 +84,7 @@ Plus the **3-month freshness rule**: data older than 3 months gets flagged in pl
 - `persona-workshop` — builds a persona from scratch, one question at a time
 - `ai-persona` — creates and levels up personas across the graph
 - `extract-findings` — transcripts → `Evidence/` + `Signals/`, with a PII scrub before anything is stored
+- `catalog` — sorts what is already there: themes for signals, topic folders for evidence, missing quote translations, the evidence fields the AI reads first; never touches what a human curated
 
 **Connect sources (all read-only, all with provenance)**
 - `dovetail-sync` — Dovetail workspace over its official MCP

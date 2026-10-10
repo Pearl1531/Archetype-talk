@@ -135,6 +135,8 @@ function transcriptWorkspace(e){
       t = n; }
     if(!t && s.quote){ const head = trNorm(s.quote).split(' ').slice(0,6).join(' '); t = turns.find(x=> trNorm(x.textContent).includes(head)) || null; }
     s.turn = t; s.i = i;
+    // "Open at this moment" on a signal: once the turn it lands on is the one on screen (a page can render twice)
+    if(t && TR_FOCUS === s.x.id) setTimeout(()=>{ if(!t.isConnected || TR_FOCUS !== s.x.id) return; TR_FOCUS = null; t.scrollIntoView({ block: "center" }); t.classList.add("tr-focus"); }, 60);
     if(t){
       t.dataset.sig = (t.dataset.sig ? t.dataset.sig+' ' : '') + i;
       let row = t.querySelector('.tr-sigs'); if(!row){ row = document.createElement('div'); row.className = 'tr-sigs'; t.querySelector('.tr-txt').appendChild(row); }
