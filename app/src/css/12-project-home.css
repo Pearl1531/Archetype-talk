@@ -186,9 +186,9 @@
     @keyframes dxFloat { 50% { transform: translateY(-7px); } }
 
     /* arrivals — the hero choreographs itself, every later section rises as it scrolls in */
-    .dx-motion .dx-kicker { animation: dxUp .8s var(--ease-out) backwards .05s; }
-    .dx-motion .dx-actions { animation: dxUp .8s var(--ease-out) backwards .5s; }
-    .dx-motion .dx-cast > a { animation: dxCastIn 1s var(--ease-spring) backwards; animation-delay: calc(.3s + var(--i) * 120ms); }
+    .dx-motion .dx-kicker { animation: dxUp .3s var(--ease-out) backwards .05s; }
+    .dx-motion .dx-actions { animation: dxUp .3s var(--ease-out) backwards .15s; }
+    .dx-motion .dx-cast > a { animation: dxCastIn 1s var(--ease-spring) backwards; animation-delay: min(150ms, calc(.03s + var(--i) * 40ms)); }
     .dx-motion .dx-band.dx-rv { clip-path: inset(0 7% round 20px); transition: clip-path 1.1s var(--ease-out) .1s; }
     .dx-motion .dx-band.dx-rv.in { clip-path: inset(0 0 round 20px); }
 

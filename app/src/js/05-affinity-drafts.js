@@ -61,11 +61,11 @@ function renderAffinity(list){
   });
   // edit handlers
   const eb = grid.querySelector('#affEdit'); if(eb) eb.onclick = ()=>{ AFFINITY_EDIT = !AFFINITY_EDIT; renderAffinity(filteredList(searchInput.value)); };
-  const ab = grid.querySelector('#affAdd'); if(ab) ab.onclick = ()=>{ const nm = prompt('New group name:'); if(nm && nm.trim()){ NEW_AFF_GROUPS.add(nm.trim()); renderAffinity(filteredList(searchInput.value)); } };
+  const ab = grid.querySelector('#affAdd'); if(ab) ab.onclick = ()=>{ const nm = prompt(tr('New group name:')); if(nm && nm.trim()){ NEW_AFF_GROUPS.add(nm.trim()); renderAffinity(filteredList(searchInput.value)); } };
   grid.querySelectorAll('.aff-move').forEach(sel=> sel.onchange = async ()=>{
     const e = ENTITIES[sel.dataset.id]; if(!e) return;
     let target = sel.value;
-    if(target==='__new__'){ target = (prompt('New group name:')||'').trim(); if(!target){ renderAffinity(filteredList(searchInput.value)); return; } }
+    if(target==='__new__'){ target = (prompt(tr('New group name:'))||'').trim(); if(!target){ renderAffinity(filteredList(searchInput.value)); return; } }
     await setSignalAffinity(e, target, true);
   });
   grid.querySelectorAll('.aff-name-in').forEach(inp=>{
@@ -327,7 +327,7 @@ async function createIdea(){
       const fh = await getFileHandleFor(file);
       const e = parseEntity(md, file); e.id = idFor(file); e.handle = fh; e.ws = 'project';
       ENTITIES[e.id] = e; reindex();
-    }catch(err){ toast(tr('Save failed: ')+err.message); return; }
+    }catch(err){ toastSaveFailed(err); return; }
   } else {
     if(!addDraftEntity(md, file)){ toast(tr('Could not create the draft')); return; }
   }

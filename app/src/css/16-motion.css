@@ -18,6 +18,7 @@
 
   @media (prefers-reduced-motion: no-preference) {
     @keyframes dxUp { from { opacity: 0; translate: 0 22px; } }
+    @keyframes dxUpNow { from { translate: 0 22px; } }   /* a block already on screen at entry: the rise, never a blank */
     @keyframes dxRise { from { transform: translateY(108%); } }
     @keyframes dxPop { from { transform: scale(0); } }
     @keyframes dxCastIn { from { opacity: 0; scale: .55; } }
@@ -26,8 +27,9 @@
 
     /* arrivals */
     .dx-motion .dx-rv:not(.in), .dx-motion .dx-rv:not(.in) .dx-st { opacity: 0; }
-    .dx-motion .dx-rv.in { animation: dxUp .85s var(--ease-out) backwards; animation-delay: calc(var(--b, 0) * 45ms); }
-    .dx-motion .dx-rv.in .dx-st { animation: dxUp .75s var(--ease-out) backwards; animation-delay: calc(.12s + var(--i, 0) * 60ms); }
+    .dx-motion .dx-rv.in { animation: dxUp .3s var(--ease-out) backwards; animation-delay: calc(var(--b, 0) * 45ms); }
+    .dx-motion .dx-rv.in .dx-st { animation: dxUp .3s var(--ease-out) backwards; animation-delay: calc(.12s + var(--i, 0) * 60ms); }
+    .dx-motion .dx-rv.in.now, .dx-motion .dx-rv.in.now .dx-st { animation-name: dxUpNow; }   /* the first screen (12c-motion.js) is visible on its first frame */
 
     /* bars draw left to right once their block is in view */
     .dx-motion .dx-rv :is(.dx-track i, .dx-split i, .dx-lvl i) { transform: scaleX(0); transform-origin: left; transition: transform 1.1s var(--ease-out) .35s; }
@@ -41,21 +43,21 @@
     /* a page's name arrives word by word out of its own mask and its dot pops —
        the Overview's title (.dx-motion, the grid) and a persona's name
        (.mo-enter, set on the hero itself so a re-render in place never replays it) */
-    :is(.dx-motion, .mo-enter) .dx-w > span { animation: dxRise 1.05s var(--ease-out) backwards; animation-delay: calc(.12s + var(--i) * 90ms); }
-    :is(.dx-motion .dx-title, .mo-enter .pe-name) .dx-dot, .mo-enter #pageTitle::after { display: inline-block; animation: dxPop .7s var(--ease-spring) backwards; animation-delay: calc(.35s + var(--n, 1) * 90ms); }
+    :is(.dx-motion, .mo-enter) .dx-w > span { animation: dxRise 1.05s var(--ease-out) backwards; animation-delay: min(150ms, calc(.03s + var(--i) * 40ms)); }
+    :is(.dx-motion .dx-title, .mo-enter .pe-name) .dx-dot, .mo-enter #pageTitle::after { display: inline-block; animation: dxPop .7s var(--ease-spring) backwards; animation-delay: min(150ms, calc(.05s + var(--n, 1) * 40ms)); }
 
     /* the persona page's hero = the Overview's hero, one person: kicker, name,
        the rest rising after it, and the portrait landing like the cast does */
-    .mo-enter .pe-kicker { animation: dxUp .8s var(--ease-out) backwards .05s; }
-    .mo-enter :is(.pe-role, .pe-arch) { animation: dxUp .8s var(--ease-out) backwards .38s; }
-    .mo-enter .pe-actions { animation: dxUp .8s var(--ease-out) backwards .5s; }
-    .mo-enter .pe-portrait { animation: dxCastIn 1s var(--ease-spring) backwards .3s; }
+    .mo-enter .pe-kicker { animation: dxUp .3s var(--ease-out) backwards .05s; }
+    .mo-enter :is(.pe-role, .pe-arch) { animation: dxUp .3s var(--ease-out) backwards .12s; }
+    .mo-enter .pe-actions { animation: dxUp .3s var(--ease-out) backwards .15s; }
+    .mo-enter .pe-portrait { animation: dxCastIn 1s var(--ease-spring) backwards .15s; }
 
     /* the Personas tab: its title rises like a persona's name (its dot is the
        page head's ::after, popped by the rule above), the subtitle and the bars follow */
-    .mo-enter #pageSub { animation: dxUp .8s var(--ease-out) backwards .3s; }
-    .mo-enter ~ #newBar { animation: dxUp .8s var(--ease-out) backwards .42s; }
-    .mo-enter ~ #filterBar { animation: dxUp .8s var(--ease-out) backwards .5s; }
+    .mo-enter #pageSub { animation: dxUp .3s var(--ease-out) backwards .1s; }
+    .mo-enter ~ #newBar { animation: dxUp .3s var(--ease-out) backwards .12s; }
+    .mo-enter ~ #filterBar { animation: dxUp .3s var(--ease-out) backwards .15s; }
 
     /* ── the lean — a persona card's gesture, ONE component: anything with
        data-lean="<deg>" (Overview and Personas-tab cards, the persona
@@ -67,17 +69,13 @@
       transition: transform .7s var(--ease-out), translate .5s var(--ease-out), box-shadow .5s var(--ease-out), border-color .15s; }
     [data-lean]::after { content: ""; position: absolute; inset: 0; z-index: -1; border-radius: inherit; pointer-events: none; opacity: 0;
       background: radial-gradient(260px circle at var(--mx, 50%) var(--my, 50%), rgba(255,77,0,.11), transparent 68%); transition: opacity .35s; }
-    /* the net under a leaning card (leanNet, 12c-motion.js): wires from a point behind the face */
+    /* the net under a leaning card (leanNet, 12c-motion.js): wires from a point behind the face, still — it fades in, nothing moves */
     .lean-net { position: absolute; inset: 0; z-index: -1; width: 100%; height: 100%; pointer-events: none; overflow: visible; opacity: 0; transition: opacity .4s var(--ease-out); }
     [data-lean]:hover > .lean-net { opacity: 1; }
-    .lean-net .w { stroke: rgba(10,10,10,.16); stroke-width: 1; fill: none; stroke-dasharray: 1; stroke-dashoffset: 1; transition: stroke-dashoffset .9s var(--ease-out) var(--d, 0ms); }
-    .lean-net .w.x { stroke: rgba(10,10,10,.09); stroke-dasharray: .02 .02; }
-    [data-lean]:hover > .lean-net .w { stroke-dashoffset: 0; }
-    [data-lean]:hover > .lean-net .w.x { stroke-dashoffset: 0; }
-    .lean-net .n { fill: var(--bg-elev); stroke: rgba(10,10,10,.35); stroke-width: 1.25; transform-box: fill-box; transform-origin: center; scale: 0; transition: scale .5s var(--ease-spring) var(--d, 0ms); }
+    .lean-net .w { stroke: rgba(10,10,10,.16); stroke-width: 1; fill: none; }
+    .lean-net .w.x { stroke: rgba(10,10,10,.1); stroke-dasharray: 2 3; }
+    .lean-net .n { fill: var(--bg-elev); stroke: rgba(10,10,10,.35); stroke-width: 1.25; }
     .lean-net .n.big { stroke: var(--accent); stroke-width: 1.5; }
-    [data-lean]:hover > .lean-net .n { scale: 1; }
-    .lean-net .pulse { fill: var(--accent); opacity: 0; }
     .face[data-lean]::after { z-index: 2; background: radial-gradient(160px circle at var(--mx, 50%) var(--my, 50%), rgba(255,255,255,.3), transparent 66%); }
     [data-lean] .face, .face[data-lean] { transition: transform .7s var(--ease-out), translate .5s var(--ease-out), scale .65s var(--ease-spring), rotate .65s var(--ease-spring), box-shadow .4s var(--ease-out); }
 

@@ -179,6 +179,8 @@ function renderTabs(){
     html += `<button class="nav-item ${!inView && activeType===raw?'active':''}" data-t="${raw}">${ICONS[raw]}${tr(ty.label)}<span class="n">${c}</span></button>`;
   });
   tabsEl.innerHTML = html;
+  // every page enter re-renders the tabs, so this is the one place the rail's current page is announced
+  document.querySelectorAll('.sidebar .nav-item').forEach(b=> b.classList.contains('active') ? b.setAttribute('aria-current', 'page') : b.removeAttribute('aria-current'));
   tabsEl.querySelectorAll('.nav-item').forEach(b=> b.onclick=()=>{
     activeType=b.dataset.t;
     if(HELP_ACTIVE || SETTINGS_ACTIVE || MINDMAP_ACTIVE || DASHBOARD_ACTIVE || BACKLOG_ACTIVE){ helpExit(); settingsExit(); mindmapExit(); dashboardExit(); backlogExit(); if(location.hash) { suppressRoute = true; location.hash=''; } }

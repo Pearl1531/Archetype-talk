@@ -63,6 +63,10 @@ Two rules hold whatever they answer:
 
 If they say yes — or the transcript already carries these fields and you need to honor a `consent_scope` — read [references/lifecycle-fields.md](references/lifecycle-fields.md) for what to fill, what to ask, and what each scope gates.
 
+### 0c. File the whole conversation — timestamped
+
+A transcript you file (from `Inbox/`, a pasted text, a recording the user asked you to transcribe) keeps the **whole** conversation under `## Full transcript` — never only the parts that look useful (rule 8). One paragraph per turn, its start time first: `[12:04] **Emma:** text`, or `[12:04] text` when the speakers are unknown; a source's chapters as `### Title (12:04)`. Keep every word as said — no correcting, no smoothing, no translating in place. Set `anonymization:` to what actually happened (`none` when nothing was scrubbed); the app shows it in the transcript's header and lets the researcher change it. Excerpts of a long public source may sit above the full text — they are a reading aid, the full text is the source.
+
 ### 1. Read the transcript(s)
 Read every transcript for the project. Note participant code, date, and profile. Patterns only emerge across multiple sessions — never process just one when several exist.
 

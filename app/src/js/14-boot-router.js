@@ -91,6 +91,8 @@ function toast(msg, action, ms, detail){ // action: {label, fn} — e.g. an Undo
   t.style.pointerEvents = 'auto';
   t.classList.add('show');
 }
+/* a write that failed: one human line, the browser's reason underneath */
+const toastSaveFailed = err => toast(tr('Not saved — the file could not be written'), null, 0, err && err.message);
 
 /* ---------- load from disk ---------- */
 async function ingest(fileList){
@@ -397,6 +399,8 @@ function ensureHlEls(){
   hlBtnEl.id='hlBtn'; hlBtnEl.className='hl-float'; hlBtnEl.setAttribute('role','toolbar'); hlBtnEl.setAttribute('aria-label', tr('Selection'));
   hlBtnEl.innerHTML = `<button type="button" data-hlact="mark">${ic('<path d="m9 11-6 6v3h9l3-3"/><path d="m22 12-4.6 4.6a2 2 0 0 1-2.8 0l-5.2-5.2a2 2 0 0 1 0-2.8L14 4"/>')}${tr('Highlight')}</button>`
     + `<button type="button" data-hlact="tag">${ic('<path d="M5 9h14M5 15h14M11 4 7 20M17 4l-4 16"/>')}${tr('Tag…')}</button>`
+    + `<button type="button" data-hlact="note">${ICON_CM}${tr('Comment')}</button>`
+    + `<button type="button" data-hlact="sig">${ICONS.Signal}${tr('Signal…')}</button>`
     + `<button type="button" data-hlact="copy">${ic('<rect x="8" y="8" width="12" height="12" rx="2"/><path d="M16 8V6a2 2 0 0 0-2-2H6a2 2 0 0 0-2 2v8a2 2 0 0 0 2 2h2"/>')}${tr('Copy quote')}</button>`;
   hlBtnEl.style.display='none';
   hlBtnEl.addEventListener('mousedown', ev=>{ ev.preventDefault(); ev.stopPropagation(); });
@@ -414,9 +418,11 @@ function openHlPop(x, y, ctx){
   hlBtnEl.style.display='none';
   const existing = hlAllTagNames();
   const sel = new Set(ctx.tags||[]);
+  const note = ctx.mode==='edit' ? ((entityHighlights(ctx.e)[ctx.hln]||{}).note||'') : '';
   hlPopEl.innerHTML = `
-    <div class="hl-pop-head">${tr(ctx.mode==='edit'?'Edit highlight':'New highlight')}</div>
+    <div class="hl-pop-head">${tr(ctx.mode==='edit'?'Edit highlight':ctx.focus==='note'?'New comment':'New highlight')}</div>
     <div class="hl-pop-quote">${esc(trim(ctx.selText||ctx.text||'',140))}</div>
+    <textarea class="hl-pop-note" id="hlNoteInput" rows="2" placeholder="${esc(tr('Comment (optional) — shows beside the text on hover'))}">${esc(note)}</textarea>
     ${existing.length?`<div class="hl-pop-tags">${existing.map(t=>`<button type="button" class="hl-chip${sel.has(t)?' on':''}" data-t="${esc(t)}">${esc(t)}</button>`).join('')}</div>`:''}
     <input class="hl-pop-input" id="hlTagInput" placeholder="${esc(tr('new tags, comma-separated (e.g. pain, pricing)'))}" autocomplete="off">
     <div class="hl-pop-actions">
@@ -435,13 +441,15 @@ function openHlPop(x, y, ctx){
     const chips=[...hlPopEl.querySelectorAll('.hl-chip.on')].map(b=>b.dataset.t);
     const typed=hlTagsParse(document.getElementById('hlTagInput').value).map(t=>t.replace(/[{}]/g,'').trim()).filter(Boolean);
     const tags=[...new Set([...chips, ...typed])];
+    const nt=document.getElementById('hlNoteInput').value.replace(/\s+/g,' ').trim();
     hideHlUi();
-    if(ctx.mode==='edit') await editHighlight(ctx.e, ctx.hln, tags);
-    else await addHighlight(ctx.e, ctx.selText, ctx.occ, tags);
+    if(ctx.mode==='edit') await editHighlight(ctx.e, ctx.hln, tags, nt);
+    else await addHighlight(ctx.e, ctx.selText, ctx.occ, tags, nt);
   };
+  document.getElementById('hlNoteInput').addEventListener('keydown', ev=>{ if(ev.key==='Enter' && !ev.shiftKey){ ev.preventDefault(); document.getElementById('hlSave').click(); } if(ev.key==='Escape'){ ev.stopPropagation(); hideHlUi(); } });
   const inp=document.getElementById('hlTagInput');
   inp.addEventListener('keydown', ev=>{ if(ev.key==='Enter'){ ev.preventDefault(); document.getElementById('hlSave').click(); } if(ev.key==='Escape'){ ev.stopPropagation(); hideHlUi(); } });
-  setTimeout(()=> inp.focus(), 0);
+  setTimeout(()=> (ctx.focus==='note' ? document.getElementById('hlNoteInput') : inp).focus(), 0);
 }
 document.getElementById('doc').addEventListener('mouseup', ()=>{
   setTimeout(()=>{ // selection finalizes after mouseup
@@ -480,7 +488,8 @@ document.getElementById('doc').addEventListener('mouseup', ()=>{
       if(!w) return;
       if(w!==e){ openDetail(w.id); toast(tr('Folder connected ✓ — select the fragment again to highlight it')); return; }
       if(act==='mark') await addHighlight(e, text, occ, []);   // tags can come later: click the highlight
-      else openHlPop(r.left + window.scrollX, r.bottom + window.scrollY, { mode:'new', e, selText:text, occ });
+      else if(act==='sig') trSignalPick(r.left + window.scrollX, r.bottom + window.scrollY, e, text, occ);
+      else openHlPop(r.left + window.scrollX, r.bottom + window.scrollY, { mode:'new', e, selText:text, occ, focus: act==='note' ? 'note' : '' });
     };
   }, 0);
 });
@@ -643,7 +652,7 @@ document.getElementById('ideaSortBtn').onclick = ()=>{
 };
 document.getElementById('newIdeaBtn').onclick = openIdeaForm;
 document.getElementById('newCreate').onclick = createNewEntity;
-document.getElementById('newHypoBtn').onclick = openHypoForm;
+document.getElementById('newHypoBtn').onclick = ()=> openHypoForm();   // not the MouseEvent: openHypoForm(editEnt) would read it as an entity
 document.getElementById('newCompBtn').onclick = openCompForm;
 document.getElementById('compCreate').onclick = createCompetitor;
 document.getElementById('hypoCreate').onclick = createHypothesis;

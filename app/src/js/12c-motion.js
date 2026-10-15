@@ -16,19 +16,26 @@ function motionReveal(scope, blocks, items){
   if(MO_IO){ MO_IO.disconnect(); MO_IO = null; }
   if(MO_STILL.matches || !scope || !('IntersectionObserver' in window)) return false;
   scope.classList.add('dx-motion');
-  blocks.forEach(b=>{ b.classList.add('dx-rv'); b.classList.remove('in'); });   // shell blocks (the detail head) keep their class between pages
+  blocks.forEach(b=>{ b.classList.add('dx-rv'); b.classList.remove('in', 'now'); });   // shell blocks (the detail head) keep their class between pages
   (items || []).forEach(el=>{ el.classList.add('dx-st'); el.style.setProperty('--i', Math.min([...el.parentNode.children].indexOf(el), 10)); });
+  let k = 0;
+  const land = t=>{
+    t.style.setProperty('--b', Math.min(k++, 8));
+    t.classList.add('in');
+    t.querySelectorAll('.dx-big, .dx-mid, .pe-fact').forEach(dxCount);
+  };
   MO_IO = new IntersectionObserver(es=>{
-    let k = 0;
-    es.forEach(en=>{
-      if(!en.isIntersecting) return;
-      const t = en.target;
-      t.style.setProperty('--b', Math.min(k++, 8));
-      t.classList.add('in'); MO_IO.unobserve(t);
-      t.querySelectorAll('.dx-big, .dx-mid, .pe-fact').forEach(dxCount);
-    });
+    k = 0;
+    es.forEach(en=>{ if(en.isIntersecting){ land(en.target); MO_IO.unobserve(en.target); } });
   }, { threshold: 0, rootMargin: '0px 0px -40px 0px' });   // a ratio threshold would never fire for a block taller than the screen
-  blocks.forEach(b=> MO_IO.observe(b));
+  /* the first screen is never hidden: a block already in view lands now, from
+     opacity 1 (.now — CSS keeps only the rise); the rest wait for the scroll */
+  const vh = innerHeight - 40;
+  blocks.forEach(b=>{
+    const r = b.getBoundingClientRect();
+    if(r.bottom > 0 && r.top < vh && (r.width || r.height)){ b.classList.add('now'); land(b); }
+    else MO_IO.observe(b);
+  });
   return true;
 }
 
@@ -55,67 +62,44 @@ const motionStraighten = el=> el && ['--rx','--ry'].forEach(v=> el.style.removeP
 document.addEventListener('pointermove', ev=>{
   if(ev.pointerType !== 'mouse' || MO_STILL.matches) return;
   const el = ev.target.closest ? ev.target.closest('[data-lean]') : null;
-  if(MO_LEAN !== el){ motionStraighten(MO_LEAN); leanNet(MO_LEAN, false); MO_LEAN = el; leanNet(el, true); }
+  if(MO_LEAN !== el){ motionStraighten(MO_LEAN); MO_LEAN = el; leanNet(el); }
   if(!el) return;
   const deg = +el.dataset.lean || 4, r = el.getBoundingClientRect(), x = (ev.clientX - r.left) / r.width, y = (ev.clientY - r.top) / r.height;
-  el._px = x - .5; el._py = y - .5;   // the net under the card drifts a little toward the pointer
   el.style.setProperty('--mx', (x*100).toFixed(1)+'%'); el.style.setProperty('--my', (y*100).toFixed(1)+'%');
   el.style.setProperty('--ry', ((x-.5)*2*deg).toFixed(2)+'deg'); el.style.setProperty('--rx', ((.5-y)*1.5*deg).toFixed(2)+'deg');
 });
-document.addEventListener('pointerleave', ()=>{ motionStraighten(MO_LEAN); leanNet(MO_LEAN, false); MO_LEAN = null; });
+document.addEventListener('pointerleave', ()=>{ motionStraighten(MO_LEAN); MO_LEAN = null; });
 
 /* the net — under a leaning card that holds a face: a few nodes wired to one
-   point behind the avatar, drawing in on hover, drifting slowly, a pulse now
-   and then running out along a wire. A hint of connections, not the graph:
-   the layout is a schematic, made once per card from its size. */
+   point behind the avatar, shown on hover and still (it reads better standing
+   than moving). A hint of connections, not the graph: the layout is a
+   schematic, made once per card from its size. */
 const NET_NS = 'http://www.w3.org/2000/svg';
-function leanNet(el, on){
-  if(!el || el.matches('.face')) return;
+function leanNet(el){
+  if(!el || el.matches('.face') || el.querySelector(':scope > .lean-net')) return;
   const face = el.querySelector('.face'); if(!face) return;
-  if(!on){ clearTimeout(el._netOff); el._netOff = setTimeout(()=>{ cancelAnimationFrame(el._netRaf); el._netRaf = 0; }, 600); return; }
-  clearTimeout(el._netOff);
-  let svg = el.querySelector(':scope > .lean-net');
-  if(!svg){
-    const r = el.getBoundingClientRect(), f = face.getBoundingClientRect();
-    const W = r.width, H = r.height, hx = f.left - r.left + f.width / 2, hy = f.top - r.top + f.height / 2, fr = f.width / 2;
-    let seed = Math.round(W * 7 + H * 13);   // the same card draws the same net every time
-    const rnd = ()=> (seed = (seed * 9301 + 49297) % 233280) / 233280;
-    /* nodes go where this card has room: of 24 directions from the hub, the
-       ones that reach furthest before the card's edge, at least 34° apart */
-    const reach = a=>{ const c = Math.cos(a), s = Math.sin(a), lim = [c > 0 ? (W - 14 - hx) / c : c < 0 ? (14 - hx) / c : 1e9, s > 0 ? (H - 14 - hy) / s : s < 0 ? (14 - hy) / s : 1e9]; return Math.min(...lim); };
-    const dirs = Array.from({ length: 24 }, (_, i)=> (i * 15 + rnd() * 8) * Math.PI / 180).map(a=> ({ a, free: reach(a) })).filter(o=> o.free > fr + 40).sort((p, q)=> q.free - p.free);
-    const pick = [];
-    dirs.forEach(o=>{ if(pick.length < 8 && pick.every(p=> Math.abs(Math.atan2(Math.sin(p.a - o.a), Math.cos(p.a - o.a))) > .6)) pick.push(o); });
-    const nodes = pick.sort((p, q)=> p.a - q.a).map((o, i)=>{
-      const d = fr + 30 + rnd() * Math.min(150, o.free - fr - 36);
-      return { x: hx + Math.cos(o.a) * d, y: hy + Math.sin(o.a) * d, p: rnd() * 6.28, w: .5 + rnd() * .6, big: i % 3 === 1 };
-    });
-    const links = [[1, 2], [4, 5], [6, 7]].filter(([a, b])=> nodes[a] && nodes[b]);
-    if(nodes.length < 3) return;   // a card with no room around its face gets no net
-    svg = document.createElementNS(NET_NS, 'svg');
-    svg.setAttribute('class', 'lean-net'); svg.setAttribute('aria-hidden', 'true'); svg.setAttribute('viewBox', `0 0 ${W} ${H}`);
-    const wires = nodes.map((n, i)=> `<line class="w" pathLength="1" style="--d:${i * 45}ms" x1="${hx}" y1="${hy}" x2="${n.x}" y2="${n.y}"/>`).join('')
-      + links.map(([a, b], i)=> `<line class="w x" pathLength="1" style="--d:${360 + i * 60}ms" x1="${nodes[a].x}" y1="${nodes[a].y}" x2="${nodes[b].x}" y2="${nodes[b].y}"/>`).join('');
-    svg.innerHTML = wires + nodes.map((n, i)=> `<circle class="n${n.big ? ' big' : ''}" style="--d:${200 + i * 45}ms" r="${n.big ? 4.5 : 3}" cx="${n.x}" cy="${n.y}"/>`).join('') + '<circle class="pulse" r="2.5"/><circle class="pulse" r="2.5"/>';
-    el.prepend(svg);
-    el._net = { nodes, links, hx, hy, ls: [...svg.querySelectorAll('line')], cs: [...svg.querySelectorAll('circle.n')], ps: [...svg.querySelectorAll('circle.pulse')] };
-  }
-  if(el._netRaf) return;
-  const N = el._net, t0 = performance.now();
-  const step = now=>{
-    const t = (now - t0) / 1000, mx = (el._px || 0) * 14, my = (el._py || 0) * 10;
-    const at = N.nodes.map(n=> [n.x + Math.sin(t * n.w + n.p) * 5 + mx * n.w, n.y + Math.cos(t * n.w * .8 + n.p) * 4 + my * n.w]);
-    N.nodes.forEach((n, i)=>{ N.cs[i].setAttribute('cx', at[i][0].toFixed(1)); N.cs[i].setAttribute('cy', at[i][1].toFixed(1));
-      N.ls[i].setAttribute('x2', at[i][0].toFixed(1)); N.ls[i].setAttribute('y2', at[i][1].toFixed(1)); });
-    N.links.forEach(([a, b], i)=>{ const l = N.ls[N.nodes.length + i]; l.setAttribute('x1', at[a][0].toFixed(1)); l.setAttribute('y1', at[a][1].toFixed(1)); l.setAttribute('x2', at[b][0].toFixed(1)); l.setAttribute('y2', at[b][1].toFixed(1)); });
-    N.ps.forEach((p, k)=>{   // a pulse leaves the hub along one wire, then the next
-      const per = 2.4, ph = ((t + k * per / 2) % per) / per, wi = (Math.floor((t + k * per / 2) / per) * 3 + k * 5) % N.nodes.length, e = ph * ph * (3 - 2 * ph);
-      p.setAttribute('cx', (N.hx + (at[wi][0] - N.hx) * e).toFixed(1)); p.setAttribute('cy', (N.hy + (at[wi][1] - N.hy) * e).toFixed(1));
-      p.style.opacity = (Math.sin(ph * Math.PI) * .9).toFixed(2);
-    });
-    el._netRaf = requestAnimationFrame(step);
-  };
-  el._netRaf = requestAnimationFrame(step);
+  const r = el.getBoundingClientRect(), f = face.getBoundingClientRect();
+  const W = r.width, H = r.height, hx = f.left - r.left + f.width / 2, hy = f.top - r.top + f.height / 2, fr = f.width / 2;
+  let seed = Math.round(W * 7 + H * 13);   // the same card draws the same net every time
+  const rnd = ()=> (seed = (seed * 9301 + 49297) % 233280) / 233280;
+  /* nodes go where this card has room: of 24 directions from the hub, the
+     ones that reach furthest before the card's edge, at least 34° apart */
+  const reach = a=>{ const c = Math.cos(a), s = Math.sin(a), lim = [c > 0 ? (W - 14 - hx) / c : c < 0 ? (14 - hx) / c : 1e9, s > 0 ? (H - 14 - hy) / s : s < 0 ? (14 - hy) / s : 1e9]; return Math.min(...lim); };
+  const dirs = Array.from({ length: 24 }, (_, i)=> (i * 15 + rnd() * 8) * Math.PI / 180).map(a=> ({ a, free: reach(a) })).filter(o=> o.free > fr + 40).sort((p, q)=> q.free - p.free);
+  const pick = [];
+  dirs.forEach(o=>{ if(pick.length < 8 && pick.every(p=> Math.abs(Math.atan2(Math.sin(p.a - o.a), Math.cos(p.a - o.a))) > .6)) pick.push(o); });
+  const nodes = pick.sort((p, q)=> p.a - q.a).map((o, i)=>{
+    const d = fr + 30 + rnd() * Math.min(150, o.free - fr - 36);
+    return { x: hx + Math.cos(o.a) * d, y: hy + Math.sin(o.a) * d, big: i % 3 === 1 };
+  });
+  const links = [[1, 2], [4, 5], [6, 7]].filter(([a, b])=> nodes[a] && nodes[b]);
+  if(nodes.length < 3) return;   // a card with no room around its face gets no net
+  const svg = document.createElementNS(NET_NS, 'svg');
+  svg.setAttribute('class', 'lean-net'); svg.setAttribute('aria-hidden', 'true'); svg.setAttribute('viewBox', `0 0 ${W} ${H}`);
+  svg.innerHTML = nodes.map(n=> `<line class="w" x1="${hx}" y1="${hy}" x2="${n.x}" y2="${n.y}"/>`).join('')
+    + links.map(([a, b])=> `<line class="w x" x1="${nodes[a].x}" y1="${nodes[a].y}" x2="${nodes[b].x}" y2="${nodes[b].y}"/>`).join('')
+    + nodes.map(n=> `<circle class="n${n.big ? ' big' : ''}" r="${n.big ? 4.5 : 3}" cx="${n.x}" cy="${n.y}"/>`).join('');
+  el.prepend(svg);
 }
 
 /* a number counts up from zero (ease-out expo) — only the leading integer of

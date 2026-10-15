@@ -1,12 +1,21 @@
 /* ---------- markdown detail with xref navigation ---------- */
 function esc(s){ return (s||'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c])); }
 let HL_N = 0; // render-order index of highlights — maps a clicked <mark> back to the nth HL_RE match in the source body
+/* comments are Markdown footnotes: ==fragment==[^c1] (a commented highlight)
+   or a bare [^1] after a quote (context), and "[^c1]: text" on a line of its
+   own. mdToHtml lifts the definitions out of the flow into MD_NOTES. */
+let MD_NOTES = {};
+const ICON_CM = '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M21 12a8 8 0 0 1-11.6 7.1L4 20l1-4.6A8 8 0 1 1 21 12z"/></svg>';
+const FN_DEF_RE = /^\[\^([\w-]+)\]:[ \t]*(.*)$/gm;
+function mdNotes(md){ const o = {}; for(const m of String(md||'').matchAll(FN_DEF_RE)) o[m[1]] = m[2]; return o; }
 function inline(s){
   s = esc(s);
-  s = s.replace(HL_RE, (m,txt,tags)=>{
-    const tl = hlTagsParse(tags);
-    return `<mark class="hl" data-hln="${HL_N++}" title="${esc(tr('Team highlight — click to edit tags'))}">${txt}${tl.map(t=>`<span class="hl-t">${t}</span>`).join('')}</mark>`;
+  s = s.replace(HL_RE, (m,txt,tags,off,all)=>{
+    const tl = hlTagsParse(tags), cm = (all.slice(off+m.length).match(/^\[\^([\w-]+)\]/)||[])[1];
+    return `<mark class="hl${cm?' cm':''}" data-hln="${HL_N++}"${cm?` data-cm="${cm}" title="${esc(MD_NOTES[cm]||'')}"`:` title="${esc(tr('Team highlight — click to edit tags'))}"`}>${txt}${tl.map(t=>`<span class="hl-t">${t}</span>`).join('')}</mark>`;
   });
+  s = s.replace(/(<\/mark>)?\[\^([\w-]+)\]/g, (m,mk,id)=> mk ? mk
+    : `<button type="button" class="cm-ref" data-cm="${id}" title="${esc(MD_NOTES[id]||'')}" aria-label="${esc(tr('Comment')+': '+(MD_NOTES[id]||''))}">${ICON_CM}</button>`);
   s = s.replace(MD_LINK, (m,txt,url)=>{
     if(/^https?:/.test(url)) return `<a href="${url}" target="_blank" rel="noopener">${txt}</a>`; // url already escaped by esc(s) above (now incl. quotes)
     const id = resolveRef(url);
@@ -58,8 +67,8 @@ function vizBlock(type, body){
   return `<pre class="viz-code"><code>${esc(body)}</code></pre>`;
 }
 function mdToHtml(md){
-  HL_N = 0;
-  const lines = md.split('\n'); let html=''; let inList=false; let para=[];
+  HL_N = 0; MD_NOTES = mdNotes(md);
+  const lines = md.replace(FN_DEF_RE, '').split('\n'); let html=''; let inList=false; let para=[];
   let fenceType=null, fenceBuf=null, quote=null;
   const flushP=()=>{ if(para.length){ html+='<p>'+inline(para.join(' '))+'</p>'; para=[]; } };
   /* consecutive "> " lines are one quote: a blank "> " starts a new paragraph,
@@ -526,7 +535,7 @@ async function saveEntityText(e, text, opts){
     // never touch a file, so there is nothing to attribute there
     text = stampUpdated(text);
     const w = await e.handle.createWritable(); await w.write(text); await w.close();
-  }catch(err){ toast(tr('Save failed: ')+err.message); return false; }
+  }catch(err){ toastSaveFailed(err); return false; }
   if(!opts.noUndo) LAST_SAVE = { id: e.id, file: e.file, prev: e.md };
   const saved = parseEntity(text, e.file) || ne;   // keep memory identical to disk
   saved.id = e.id; saved.handle = e.handle; saved.ws = saved.fm.demo ? 'demo' : 'project'; ENTITIES[e.id] = saved; reindex();
@@ -594,9 +603,9 @@ document.getElementById('icFetch').onclick = async ()=>{
     toast(tr('External favicon fetch is off for privacy. Turn it on in Settings ▸ Privacy & network — or upload an icon, or ask your AI assistant to fetch it.'));
     return;
   }
-  const dom = prompt('Company domain to fetch the favicon from (e.g. deezer.com):', '');
+  const dom = prompt(tr('Company domain to fetch the favicon from (e.g. deezer.com):'), '');
   if(!dom) return;
-  if(!confirm(`This sends the domain “${dom.trim()}” to Google’s favicon service (google.com). Continue?\n\nThe fetched icon is then stored inline in the file, so it never has to be fetched again.`)) return;
+  if(!confirm(tr('This sends the domain “{d}” to Google’s favicon service (google.com). Continue?').replace('{d}', dom.trim())+'\n\n'+tr('The fetched icon is then stored inline in the file, so it never has to be fetched again.'))) return;
   try{
     const r = await fetch(`https://www.google.com/s2/favicons?domain=${encodeURIComponent(dom.trim())}&sz=64`);
     if(!r.ok) throw new Error('HTTP '+r.status);

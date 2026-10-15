@@ -273,7 +273,7 @@ async function createNewEntity(){
       const fh = await getFileHandleFor(file);
       const e = parseEntity(md, file); e.id = idFor(file); e.handle = fh; e.ws = 'project';
       ENTITIES[e.id] = e; reindex();
-    }catch(err){ toast(tr('Save failed: ')+err.message); return; }
+    }catch(err){ toastSaveFailed(err); return; }
   } else {
     if(!addDraftEntity(md, file)){ toast(tr('Could not create the draft')); return; }
   }

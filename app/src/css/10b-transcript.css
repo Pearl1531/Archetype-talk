@@ -51,12 +51,40 @@
     background: var(--t-bg, var(--bg-elev-2)); color: var(--t-fg, var(--text)); font-size: 14px; font-weight: 600; letter-spacing: 0; text-transform: none; vertical-align: 1px; }
   .tr-tag { margin-left: 0; }
 
-  /* the Signal chips under a passage */
-  .tr-sigs { display: flex; gap: 6px; flex-wrap: wrap; }
-  .tr-sig { height: 30px; padding: 0 11px 0 9px; border-radius: 999px; border: 1px solid var(--line); background: var(--bg);
-    display: inline-flex; align-items: center; gap: 6px; font: inherit; font-size: 14px; font-weight: 500; color: var(--text); cursor: pointer; }
-  .tr-sig svg { width: 14px; height: 14px; }
-  .tr-sig:hover, .tr-sig.lit { border-color: var(--accent); background: var(--bg-elev); }
+  /* annotations ride on the words: a Signal is a citation pill after its
+     quote, a note a small bubble mark; a commented highlight is underlined.
+     Context off hides pills and marks — highlights and underlines stay. */
+  .tr-ann { height: 24px; max-width: 240px; margin-left: 6px; padding: 0 9px 0 7px; border-radius: 999px; border: 0; background: var(--bg-elev-2);
+    display: inline-flex; align-items: center; gap: 5px; vertical-align: 2px; font: inherit; font-size: 14px; font-weight: 500; font-style: normal;
+    line-height: 1; color: var(--text-soft); cursor: pointer; transition: background .15s, color .15s; }
+  .tr-ann svg { width: 13px; height: 13px; flex: none; }
+  .tr-ann span { min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+  .tr-ann b { font-weight: 600; color: var(--text-dim); }
+  .tr-ann:hover, .tr-ann.lit { background: var(--text); color: var(--bg-elev); }
+  .tr-ann:hover b, .tr-ann.lit b { color: inherit; }
+  .cm-ref { width: 22px; height: 22px; margin-left: 4px; padding: 0; border: 0; border-radius: 6px; background: none; vertical-align: -3px;
+    display: inline-flex; align-items: center; justify-content: center; color: var(--accent-text, var(--accent)); cursor: pointer; }
+  .cm-ref.ctx { color: var(--text-dim); }
+  .cm-ref:hover, .cm-ref:focus-visible { background: var(--bg-elev-2); color: var(--text); }
+  .tr-detail mark.hl.cm { text-decoration: underline 2px var(--accent); text-underline-offset: 4px; cursor: pointer; }
+  .tr-ctx-off .tr-ann, .tr-ctx-off .cm-ref { display: none; }
+  .tr-bubble { position: fixed; z-index: 640; width: max-content; max-width: 300px; padding: 10px 12px; border-radius: 12px; pointer-events: none;
+    background: var(--bg-elev); border: 1px solid var(--line); box-shadow: 0 12px 32px -10px rgba(10,10,10,.28);
+    display: flex; flex-direction: column; gap: 4px; font-size: 14px; line-height: 1.5; color: var(--text); }
+  .tr-bubble[hidden] { display: none; }
+  .tr-bubble > b { display: inline-flex; align-items: center; gap: 5px; font-size: 14px; font-weight: 600; color: var(--text-dim); }
+  .tr-bubble p, .tr-bubble ul, .tr-bubble blockquote { margin: 0; padding: 0; border: 0; font-size: 14px; }
+  .tr-bubble ul { padding-left: 16px; }
+  .tr-bubble small { font-size: 14px; color: var(--text-dim); }
+  /* the switch beside the hint */
+  .tr-ctx { height: 30px; padding: 0 10px 0 6px; border: 0; border-radius: 999px; background: none; display: inline-flex; align-items: center; gap: 8px;
+    font: inherit; font-size: 14px; color: var(--text-soft); cursor: pointer; }
+  .tr-ctx i { width: 28px; height: 16px; border-radius: 999px; background: var(--line); position: relative; transition: background .15s; }
+  .tr-ctx i::after { content: ""; position: absolute; top: 2px; left: 2px; width: 12px; height: 12px; border-radius: 50%; background: #fff; transition: transform .15s; }
+  .tr-ctx[aria-checked=true] i { background: var(--text); }
+  .tr-ctx[aria-checked=true] i::after { transform: translateX(12px); }
+  .tr-ctx:hover { color: var(--text); }
+  .tr-detail .doc .flash { animation: trFlash 1.2s ease-out; border-radius: 6px; }
 
   /* the pane */
   .tr-pane { position: sticky; top: 16px; max-height: calc(100vh - 32px); display: flex; flex-direction: column; overflow: hidden;
@@ -71,6 +99,13 @@
   .tr-card { padding: 14px 16px; border-radius: 12px; border: 1px solid var(--line); background: var(--bg-elev); display: flex; flex-direction: column; gap: 8px;
     transition: border-color .15s, box-shadow .15s; }
   .tr-card.lit { border-color: var(--accent); box-shadow: 0 0 0 1px var(--accent); }
+  .tr-card { cursor: pointer; }
+  .tr-card-h > b { font-size: 15px; font-weight: 600; }
+  .tr-card-h > svg:first-child { color: var(--text-dim); }
+  .tr-card p.tr-cmq { color: var(--text-dim); font-style: italic; }
+  .tr-cmc > p:last-child { color: var(--text); }
+  .tr-hl-note { display: flex; gap: 6px; align-items: flex-start; font-size: 14px; color: var(--text-soft); }
+  .tr-hl-note svg { flex: none; margin-top: 3px; }
   .tr-card-h { display: flex; align-items: center; gap: 8px; }
   .tr-card-h svg { width: 15px; height: 15px; flex: none; }
   .tr-card-h a.xref { font-size: 15px; font-weight: 600; color: var(--text); text-transform: none; letter-spacing: 0; }
@@ -115,7 +150,7 @@
     .tr-hint { margin-left: 0; flex-basis: 100%; }
     .tr-extract { margin-left: 0; }
   }
-  @media print { .tr-pane, .tr-tagbar, .tr-sigs { display: none !important; } .tr-detail .p-body.tr-split { display: block; } }
+  @media print { .tr-pane, .tr-tagbar, .tr-ann, .cm-ref { display: none !important; } .tr-detail .p-body.tr-split { display: block; } }
 
   /* a multi-line quote is one block (mdToHtml): paragraphs inside, an optional heading */
   .doc blockquote.bq-block { display: flex; flex-direction: column; gap: 8px; }
@@ -177,3 +212,28 @@
   .toast-x:hover { background: rgba(250,249,245,.1); color: #FAF9F5; }
   .toast-bar { position: absolute; left: 0; right: 0; bottom: 0; height: 3px; background: var(--accent); transform-origin: left center; }
   @media (max-width: 600px) { .toast, body.lin-all .toast { left: 16px; right: 16px; top: 12px; width: auto; max-width: none; } }
+
+  /* the full transcript (09f): the view switch, a timestamp under the speaker,
+     the anonymisation choice in the header, the import dialog */
+  .tr-tagbar .tr-view { margin: 0 6px 0 0; }
+  .tr-tagbar .tr-view button { height: 28px; padding: 0 12px; }
+  .tr-addfull { height: 30px; padding: 0 12px; border-radius: 999px; border: 1px dashed var(--edge, var(--line)); background: none;
+    font: inherit; font-size: 14px; color: var(--text-soft); cursor: pointer; }
+  .tr-addfull:hover { color: var(--text); border-color: var(--text); }
+  .tr-spk time { display: block; margin-top: 2px; font-family: var(--font-mono); font-size: 14px; font-weight: 400; color: var(--text-dim); }
+  .tr-anon { height: 28px; padding: 0 8px; border: 1px solid var(--line); border-radius: 8px; background: var(--bg-elev); font: inherit; font-size: 14px; color: var(--text-soft); cursor: pointer; }
+  .tr-full-modal { width: min(640px, calc(100vw - 32px)); padding: 0; border: 1px solid var(--line); border-radius: 16px; background: var(--bg-elev); color: var(--text); }
+  .tr-full-modal::backdrop { background: rgba(10,10,10,.35); }
+  .tr-full-form { display: flex; flex-direction: column; gap: 12px; padding: 22px; }
+  .tr-full-form h3 { margin: 0; font-size: 20px; }
+  .tr-full-lead { margin: 0; font-size: 14px; line-height: 1.55; color: var(--text-soft); }
+  .tr-full-file { align-self: flex-start; display: inline-flex; align-items: center; height: 34px; padding: 0 14px; border-radius: 10px; border: 1px solid var(--line);
+    font-size: 14px; font-weight: 600; cursor: pointer; }
+  .tr-full-file input { display: none; }
+  .tr-full-form textarea { width: 100%; box-sizing: border-box; padding: 10px 12px; border: 1px solid var(--line); border-radius: 10px; background: var(--bg);
+    font-family: var(--font-mono); font-size: 14px; line-height: 1.5; color: var(--text); resize: vertical; }
+  .tr-full-anon { display: flex; align-items: center; gap: 10px; flex-wrap: wrap; font-size: 14px; color: var(--text-soft); }
+  .tr-full-act { display: flex; justify-content: flex-end; gap: 8px; }
+  a.tr-at { text-decoration: none; }
+  a.tr-at time { color: var(--accent-text, var(--accent)); }
+  a.tr-at:hover time { text-decoration: underline; }

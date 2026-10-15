@@ -5,9 +5,27 @@
    Distinct tags per file are mirrored into `highlight_tags:` frontmatter so
    triage (header → grep → read) can find tagged files without reading them. */
 function entityHighlights(e){
-  const out=[]; let m; const re=new RegExp(HL_RE.source,'g');
-  while((m=re.exec(e.body))) out.push({ text:m[1], tags:hlTagsParse(m[2]) });
+  const out=[]; let m; const re=new RegExp(HLC_RE.source,'g'), notes = mdNotes(e.body);
+  while((m=re.exec(e.body))) out.push({ text:m[1], tags:hlTagsParse(m[2]), cm:m[3]||'', note:m[3] ? notes[m[3]]||'' : '' });
   return out;
+}
+/* A comment is a footnote on its highlight — ==text=={tags}[^c1], and
+   "[^c1]: the comment" on its own line at the end of the file. Plain
+   Markdown: any agent reads it, the transcript view shows it on hover. */
+const HLC_RE = new RegExp(HL_RE.source + '(?:\\[\\^([\\w-]+)\\])?', 'g');
+const newNoteId = body => 'c' + (Math.max(0, ...[...body.matchAll(/\[\^c(\d+)\]/g)].map(m=> +m[1])) + 1);
+function setNoteDef(body, id, text){   // empty text removes the definition
+  const re = new RegExp('^\\[\\^' + id + '\\]:.*\\n?', 'm');
+  if(!text) return body.replace(re, '');
+  const line = '[^' + id + ']: ' + text.replace(/\s+/g, ' ').trim();
+  if(re.test(body)) return body.replace(re, line + '\n');
+  return body.replace(/\s*$/, (/^\[\^[\w-]+\]:/.test(body.trimEnd().split('\n').pop()) ? '\n' : '\n\n') + line + '\n');
+}
+/* a context note that sits on no highlight (a bare [^id] after a quote) */
+async function saveNote(e, id, text){
+  let nb = setNoteDef(e.body, id, text);
+  if(!text) nb = nb.split('[^' + id + ']').join('');
+  await saveHighlightChange(e, nb, text ? 'Comment saved ✓' : 'Comment removed ✓', text || mdNotes(e.body)[id]);
 }
 function syncHighlightTagsFm(md, body){
   const tags=new Set(); let m; const re=new RegExp(HL_RE.source,'g');
@@ -18,10 +36,6 @@ function withNewBody(e, newBody){ // splice a rewritten body back into the raw .
   const i = e.md.indexOf(e.body);
   return i===-1 ? null : syncHighlightTagsFm(e.md.slice(0,i) + newBody + e.md.slice(i+e.body.length), newBody);
 }
-function replaceNthHl(body, n, fn){ // fn(text, tags[]) -> replacement markdown for the nth highlight
-  let i=-1;
-  return body.replace(new RegExp(HL_RE.source,'g'), (m,txt,tags)=>{ i++; return i===n ? fn(txt, hlTagsParse(tags)) : m; });
-}
 /* Strip highlight markers and ** from a body, keeping a plain→raw index map,
    so a DOM selection (rendered text) can be located in the raw source. */
 function hlPlainMap(body){
@@ -29,11 +43,12 @@ function hlPlainMap(body){
   while(i<body.length){
     if(body.startsWith('==',i)){ i+=2; if(body[i]==='{'){ const j=body.indexOf('}',i); i = j===-1? i : j+1; } continue; }
     if(body.startsWith('**',i)){ i+=2; continue; }
+    if(body.startsWith('[^',i)){ const f = body.slice(i).match(/^\[\^[\w-]+\]/); if(f){ i+=f[0].length; continue; } }   // a comment marker draws no text
     chars.push(body[i]); map.push(i); i++;
   }
   return { plain: chars.join(''), map };
 }
-function findHlSpanInBody(body, selText, occurrence){
+function findHlSpanInBody(body, selText, occurrence, loose){   // loose: may overlap a highlight (to locate, not to wrap)
   const norm = String(selText||'').replace(/\s+/g,' ').trim();
   if(norm.length < 3) return { err:'too-short' };
   const pat = new RegExp(norm.replace(/[.*+?^${}()|[\]\\]/g,'\\$&').replace(/ /g,'\\s+'), 'g');
@@ -44,7 +59,7 @@ function findHlSpanInBody(body, selText, occurrence){
   while((m=pat.exec(plain))){
     const rs = map[m.index], re2 = map[m.index+m[0].length-1]+1;
     if(body.slice(rs,re2).includes('\n')) continue;                     // one paragraph only
-    if(taken.some(([a,b])=> rs<b && re2>a)) continue;                   // overlaps an existing highlight
+    if(!loose && taken.some(([a,b])=> rs<b && re2>a)) continue;                   // overlaps an existing highlight
     cands.push({start:rs, end:re2});
   }
   if(!cands.length) return { err:'not-found' };
@@ -68,18 +83,30 @@ async function saveHighlightChange(e, newBody, msg, what){
   }
   return ok;
 }
-async function addHighlight(e, selText, occurrence, tags){
+async function addHighlight(e, selText, occurrence, tags, note){
   const r = findHlSpanInBody(e.body, selText, occurrence);
   if(r.err){ toast(r.err==='too-short' ? 'Select a bit more text (3+ characters)' : 'Couldn’t match that selection in the source — select within one paragraph, outside existing highlights'); return; }
-  const frag = e.body.slice(r.span.start, r.span.end);
-  const nb = e.body.slice(0, r.span.start) + '==' + frag + '==' + (tags.length ? '{'+tags.join(', ')+'}' : '') + e.body.slice(r.span.end);
-  await saveHighlightChange(e, nb, 'Highlighted ✓', frag);
+  const frag = e.body.slice(r.span.start, r.span.end), id = note ? newNoteId(e.body) : '';
+  const nb = e.body.slice(0, r.span.start) + '==' + frag + '==' + (tags.length ? '{'+tags.join(', ')+'}' : '') + (id ? '[^'+id+']' : '') + e.body.slice(r.span.end);
+  await saveHighlightChange(e, id ? setNoteDef(nb, id, note) : nb, id ? 'Comment saved ✓' : 'Highlighted ✓', frag);
 }
-async function editHighlight(e, hln, tags){
-  await saveHighlightChange(e, replaceNthHl(e.body, hln, txt=>'=='+txt+'=='+(tags.length?'{'+tags.join(', ')+'}':'')), 'Tags updated ✓', (entityHighlights(e)[hln]||{}).text);
+/* tags and the comment of the nth highlight; an emptied comment goes, footnote and all */
+function rewriteNthHl(e, hln, fn){
+  let i = -1, id = '';
+  const nb = e.body.replace(new RegExp(HLC_RE.source,'g'), (m,txt,tags,cm)=>{ if(++i!==hln) return m; id = cm || ''; return fn(txt, cm || ''); });
+  return { nb, id };
+}
+async function editHighlight(e, hln, tags, note){
+  const old = entityHighlights(e)[hln] || {};
+  if(note === undefined) note = old.note;
+  const fresh = note && !old.cm ? newNoteId(e.body) : '';
+  const { nb, id } = rewriteNthHl(e, hln, (txt, cm)=> '=='+txt+'=='+(tags.length?'{'+tags.join(', ')+'}':'')+(note ? '[^'+(cm||fresh)+']' : ''));
+  const key = id || fresh;
+  await saveHighlightChange(e, key ? setNoteDef(nb, key, note) : nb, note !== old.note ? (note ? 'Comment saved ✓' : 'Comment removed ✓') : 'Tags updated ✓', old.text);
 }
 async function removeHighlight(e, hln){
-  await saveHighlightChange(e, replaceNthHl(e.body, hln, txt=>txt), 'Highlight removed ✓', (entityHighlights(e)[hln]||{}).text);
+  const { nb, id } = rewriteNthHl(e, hln, txt=> txt);
+  await saveHighlightChange(e, id ? setNoteDef(nb, id, '') : nb, 'Highlight removed ✓', (entityHighlights(e)[hln]||{}).text);
 }
 function hlAllTagNames(){
   const s=new Set();
@@ -313,7 +340,7 @@ async function createCompetitor(){
       const fh=await getFileHandleFor(file);
       const e=parseEntity(md, file); e.id=idFor(file); e.handle=fh; e.ws='project';
       ENTITIES[e.id]=e; reindex();
-    }catch(err){ toast(tr('Save failed: ')+err.message); return; }
+    }catch(err){ toastSaveFailed(err); return; }
   } else {
     if(!addDraftEntity(md, file)){ toast(tr('Could not create the draft')); return; }
   }
@@ -454,7 +481,7 @@ async function createHypothesis(){
       const fh=await getFileHandleFor(file);
       const e=parseEntity(md, file); e.id=idFor(file); e.handle=fh; e.ws='project';
       ENTITIES[e.id]=e; reindex();
-    }catch(err){ toast(tr('Save failed: ')+err.message); return; }
+    }catch(err){ toastSaveFailed(err); return; }
   } else {
     if(!addDraftEntity(md, file)){ toast(tr('Could not create the draft')); return; }
   }

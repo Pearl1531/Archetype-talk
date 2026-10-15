@@ -362,6 +362,9 @@ function card(e){
   }
   el.innerHTML = inner;
   el.onclick = ()=> { location.hash = '#'+e.id; };
+  // a card is a link that holds buttons (votes, ⋯), so it stays a div: reachable by Tab, opened by Enter/Space
+  el.tabIndex = 0; el.setAttribute('role', 'link');
+  el.onkeydown = ev=>{ if(ev.target === el && (ev.key === 'Enter' || ev.key === ' ')){ ev.preventDefault(); el.click(); } };
   wireVotes(el);
   el.querySelectorAll('[data-promote]').forEach(b=> b.onclick = ev=>{ ev.stopPropagation(); promoteHypothesis(b.dataset.promote); });
   el.querySelectorAll('[data-exclude]').forEach(b=> b.onclick = ev=>{ ev.stopPropagation(); toggleExcluded(ENTITIES[b.dataset.exclude], true); });
@@ -424,7 +427,7 @@ function votePillHtml(e){
   const n = voteCount(e), mine = iVoted(e);
   const names = voteList(e);
   const tip = n ? tr('Voted by:')+' '+names.join(', ') : tr('No votes yet — be the first');
-  return `<button type="button" class="vote-pill${mine?' voted':''}" data-vote="${e.id}" aria-pressed="${mine?'true':'false'}" title="${esc(tip)}">
+  return `<button type="button" class="vote-pill${mine?' voted':''}" data-vote="${e.id}" aria-pressed="${mine?'true':'false'}" title="${esc(tip)}" aria-label="${esc(tip)}">
     <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 19V5"/><path d="M5 12l7-7 7 7"/></svg>
     <span class="vote-n">${n}</span></button>`;
 }

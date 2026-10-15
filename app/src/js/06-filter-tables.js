@@ -311,13 +311,13 @@ function renderHighlights(list){
   grid.querySelectorAll('button[data-ren]').forEach(b=> b.onclick=ev=>{
     ev.stopPropagation();
     const t=b.dataset.ren;
-    const nn=(prompt('Rename tag “'+t+'” to (typing an existing tag merges them):', t)||'').replace(/[{},]/g,'').trim();
+    const nn=(prompt(tr('Rename tag “{t}” to (typing an existing tag merges them):').replace('{t}', t), t)||'').replace(/[{},]/g,'').trim();
     if(nn && nn!==t) renameTagEverywhere(t, nn);
   });
   grid.querySelectorAll('button[data-del]').forEach(b=> b.onclick=ev=>{
     ev.stopPropagation();
     const t=b.dataset.del;
-    if(confirm('Remove tag “'+t+'” from all highlights?\nThe highlighted fragments stay — only the tag goes.')) renameTagEverywhere(t, '');
+    if(confirm(tr('Remove tag “{t}” from all highlights?').replace('{t}', t)+'\n'+tr('The highlighted fragments stay — only the tag goes.'))) renameTagEverywhere(t, '');
   });
 }
 /* Competitors list — review-site-style profile rows (identity + what-it-is left,

@@ -134,7 +134,7 @@ async function clearLocalData(){
    meets it. Persists only when a folder is connected (prefs live on disk);
    otherwise it holds for this session, which is the honest fallback. */
 async function allowExternalImages(host){
-  if(!confirm(`Load images from ${host||'the external host'}?\n\nFrom now on this app will request them from that host every time it renders a file pointing there — the host learns your IP address and when you opened the file. You can switch this back off in Settings ▸ Privacy & network.`)) return;
+  if(!confirm(tr('Load images from {h}?').replace('{h}', host||tr('the external host'))+'\n\n'+tr('From now on this app will request them from that host every time it renders a file pointing there — the host learns your IP address and when you opened the file. You can switch this back off in Settings ▸ Privacy & network.'))) return;
   PREFS.allow_external_images = true;
   let saved = false;
   try{ if(DIRHANDLE){ await savePrefs(); saved = true; } }catch(e){}
@@ -281,17 +281,17 @@ function renderSettings(){
       if(ev.key!=='Enter') return;
       const v = inp.value.trim(); if(!v) return;
       try{ await setEnvKey(inp.dataset.envkey, v); inp.value=''; renderSettings(); toast(tr('Key saved to .env (local, gitignored) ✓')); }
-      catch(e){ toast(tr('Save failed: ')+e.message); }
+      catch(e){ toastSaveFailed(e); }
     });
     inp.addEventListener('blur', ()=>{ /* never keep typed secrets around */ if(document.activeElement!==inp) return; });
   });
   grid.querySelectorAll('button[data-envdel]').forEach(b=> b.onclick = async ()=>{
     try{ await setEnvKey(b.dataset.envdel, ''); renderSettings(); toast(tr('Key removed from .env ✓')); }
-    catch(e){ toast(tr('Save failed: ')+e.message); }
+    catch(e){ toastSaveFailed(e); }
   });
   const bindPref = (id, key, ev='change') => { const el=grid.querySelector('#'+id); el.addEventListener(ev, async ()=>{
     PREFS[key] = el.type==='checkbox' ? el.checked : el.value;
-    try{ await savePrefs(); toast(tr('Preference saved ✓')); }catch(e){ toast(tr('Save failed: ')+e.message); }
+    try{ await savePrefs(); toast(tr('Preference saved ✓')); }catch(e){ toastSaveFailed(e); }
   }); };
   bindPref('prefName','name');
   const popPrev = grid.querySelector('#popPreview');
@@ -319,24 +319,24 @@ function renderSettings(){
   popInp.addEventListener('change', async ()=>{
     PREFS.population = popInp.value.replace(/[^0-9]/g,'');
     store.set('at-population', PREFS.population);
-    try{ await savePrefs(); toast('Population saved (local only) ✓'); }catch(e){ toast('Save failed: '+e.message); }
+    try{ await savePrefs(); toast(tr('Population saved (local only) ✓')); }catch(e){ toastSaveFailed(e); }
   });
   bindPref('swJudge','judge_enabled'); bindPref('swTips','demo_tips'); bindPref('swFavicon','allow_external_favicon'); bindPref('swExtImg','allow_external_images');
   // not a boolean on disk: the agent reads 'EU' | 'none', so the switch maps to those
   { const rs = grid.querySelector('#swResidency');
     if(rs) rs.addEventListener('change', async ()=>{
       PREFS.data_residency = rs.checked ? 'EU' : 'none';
-      try{ await savePrefs(); toast(rs.checked ? 'EU-only mode on — skills will ask before calling a non-EU service ✓' : 'Preference saved ✓'); }
-      catch(e){ toast('Save failed: '+e.message); }
+      try{ await savePrefs(); toast(tr(rs.checked ? 'EU-only mode on — skills will ask before calling a non-EU service ✓' : 'Preference saved ✓')); }
+      catch(e){ toastSaveFailed(e); }
     }); }
   grid.querySelectorAll('#segTier button').forEach(b=> b.onclick = async ()=>{
     PREFS.context_tier_default = b.dataset.v;
     grid.querySelectorAll('#segTier button').forEach(x=>x.classList.toggle('active', x===b));
-    try{ await savePrefs(); toast(tr('Preference saved ✓')); }catch(e){ toast(tr('Save failed: ')+e.message); }
+    try{ await savePrefs(); toast(tr('Preference saved ✓')); }catch(e){ toastSaveFailed(e); }
   });
   grid.querySelector('#saveJudge').onclick = async ()=>{
     PREFS.judge_override = grid.querySelector('#prefJudge').value.trim();
-    try{ await savePrefs(); toast(tr('Judge instruction saved ✓')); }catch(e){ toast(tr('Save failed: ')+e.message); }
+    try{ await savePrefs(); toast(tr('Judge instruction saved ✓')); }catch(e){ toastSaveFailed(e); }
   };
 }
 async function settingsEnter(){

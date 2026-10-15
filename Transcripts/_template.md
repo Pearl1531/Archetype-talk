@@ -5,6 +5,7 @@ interview_id: <INT-xx>
 participant: '<pseudonymized profile — code, age, role, city>'
 method: '<In-depth interview / usability test, remote / in person>'
 date: DD.MM.YYYY
+# recording_url: 'https://…'   # optional — the recording; each [12:04] in the text opens it at that moment
 # --- data lifecycle — OPTIONAL, and nothing breaks without it ---------------
 # Absence means "not recorded", never "not allowed": every skill keeps working,
 # the lint says INFO/WARN, and no analysis is blocked. Fill these in when you
@@ -64,13 +65,29 @@ mentions_competitors: [] # EXHAUSTIVE at extraction time: [] means "checked — 
 
 # <INT-xx — Participant>
 
+## Full transcript
+
+<!-- The whole conversation, every word as said, one paragraph per turn with
+     its start time: [12:04] **M:** … / [12:05] **Emma:** … — or [12:04] text
+     when speakers are unknown; a recording's chapters as ### Title (12:04).
+     The app's "Add the full transcript" fills this from a pasted text or a
+     .txt/.srt/.vtt file (a YouTube transcript copy works). Whether it is
+     anonymised is the anonymization: field above. Excerpts of a long public
+     source may sit above this section; the app switches between the two. -->
+
 <!-- Verbatim transcript. Speaker labels stay ("M:" / "P:"); anchor comments
      (<!-- anchor: topic -->) mark moments Signals link back to.
      Team highlights: ==fragment=={tag1, tag2} wraps an important moment
      (added by selecting text in the app — the wrapped verbatim text is never
      altered; quotes are data). Distinct tags are mirrored into a
      `highlight_tags:` frontmatter line by the app. Human-curated: the AI
-     treats them as prioritized evidence and never edits them itself. -->
+     treats them as prioritized evidence and never edits them itself.
+     Keep the dialogue clean — only what was said. Context that is nobody's
+     words (who asked, a paraphrase, "after a long pause") goes in a footnote
+     after the words it is about: …the quote."[^1] and, at the end of the
+     file, [^1]: the note. The app shows it beside the text on hover. A team
+     comment is the same footnote on a highlight, ==fragment==[^c1] — made in
+     the app, human-curated like the highlight itself. -->
 
 ## Observer notes
 

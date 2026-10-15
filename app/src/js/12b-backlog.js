@@ -406,7 +406,7 @@ async function blSave(raw, msg){
       if(!(await loadFromPicker())) return bail();
     }
     try{ await writeRepoFile(BACKLOG_FILE, raw); }
-    catch(err){ return bail('Save failed: '+err.message); }
+    catch(err){ toastSaveFailed(err); return bail(); }
     BACKLOG_RAW = raw;
   }
   BL_EDIT = null; BL_MODE = 'edit';
