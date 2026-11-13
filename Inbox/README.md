@@ -2,8 +2,12 @@
 
 Put **new, unprocessed** research material in this folder:
 
-- interview / usability-test transcripts (`.md`)
+- interview / usability-test transcripts (`.md`, `.txt`, `.srt`, `.vtt`)
+- reports and documents (`.pdf`, `.docx`, `.doc`, `.rtf`, `.odt`)
+- scans and photos of notes or printouts (`.png`, `.jpg`, `.heic`, `.tif`, scanned PDFs)
 - session notes, raw quotes, survey exports pasted into a markdown file
+
+PDF, Word and image files are first turned into text on your own machine by `scripts/to_text.py` (nothing is uploaded; scans are read with the OCR built into macOS). The text keeps a `[p. N]` marker per page, so every figure can be traced back to the original. If a page can't be read, it is marked as unread rather than guessed.
 
 ## What happens next
 

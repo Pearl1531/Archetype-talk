@@ -61,9 +61,11 @@ if ls "$ROOT"/Competitors/*.md >/dev/null 2>&1; then
 fi
 
 if [ -d "$INBOX" ]; then
-  N=$(find "$INBOX" -type f -name '*.md' ! -name 'README.md' ! -name '_*' 2>/dev/null | wc -l | tr -d ' ')
+  N=$(find "$INBOX" -type f \( -iname '*.md' -o -iname '*.txt' -o -iname '*.srt' -o -iname '*.vtt' -o -iname '*.pdf' -o -iname '*.docx' -o -iname '*.doc' -o -iname '*.rtf' -o -iname '*.odt' -o -iname '*.png' -o -iname '*.jpg' -o -iname '*.jpeg' -o -iname '*.heic' -o -iname '*.tif' -o -iname '*.tiff' \) ! -name 'README.md' ! -name '_*' 2>/dev/null | wc -l | tr -d ' ')
   if [ "${N:-0}" -gt 0 ]; then
     echo "INBOX_NEW: $N unprocessed file(s) in Inbox/."
+    BIN=$(find "$INBOX" -type f \( -iname '*.pdf' -o -iname '*.docx' -o -iname '*.doc' -o -iname '*.rtf' -o -iname '*.odt' -o -iname '*.png' -o -iname '*.jpg' -o -iname '*.jpeg' -o -iname '*.heic' -o -iname '*.tif' -o -iname '*.tiff' \) 2>/dev/null | wc -l | tr -d ' ')
+    [ "${BIN:-0}" -gt 0 ] && echo "-> $BIN of them are PDF/Word/image files: convert each with python3 scripts/to_text.py <file> before reading (local, keeps [p. N] page markers, OCRs scans)."
     echo "-> Do NOT analyze automatically. First ASK the user whether to process them via /extract-findings."
     if [ "$N" -gt 5 ]; then
       echo "-> WARN the user: $N files is a lot — analysis may take a while and use noticeable tokens. Offer to do a subset first."

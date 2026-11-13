@@ -67,6 +67,16 @@ If they say yes — or the transcript already carries these fields and you need 
 
 A transcript you file (from `Inbox/`, a pasted text, a recording the user asked you to transcribe) keeps the **whole** conversation under `## Full transcript` — never only the parts that look useful (rule 8). One paragraph per turn, its start time first: `[12:04] **Emma:** text`, or `[12:04] text` when the speakers are unknown; a source's chapters as `### Title (12:04)`. Keep every word as said — no correcting, no smoothing, no translating in place. Set `anonymization:` to what actually happened (`none` when nothing was scrubbed); the app shows it in the transcript's header and lets the researcher change it. Excerpts of a long public source may sit above the full text — they are a reading aid, the full text is the source.
 
+### 0d. Convert PDF, Word and scans to text first
+
+A source that is not plain text (`.pdf`, `.docx`, `.doc`, `.rtf`, `.odt`, or a scan/photo such as `.png`, `.jpg`, `.heic`, `.tif`) is converted locally before anything else: `python3 scripts/to_text.py <file>` writes `<file>.md` next to it. Read the `.md`, not the original.
+
+- **Page markers are citations.** Every page starts with `[p. N]`. A figure or quote taken from a converted document carries its page (`Sources: Report 2025, p. 14`) so the researcher can check it in the original — rule 7.
+- **OCR is a reading, not the document.** The header line says how each page was extracted (`text-layer`, `ocr-vision-accurate`, `ocr-vision-fast`, `ocr-tesseract`). Numbers from OCR'd pages are easy to misread (`31%` ↔ `81%`, `1,8` ↔ `1.8`) or silently dropped: before filing an OCR'd figure as Evidence, say it came from OCR and ask the researcher to confirm it against the original page. Set `primary_checked: false` until they do. A page that opens with `*(OCR check: …)*` was read two ways that disagreed on its numbers — treat every figure on it as unconfirmed and name the page to the researcher.
+- **Unread pages stay unread.** Exit code 2 and `UNREAD pages: […]` mean a page had no text layer and no local OCR. Tell the user which pages, and never fill them in from memory or from the surrounding pages.
+- **Keep the original.** When the file is processed, move both the original and its `.md` out of `Inbox/` (the `.md` to `Transcripts/` for an interview, the original alongside it or wherever the user keeps source documents). The Evidence file's `Sources:` names the original file, not the `.md`.
+- **Tables flatten.** A table in a PDF comes out as lines of text; check the column a number belongs to before you record it.
+
 ### 1. Read the transcript(s)
 Read every transcript for the project. Note participant code, date, and profile. Patterns only emerge across multiple sessions — never process just one when several exist.
 
