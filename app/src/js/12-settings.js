@@ -13,6 +13,7 @@ const KNOWN_KEYS = [
 const PREF_DEFAULTS = { name:'', context_tier_default:'auto', judge_enabled:true, demo_tips:true, population:'', judge_override:'', allow_external_favicon:false, allow_external_images:false, data_residency:'none' };
 const PREF_BOOLS = ['judge_enabled','demo_tips','allow_external_favicon','allow_external_images'];
 
+const PC_FILE = 'Product Context.md';
 async function readRepoFile(path){ // path like '.env' or '.claude/preferences.local.md'
   if(!DIRHANDLE) return null;
   try{
@@ -75,6 +76,8 @@ ${p.judge_override}
 let PREFS = {...PREF_DEFAULTS};
 let ENV_LINES = [];   // raw .env lines — values never rendered to the DOM
 async function loadSettingsData(){
+  // fresh from disk, so the editor below shows what an agent may have written since load
+  if(DIRHANDLE && WS==='project'){ const pc = await readRepoFile(PC_FILE); if(pc!==null) PRODUCT_RAW = pc; }
   PREFS = parsePrefs(await readRepoFile('.claude/preferences.local.md'));
   if(typeof topnavSync === 'function') topnavSync();   // `name:` is what the avatar shows
   const env = await readRepoFile('.env');
@@ -166,6 +169,18 @@ function renderSettings(){
   grid.className = 'set-wrap';
   grid.innerHTML = `
     ${can?'':`<div class="set-banner">${tr('Settings are saved into files in your project folder, so the app needs you to point at it once.')} ${window.showDirectoryPicker?`<div style="margin-top:10px"><button class="btn btn-primary btn-sm" id="setPick">${tr('Choose project folder…')}</button></div>`:`<b>${tr('Saving requires Chrome or Edge')}</b> — ${tr('this browser cannot write local files.')}`}</div>`}
+    <div class="set-card" id="pcCard">
+      <h3>${tr('Product context')}</h3>
+      <div class="desc">${tr('The brief for this project: what the product is, its features, competitors and the Compare categories. Every AI assistant reads <code>Product Context.md</code> first, and <code>project_name:</code> at the top is the name the app shows. Write what you <b>know</b> about your own product here; what you believe about users is a hypothesis, not context.')}</div>
+      ${WS==='demo'
+        ? `<div class="set-note">${tr('This is the Demo workspace — its product context is a frozen example. Open your project to edit yours.')}</div>`
+        : `<textarea class="set-input pc-editor" id="pcText" spellcheck="false" aria-label="${esc(tr('Product context'))}" ${dis}>${esc(PRODUCT_RAW || PJ_PRODUCT_STUB)}</textarea>
+           <div class="pc-actions">
+             <button class="btn btn-primary btn-sm" id="savePc" ${dis}>${tr(PRODUCT_RAW ? 'Save to Product Context.md' : 'Create Product Context.md')}</button>
+             <button class="btn btn-ghost btn-sm" id="reloadPc" ${dis}>${tr('Reload from disk')}</button>
+             <span class="set-note" id="pcState"></span>
+           </div>`}
+    </div>
     <div class="set-card">
       <h3>${tr('You')}</h3>
       <div class="desc">${tr('Stored in <code>.claude/preferences.local.md</code> — local and gitignored. Whichever AI assistant you work with reads this file to personalize research sessions.')}</div>
@@ -276,6 +291,30 @@ function renderSettings(){
   // with no folder connected — wire it BEFORE the disk-only early return below.
   { const cl = grid.querySelector('#btnClearLocal'); if(cl && !cl.disabled) cl.onclick = clearLocalData; }
   if(!can) return;
+  const pcText = grid.querySelector('#pcText');
+  if(pcText){
+    const pcState = grid.querySelector('#pcState');
+    const dirty = ()=> pcText.value !== (PRODUCT_RAW || PJ_PRODUCT_STUB);
+    pcText.addEventListener('input', ()=>{ pcState.textContent = dirty() ? tr('Unsaved changes') : ''; });
+    grid.querySelector('#savePc').onclick = async ()=>{
+      const text = pcText.value.replace(/\r/g,'');
+      // the frontmatter carries project_name and compare_categories — losing it renames the project
+      if(!/^\s*---\n[\s\S]*?\n---/.test(text) &&
+         !confirm(tr('There is no frontmatter block (--- … ---) at the top, so the project name and Compare categories would be lost. Save anyway?'))) return;
+      try{
+        await writeRepoFile(PC_FILE, text);
+        PRODUCT_RAW = text;
+        renderWsMenu(); renderTabs(); renderSettings();
+        toast(tr('Product context saved ✓'));
+      }catch(e){ toastSaveFailed(e); }
+    };
+    grid.querySelector('#reloadPc').onclick = async ()=>{
+      if(dirty() && !confirm(tr('Discard your unsaved changes and load the file from disk?'))) return;
+      const disk = await readRepoFile(PC_FILE);
+      PRODUCT_RAW = disk; renderWsMenu(); renderSettings();
+      toast(tr(disk===null ? 'No Product Context.md in this folder yet' : 'Loaded from disk ✓'));
+    };
+  }
   grid.querySelectorAll('input[data-envkey]').forEach(inp=>{
     inp.addEventListener('keydown', async ev=>{
       if(ev.key!=='Enter') return;

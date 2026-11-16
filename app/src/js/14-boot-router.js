@@ -209,9 +209,11 @@ async function connectDir(dir, opts){
     return false;
   }
   const ok = Object.keys(fresh).length;
-  // A folder with no entities is normally the wrong folder — except right after
-  // we created one, where empty is exactly what it should be.
-  if(!ok && !opts.allowEmpty){ toast(tr('No entity .md files found in that folder')); return false; }
+  // A folder with no entities is normally the wrong folder — except a project root
+  // that is simply empty so far: one we just created, or one whose Product Context.md
+  // names a project (set up by hand or by an agent, nothing extracted yet).
+  const namedProject = !!opts.created || /^project_name:[ \t]*['"]?[^'"\s#]/m.test(PRODUCT_RAW || '');
+  if(!ok && !opts.allowEmpty && !namedProject){ toast(tr('No entity .md files found in that folder')); return false; }
   ENTITIES = { ...EMBEDDED_DEMO, ...wsTagFresh(fresh) }; reindex();
   applyDemoOverlay();
   await loadLocalPictures();
@@ -221,7 +223,7 @@ async function connectDir(dir, opts){
      of this repo, say) leaves the project workspace empty, and switching to it
      would show a blank app while hiding everything just read. */
   const nProject = Object.values(fresh).filter(e=> (e.ws||'project')==='project').length;
-  setWs(nProject || opts.created ? 'project' : 'demo');
+  setWs(nProject || namedProject ? 'project' : 'demo');
   await rememberFolder(dir);   // so the next visit starts here instead of at the picker
   store.set('at-last', 'project');
   // …and so the Projects screen can list it next time, with the size it had
@@ -232,7 +234,7 @@ async function connectDir(dir, opts){
      older record for it is dropped. A folder we just scaffolded is empty on
      purpose and stays listed. */
   const nDemoFiles = Object.values(fresh).filter(e=> (e.ws||'project')==='demo').length;
-  if(nProject || opts.created){
+  if(nProject || namedProject){
     await projectRemember(dir, { entities: nProject, created: !!opts.created, label: projectNameOverride(),
       personas: Object.values(fresh).filter(e=>e.type==='Persona').length });
   } else {

@@ -1279,6 +1279,21 @@ const PL = {
   'Key removed from .env ✓': 'Klucz usunięty z .env ✓',
   'Preference saved ✓': 'Ustawienie zapisane ✓',
   'Judge instruction saved ✓': 'Instrukcja dla sędziego zapisana ✓',
+  'Product context': 'Kontekst produktu',
+  'The brief for this project: what the product is, its features, competitors and the Compare categories. Every AI assistant reads <code>Product Context.md</code> first, and <code>project_name:</code> at the top is the name the app shows. Write what you <b>know</b> about your own product here; what you believe about users is a hypothesis, not context.':
+    'Brief tego projektu: czym jest produkt, jego funkcje, konkurenci i kategorie porównania. Każdy asystent AI czyta <code>Product Context.md</code> jako pierwszy, a <code>project_name:</code> na górze to nazwa, którą pokazuje aplikacja. Wpisuj tu to, co <b>wiesz</b> o własnym produkcie; to, co sądzisz o użytkownikach, jest hipotezą, a nie kontekstem.',
+  'This is the Demo workspace — its product context is a frozen example. Open your project to edit yours.':
+    'To przestrzeń demo — jej kontekst produktu to zamrożony przykład. Otwórz swój projekt, żeby edytować własny.',
+  'Save to Product Context.md': 'Zapisz do Product Context.md',
+  'Create Product Context.md': 'Utwórz Product Context.md',
+  'Reload from disk': 'Wczytaj z dysku',
+  'Unsaved changes': 'Niezapisane zmiany',
+  'There is no frontmatter block (--- … ---) at the top, so the project name and Compare categories would be lost. Save anyway?':
+    'Na górze nie ma bloku frontmatter (--- … ---), więc nazwa projektu i kategorie porównania przepadną. Zapisać mimo to?',
+  'Product context saved ✓': 'Kontekst produktu zapisany ✓',
+  'Discard your unsaved changes and load the file from disk?': 'Odrzucić niezapisane zmiany i wczytać plik z dysku?',
+  'No Product Context.md in this folder yet': 'W tym folderze nie ma jeszcze Product Context.md',
+  'Loaded from disk ✓': 'Wczytano z dysku ✓',
 
   /* ---- gallery: freshness, sample stats, tables, competitor rows ---- */
   'exclude from analysis': 'wyłącz z analizy',

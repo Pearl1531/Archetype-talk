@@ -304,6 +304,9 @@
   .set-input[data-envkey] { width: 210px; }
   textarea.set-input { width: 100%; max-width: none; min-height: 110px; resize: vertical;
     font: 13px/1.55 ui-monospace, Menlo, monospace; border-radius: var(--r-md); }
+  textarea.pc-editor { min-height: 420px; margin-top: var(--s-3); tab-size: 2; }
+  .pc-actions { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; margin-top: 8px; }
+  .pc-actions .set-note { margin: 0; }
   .switch { position: relative; width: 40px; height: 22px; flex: none; cursor: pointer; }
   .switch input { position: absolute; opacity: 0; inset: 0; margin: 0; cursor: pointer; }
   .switch i { position: absolute; inset: 0; background: var(--line); border-radius: var(--r-pill); transition: background .15s; }
