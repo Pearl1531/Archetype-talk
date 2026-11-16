@@ -4,6 +4,8 @@
 
 An agent toolkit — Claude Code, Codex, Cursor, Copilot, Gemini CLI — for turning raw customer research into **Intention-Based Personas** you can browse and talk to — organised as a linked knowledge graph where **every claim traces to a real source**, and where a persona would rather say *"I don't know"* than invent an answer.
 
+![Archetype Talk — project overview (Spotify demo)](docs/screenshots/01-overview.png)
+
 > ### What ships inside
 >
 > The repo arrives with **one illustrative dataset: the Spotify demo** — every file of it flagged `demo: true`, so your AI assistant treats it as an example and never as your research. `Product Context.md` and `Research backlog.md` are blank templates waiting for your project; the demo keeps its own frozen copies in [docs/demo-workspace/](docs/demo-workspace/).
@@ -16,6 +18,17 @@ An agent toolkit — Claude Code, Codex, Cursor, Copilot, Gemini CLI — for tur
 > **To start your own project**, point the app at a different folder: *Projects → New project* picks an empty one and scaffolds it. Or work in this folder and drop the demo when you're done with it (`/demo-data`).
 
 **Try it in 2 minutes:** open the project in your agent and run `/persona-talk Personas/Emma.md` (`$persona-talk` in Codex — [every agent](#works-with-claude-code-codex-cursor-copilot--gemini-cli)) — a ready demo persona, no setup needed (guided walkthrough in [DEMO.md](DEMO.md)).
+
+## See the app
+
+The bundled Spotify demo (`demo: true`, example data — not real research), as it looks in `app/index.html`:
+
+| | |
+|---|---|
+| ![Persona](docs/screenshots/02-persona-emma.png) **Persona** — Emma, her archetypes, how solid she is, frustrations traced to sources | ![Persona poster](docs/screenshots/03-persona-poster.png) **Persona poster** — jobs to be done, gains, pains, one page to hand over |
+| ![Research map — Flow](docs/screenshots/04-graph-flow.png) **Research map · Flow** — how research flows: transcripts → evidence → signals → personas → ideas | ![Research map — Columns](docs/screenshots/05-graph-columns.png) **Research map · Columns** — the same graph by entity type |
+| ![Research map — Free](docs/screenshots/06-graph-free.png) **Research map · Free** — force layout around the personas | ![Research backlog](docs/screenshots/07-research-backlog.png) **Research backlog** — open questions to take into the next round |
+| ![Overview](docs/screenshots/01-overview.png) **Overview** — project home: interviews, sources, freshness, open questions | ![Projects](docs/screenshots/08-projects.png) **Projects** — start, import, or open the demo |
 
 ## Not the "synthetic users" you've been warned about
 
@@ -131,16 +144,7 @@ The Spotify example set (4 personas, 8 archetypes, 17 evidence files, 24 signals
 
 ## Interface
 
-`app/index.html` is a self-contained browser for the graph — no server needed, ships with the demo set embedded. (It's a **generated file**: sources live in `app/src/` and `python3 scripts/build_app.py` assembles them — the shipped app stays one file.) Open it and walk the graph: sidebar filters by type, links between entities are clickable, and every view switches between **cards and a table** (Capacities-style). **Connect folder** swaps in your own files — in Chrome/Edge it also enables **in-place editing** of the .md files (File System Access API: you pick the folder, the browser asks for write permission, everything stays local). You pick that folder **once**: the app remembers which folder it was, so later visits open a *Reconnect* bar naming it instead of the file dialog. Opened straight from disk (`file://`), Chrome re-asks for permission once per browser session — one click, and your files are back. That click is the browser's rule, not ours: a page may not silently regain the disk it had yesterday. **Export .md** downloads the whole loaded graph as a zip of Markdown files — share it, or import it into tools like Capacities, without GitHub.
-
-Screenshots below show the bundled Spotify demo (`demo: true`, example data — not real research).
-
-| | |
-|---|---|
-| ![Overview](docs/screenshots/01-overview.png) **Overview** — project home: interviews, sources, freshness, open questions | ![Persona](docs/screenshots/02-persona-emma.png) **Persona** — Emma, her archetypes, how solid she is, frustrations traced to sources |
-| ![Persona poster](docs/screenshots/03-persona-poster.png) **Persona poster** — jobs to be done, gains, pains, one page to hand over | ![Research map — Flow](docs/screenshots/04-graph-flow.png) **Research map · Flow** — how research flows: transcripts → evidence → signals → personas → ideas |
-| ![Research map — Columns](docs/screenshots/05-graph-columns.png) **Research map · Columns** — the same graph by entity type | ![Research map — Free](docs/screenshots/06-graph-free.png) **Research map · Free** — force layout around the personas |
-| ![Research backlog](docs/screenshots/07-research-backlog.png) **Research backlog** — open questions to take into the next round | ![Projects](docs/screenshots/08-projects.png) **Projects** — start, import, or open the demo |
+`app/index.html` is a self-contained browser for the graph — no server needed, ships with the demo set embedded. (It's a **generated file**: sources live in `app/src/` and `python3 scripts/build_app.py` assembles them — the shipped app stays one file.) Open it and walk the graph: sidebar filters by type, links between entities are clickable, and every view switches between **cards and a table** (Capacities-style). **Connect folder** swaps in your own files — in Chrome/Edge it also enables **in-place editing** of the .md files (File System Access API: you pick the folder, the browser asks for write permission, everything stays local). You pick that folder **once**: the app remembers which folder it was, so later visits open a *Reconnect* bar naming it instead of the file dialog. Opened straight from disk (`file://`), Chrome re-asks for permission once per browser session — one click, and your files are back. That click is the browser's rule, not ours: a page may not silently regain the disk it had yesterday. **Export .md** downloads the whole loaded graph as a zip of Markdown files — share it, or import it into tools like Capacities, without GitHub. Screenshots: [see the app](#see-the-app).
 
 ## Privacy, data flow & GDPR
 
