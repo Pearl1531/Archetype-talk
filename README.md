@@ -133,6 +133,15 @@ The Spotify example set (4 personas, 8 archetypes, 17 evidence files, 24 signals
 
 `app/index.html` is a self-contained browser for the graph — no server needed, ships with the demo set embedded. (It's a **generated file**: sources live in `app/src/` and `python3 scripts/build_app.py` assembles them — the shipped app stays one file.) Open it and walk the graph: sidebar filters by type, links between entities are clickable, and every view switches between **cards and a table** (Capacities-style). **Connect folder** swaps in your own files — in Chrome/Edge it also enables **in-place editing** of the .md files (File System Access API: you pick the folder, the browser asks for write permission, everything stays local). You pick that folder **once**: the app remembers which folder it was, so later visits open a *Reconnect* bar naming it instead of the file dialog. Opened straight from disk (`file://`), Chrome re-asks for permission once per browser session — one click, and your files are back. That click is the browser's rule, not ours: a page may not silently regain the disk it had yesterday. **Export .md** downloads the whole loaded graph as a zip of Markdown files — share it, or import it into tools like Capacities, without GitHub.
 
+Screenshots below show the bundled Spotify demo (`demo: true`, example data — not real research).
+
+| | |
+|---|---|
+| ![Overview](docs/screenshots/01-overview.png) **Overview** — project home: interviews, sources, freshness, open questions | ![Persona](docs/screenshots/02-persona-emma.png) **Persona** — Emma, her archetypes, how solid she is, frustrations traced to sources |
+| ![Persona poster](docs/screenshots/03-persona-poster.png) **Persona poster** — jobs to be done, gains, pains, one page to hand over | ![Research map — Flow](docs/screenshots/04-graph-flow.png) **Research map · Flow** — how research flows: transcripts → evidence → signals → personas → ideas |
+| ![Research map — Columns](docs/screenshots/05-graph-columns.png) **Research map · Columns** — the same graph by entity type | ![Research map — Free](docs/screenshots/06-graph-free.png) **Research map · Free** — force layout around the personas |
+| ![Research backlog](docs/screenshots/07-research-backlog.png) **Research backlog** — open questions to take into the next round | ![Projects](docs/screenshots/08-projects.png) **Projects** — start, import, or open the demo |
+
 ## Privacy, data flow & GDPR
 
 Archetype Talk is **local-first by design**: your research is plain Markdown in your own folder, and the browser app (`app/index.html`) runs entirely on your machine. Opening it makes **no network requests** — no CDN, no web fonts, no telemetry, no account. Avatars and competitor icons are local files or inline images, never remote URLs, so rendering a page never phones anyone.
