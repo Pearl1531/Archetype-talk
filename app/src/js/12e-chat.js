@@ -343,7 +343,7 @@ function chatEnter(id){
   syncLinTheme(); chatBtn.classList.add('active'); document.body.classList.add('chat-open');
   galleryView.style.display = ''; detailView.classList.remove('active');
   hideGalleryChrome(); renderTabs();
-  pageTitle.textContent = tr('Conversations');   // hidden on this page (body.chat-open); kept for the tab title
+  pageTitle.textContent = tr('Talk to AI persona');   // hidden on this page (body.chat-open); kept for the tab title
   chatRender(); window.scrollTo(0, 0);
 }
 function chatExit(){

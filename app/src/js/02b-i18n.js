@@ -1331,6 +1331,7 @@ const PL = {
   'the AI provider': 'dostawcy AI',
   'Researcher context': 'Kontekst badacza',
   'Conversations': 'Rozmowy',
+  'Talk to AI persona': 'Rozmowa z AI personą',
   'New conversation': 'Nowa rozmowa',
   'No messages yet': 'Jeszcze bez wiadomości',
   'No conversations yet.': 'Jeszcze nie ma rozmów.',

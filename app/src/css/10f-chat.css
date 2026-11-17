@@ -7,12 +7,12 @@
   body.chat-open .page-head { display: none; }
   body.chat-open .content { max-width: none; padding-top: var(--s-4); padding-bottom: var(--s-4); }
   /* the rail steps aside on this page (desktop); the panel button in the top row brings it back */
-  .ch-rail { display: none; }
+  .ch-pill.ch-rail { display: none; }
   @media (min-width: 861px){
     body.chat-open:not(.chat-rail) .sidebar { display: none; }
     body.chat-open:not(.chat-rail) .topnav { left: 0; }
     body.chat-open:not(.chat-rail) .ch-list { left: 0; }
-    .ch-rail { display: inline-flex; padding: 0 12px; }
+    .ch-pill.ch-rail { display: inline-flex; padding: 0 12px; }
     body.chat-rail .ch-rail { background: var(--bg-elev-2); }
   }
   .ch-top-l { display: flex; gap: 8px; }
