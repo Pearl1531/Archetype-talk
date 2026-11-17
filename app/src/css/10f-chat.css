@@ -1,0 +1,126 @@
+  /* ── Conversations (12e-chat.js): one full-width column. A top row (History ·
+     the thread's title · New conversation), then either the start screen — the
+     headline, persona chips, the composer — or the thread with the composer
+     docked under it. The history slides over from the left (a native popover).
+     House colours: the researcher's lines in ink, a persona's on a white sheet
+     with her face, the ember only where the page titles use it. ── */
+  body.chat-open .page-head { display: none; }
+  body.chat-open .content { max-width: none; padding-top: var(--s-4); padding-bottom: var(--s-4); }
+  .ch-wrap { display: flex; flex-direction: column; height: calc(100dvh - var(--topbar-h) - 2 * var(--s-4)); min-height: 480px; }
+
+  /* the top row */
+  .ch-top { flex: none; display: flex; align-items: center; justify-content: space-between; gap: var(--s-3); min-height: 44px; }
+  .ch-pill { flex: none; display: inline-flex; align-items: center; gap: 8px; height: 40px; padding: 0 16px; border: 1px solid var(--line); border-radius: var(--r-pill, 999px);
+    background: var(--bg-elev); color: var(--text); font: inherit; font-size: 14px; font-weight: 500; cursor: pointer; transition: border-color .15s; }
+  .ch-pill:hover { border-color: var(--text); }
+  .ch-pill svg { flex: none; }
+  .ch-count { min-width: 20px; height: 20px; padding: 0 6px; border-radius: 10px; background: var(--bg-elev-2); font-size: 12px; line-height: 20px; color: var(--text-soft); font-variant-numeric: tabular-nums; }
+  .ch-title { flex: 1; min-width: 0; max-width: 760px; display: flex; align-items: center; justify-content: center; gap: 10px; }
+  .ch-title > div { min-width: 0; display: flex; flex-direction: column; gap: 1px; }
+  .ch-title b { font-size: 15px; font-weight: 700; color: var(--text); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .ch-title span { font-size: 12.5px; color: var(--text-dim); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+
+  /* the history: slides over from the rail's edge, closes on Esc or a click outside */
+  .ch-list { position: fixed; inset: var(--topbar-h) auto 0 var(--sidebar-w); width: min(360px, 100vw); height: auto; margin: 0; padding: var(--s-4) var(--s-3);
+    border: 0; border-right: 1px solid var(--line); background: var(--bg-elev); box-shadow: 12px 0 40px rgba(10,10,10,.08); overflow-y: auto; color: inherit; }
+  .ch-list:popover-open { display: flex; flex-direction: column; gap: 2px; }
+  .ch-list::backdrop { background: rgba(10,10,10,.12); }
+  @media (prefers-reduced-motion: no-preference){
+    .ch-list { transition: transform .2s ease, overlay .2s allow-discrete, display .2s allow-discrete; transform: translateX(-12px); }
+    .ch-list:popover-open { transform: none; }
+    @starting-style { .ch-list:popover-open { transform: translateX(-12px); } }
+  }
+  .ch-list-head { padding: 0 10px var(--s-3); font-size: 13px; font-weight: 600; color: var(--text-dim); }
+  .ch-none { padding: var(--s-3); font-size: 14px; color: var(--text-dim); }
+  .ch-item { position: relative; display: flex; align-items: center; border-radius: 10px; transition: background .15s; }
+  .ch-item:hover { background: rgba(10,10,10,.045); }
+  .ch-item.on { background: rgba(10,10,10,.075); }
+  .ch-item-link { flex: 1; min-width: 0; display: flex; align-items: center; gap: 10px; padding: 10px 4px 10px 10px; color: inherit; text-decoration: none; }
+  .ch-item-txt { flex: 1; min-width: 0; display: flex; flex-direction: column; gap: 2px; }
+  .ch-item-txt b { font-size: 14px; font-weight: 600; color: var(--text); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .ch-item-txt span { font-size: 13px; color: var(--text-dim); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .ch-item time { flex: none; align-self: flex-start; margin-top: 2px; font-size: 12px; color: var(--text-dim); font-variant-numeric: tabular-nums; }
+  .ch-item .row-menu { flex: none; margin-right: 2px; opacity: 0; transition: opacity .15s; }
+  .ch-item:hover .row-menu, .ch-item.on .row-menu, .ch-item .row-menu:focus-within { opacity: 1; }
+
+  .ch-faces { flex: none; display: inline-flex; }
+  .ch-faces .face + .face { margin-left: -10px; box-shadow: 0 0 0 2px var(--bg); }
+  .face.ch-face-xs { width: 26px; height: 26px; font-size: 10px; }
+  .face.ch-face-sm { width: 34px; height: 34px; font-size: 12px; }
+  .face.ch-face { width: 36px; height: 36px; font-size: 13px; }
+
+  /* the start screen */
+  .ch-start { flex: 1; min-height: 0; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: var(--s-4); padding-bottom: 8vh; text-align: center; }
+  .ch-start h2 { margin: 0; font-size: clamp(34px, 4vw, 56px); font-weight: 800; line-height: 1; letter-spacing: -0.045em; color: var(--text); }
+  .ch-start h2::after { content: '.'; color: var(--accent); }
+  .ch-start > p { margin: 0; max-width: 52ch; font-size: var(--fs-md, 16px); line-height: 1.5; color: var(--text-dim); }
+  .ch-chips { display: flex; flex-wrap: wrap; justify-content: center; gap: 8px; max-width: 760px; margin-top: var(--s-2); }
+  .ch-chip { display: inline-flex; align-items: center; gap: 8px; height: 40px; padding: 0 16px 0 7px; border: 1px solid var(--line); border-radius: 999px; background: var(--bg-elev);
+    color: var(--text); font: inherit; font-size: 14px; font-weight: 500; cursor: pointer; transition: border-color .15s, background .15s, color .15s; }
+  .ch-chip:hover { border-color: var(--text); }
+  .ch-chip.on { background: var(--text); border-color: var(--text); color: var(--bg-elev); }
+  .ch-chip.on .face { box-shadow: 0 0 0 2px var(--bg-elev); }
+  .ch-start .ch-dock { width: 100%; }
+
+  /* the thread: messages in a centred column, the composer docked under it */
+  .ch-thread { flex: 1; min-height: 0; display: flex; flex-direction: column; }
+  .ch-body { flex: 1; min-height: 0; overflow-y: auto; }
+  .ch-msgs { max-width: 760px; margin: 0 auto; padding: var(--s-6) 0 var(--s-4); display: flex; flex-direction: column; gap: 14px; }
+  .ch-dock { flex: none; width: 100%; max-width: 760px; margin: 0 auto; }
+
+  .ch-msg { display: flex; align-items: flex-start; gap: 10px; max-width: min(85%, 640px); }
+  .ch-msg.me { align-self: flex-end; }
+  .ch-msg.cont { margin-top: -8px; }
+  .ch-av { flex: none; width: 36px; }
+  .ch-col { min-width: 0; display: flex; flex-direction: column; gap: 4px; }
+  .ch-msg.me .ch-col { align-items: flex-end; }
+  .ch-who { font-size: 12px; font-weight: 600; color: var(--text-soft); padding-left: 4px; }
+  .ch-bubble { padding: 10px 16px; border-radius: 20px; font-size: 15px; line-height: 1.5; overflow-wrap: anywhere; }
+  .ch-msg.them .ch-bubble { background: var(--bg-elev); border: 1px solid var(--line); color: var(--text); border-top-left-radius: 6px; }
+  .ch-msg.them.cont .ch-bubble { border-top-left-radius: 20px; }
+  .ch-msg.me .ch-bubble { background: var(--text); color: var(--bg-elev); border-bottom-right-radius: 6px; }
+  .ch-meta { display: flex; align-items: center; gap: 8px; padding: 0 6px; font-size: 12px; color: var(--text-dim); font-variant-numeric: tabular-nums; }
+  .ch-srcs { display: inline-flex; gap: 4px; }
+  .ch-src { padding: 1px 6px; border-radius: 6px; background: var(--bg-elev-2); border: 1px solid var(--line); color: var(--text-soft); font-family: var(--font-mono);
+    font-size: 11.5px; text-decoration: none; }
+  .ch-src:hover { border-color: var(--text); color: var(--text); }
+  .ch-sys { align-self: center; max-width: 80%; text-align: center; font-size: 13px; color: var(--text-dim); padding: 4px 0; }
+  .ch-sys.err { color: var(--danger-text); }
+
+  .ch-typing { display: inline-flex; gap: 4px; padding: 14px 16px; }
+  .ch-typing i { width: 7px; height: 7px; border-radius: 50%; background: var(--text-dim); animation: chDot 1.2s infinite ease-in-out; }
+  .ch-typing i:nth-child(2) { animation-delay: .15s; } .ch-typing i:nth-child(3) { animation-delay: .3s; }
+  @keyframes chDot { 0%, 60%, 100% { opacity: .3; transform: translateY(0); } 30% { opacity: 1; transform: translateY(-3px); } }
+  @media (prefers-reduced-motion: reduce) { .ch-typing i { animation: none; opacity: .6; } }
+
+  /* the composer: a tall pill with a round send button, and the footnote under it */
+  .ch-compose { display: flex; align-items: flex-end; gap: 8px; padding: 8px 8px 8px 22px; border: 1px solid var(--edge);
+    border-radius: 30px; background: var(--bg-elev); box-shadow: 0 8px 30px rgba(10,10,10,.05); transition: border-color .15s; text-align: left; }
+  .ch-compose:focus-within { border-color: var(--text); }
+  .ch-compose textarea { flex: 1; min-height: 44px; max-height: 200px; padding: 11px 0; border: 0; outline: 0; resize: none; background: none;
+    font: inherit; font-size: 16px; line-height: 1.45; color: var(--text); }
+  .ch-compose textarea::placeholder { color: var(--text-dim); opacity: 1; }
+  .ch-compose select { align-self: center; height: 32px; border: 1px solid var(--line); border-radius: 8px; background: var(--bg-elev-2); font: inherit; font-size: 12px; color: var(--text-soft); }
+  .ch-send { flex: none; width: 44px; height: 44px; display: grid; place-items: center; border: 0; border-radius: 50%; background: var(--text); color: var(--bg-elev); cursor: pointer; transition: transform .15s, opacity .15s; }
+  .ch-send:hover { transform: scale(1.05); }
+  .ch-send:disabled { opacity: .25; cursor: default; transform: none; }
+  .ch-foot { margin: 10px 0 0; text-align: center; font-size: 12.5px; line-height: 1.5; color: var(--text-dim); }
+  .ch-nokey { display: flex; align-items: center; justify-content: space-between; gap: 12px; padding: 14px 18px; border-radius: 16px;
+    background: var(--bg-elev-2); font-size: 14px; color: var(--text-soft); text-align: left; }
+
+  @media (max-width: 860px){
+    .ch-list { left: 0; }
+    .ch-pill > span:not(.ch-count) { display: none; }
+    .ch-pill { padding: 0 12px; }
+    .ch-msg { max-width: 92%; }
+  }
+
+  /* the researcher block (persona-talk's "Researcher context"), folded under a reply */
+  .ch-note { max-width: 100%; margin-top: 2px; font-size: 13px; color: var(--text-soft); }
+  .ch-note summary { width: max-content; padding: 2px 6px; border-radius: 6px; cursor: pointer; color: var(--text-dim); font-weight: 600; list-style: none; }
+  .ch-note summary::-webkit-details-marker { display: none; }
+  .ch-note summary::before { content: '›'; display: inline-block; margin-right: 6px; transition: transform .15s; }
+  .ch-note[open] summary::before { transform: rotate(90deg); }
+  .ch-note summary:hover { background: rgba(10,10,10,.05); color: var(--text); }
+  .ch-note > div { margin-top: 6px; padding: 10px 14px; border-left: 2px solid var(--accent); background: var(--bg-elev); border-radius: 0 10px 10px 0; line-height: 1.55; }
+  .ch-linkbtn { padding: 0; border: 0; background: none; font: inherit; color: var(--accent-text); text-decoration: underline; text-underline-offset: 2px; cursor: pointer; }

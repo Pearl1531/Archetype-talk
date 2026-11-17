@@ -38,7 +38,7 @@ function parseEntity(md, file){
   const t = TYPES[rawType];
   if(!t) return null; // not a known entity type
   return { file, type:rawType, meta:t, fm, body, md,
-           title: fm.title || (body.match(/^#\s+(.+)/m)||[])[1] || file.split('/').pop().replace(/\.md$/,'') };
+           title: fm.display_title || fm.title || (body.match(/^#\s+(.+)/m)||[])[1] || file.split('/').pop().replace(/\.md$/,'') };
 }
 function section(body, h){
   /* no `m` flag: with it the `$` in the lookahead matches every line end and

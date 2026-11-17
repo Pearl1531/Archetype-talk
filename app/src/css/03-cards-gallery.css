@@ -404,3 +404,19 @@
   body.lin-all .p-apple .pa-kicker { white-space: nowrap; }
   .pa-kicker .lvl-meter { margin-left: auto; }
 
+
+  /* ── Transcript card (card() in 07): meta line, title, two lines of gist and
+     a full-width "Open" bar pinned to the bottom so a row shares one baseline.
+     An optional cover image sits on top, inset like the card's own padding. */
+  .card.tr-gcard { display: flex; flex-direction: column; gap: var(--s-2); }
+  .tr-gcard .tc-cover { aspect-ratio: 16 / 7; border-radius: var(--r-md); overflow: hidden; background: var(--bg-elev-2); margin-bottom: var(--s-2); }
+  .tr-gcard .tc-cover img { width: 100%; height: 100%; object-fit: cover; display: block; }
+  .tr-gcard .tc-meta { display: flex; align-items: center; gap: 12px; min-height: 32px; margin: -6px -8px -2px 0; font-size: var(--text-body); color: var(--text-dim); }
+  .tr-gcard .tc-meta .row-menu { margin-left: auto; }
+  .tr-gcard .tc-meta .demo-badge { margin-left: 0; }
+  .tr-gcard .name { font-size: var(--text-subheading); line-height: 1.3; }
+  .tr-gcard .tc-sum { margin-top: 0; display: -webkit-box; -webkit-box-orient: vertical; -webkit-line-clamp: 2; overflow: hidden; }
+  .tr-gcard .tc-open { margin-top: auto; display: block; padding: 8px 12px; border: 1px solid var(--line); border-radius: var(--r-md);
+    background: var(--bg-elev-2); color: var(--text-soft); font-size: var(--text-body); text-align: center; transition: background .12s, color .12s; }
+  .tr-gcard > :nth-last-child(2) { margin-bottom: var(--s-3); }   /* air above the bar on the tallest card */
+  .tr-gcard:hover .tc-open { background: var(--hover-bg); color: var(--text); }

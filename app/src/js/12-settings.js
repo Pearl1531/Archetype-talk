@@ -231,6 +231,7 @@ function renderSettings(){
       ${settingsRow('Clear local data (this browser)', localDataSummary(),
         `<button class="btn btn-danger btn-sm" id="btnClearLocal" ${store.keys().length?'':'disabled'}>${trn(store.keys().length,'Clear {n} item…','Clear {n} items…','Wyczyść {n} pozycję…','Wyczyść {n} pozycje…','Wyczyść {n} pozycji…')}</button>`)}
     </div>
+    ${aiProvidersCard()}
     <div class="set-card">
       <h3>${tr('API keys')}</h3>
       <div class="warn-box"><span>⚠</span><span>${tr("<b>Never publish these keys or give them to anyone.</b> Anyone holding a key can spend your account's quota and money. Saved keys go straight from this form into <code>.env</code> in your project folder — a file that is gitignored, never leaves this machine, and is only ever shown here as a mask. The AI is instructed to use keys by name (<code>$ELEVENLABS_API_KEY</code>) without reading their values; note that any local tool with file access could technically read <code>.env</code> — your machine is the trust boundary.")}</span></div>
@@ -290,6 +291,7 @@ function renderSettings(){
   // Clearing browser storage touches no file, so it must stay available even
   // with no folder connected — wire it BEFORE the disk-only early return below.
   { const cl = grid.querySelector('#btnClearLocal'); if(cl && !cl.disabled) cl.onclick = clearLocalData; }
+  aiProvidersWire();
   if(!can) return;
   const pcText = grid.querySelector('#pcText');
   if(pcText){
@@ -379,6 +381,7 @@ function renderSettings(){
   };
 }
 async function settingsEnter(){
+  if(typeof chatExit==='function') chatExit();
   SETTINGS_ACTIVE = true; syncLinTheme(); helpExit(); if(typeof mindmapExit==='function') mindmapExit();
   settingsBtn.classList.add('active');
   galleryView.style.display = ""; detailView.classList.remove('active');

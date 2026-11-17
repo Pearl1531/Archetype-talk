@@ -191,3 +191,69 @@
     body.nav-open.lin-side .side-search { order: 0; margin-bottom: var(--s-3); }
     body.lin-side.nav-open .nav-item .n, body.lin-side.nav-open #backlogCount { margin-left: auto; }
   }
+
+  /* ---- the rail, refined (2026-11): same paper, ink and ember, a quieter
+     hand — 32px rows, 13px type, 16px icons on a thinner stroke, the project
+     switcher without a card around it, small-caps group heads, the active row
+     a soft ink tint (bold ink text + the ember dot) instead of a solid pill,
+     and Settings/Help at the foot under a hairline. Last in the cascade. ---- */
+  body.lin-side .sidebar { padding: var(--s-4) var(--s-3); gap: 1px; }
+  body.lin-side .side-top { margin-bottom: var(--s-2); }
+  body.lin-side .ws-btn { height: 48px; padding: 0 8px; gap: 10px; border: 0; border-radius: 8px; background: none; box-shadow: none; transition: background .15s; }
+  body.lin-side .ws-btn:hover, body.lin-side .ws-btn[aria-expanded="true"] { background: rgba(10,10,10,.05); border: 0; }
+  body.lin-side .ws-ico, body.lin-side .ws-ico img, body.lin-side .ws-ini { width: 32px; height: 32px; border-radius: 7px; }
+  body.lin-side .ws-ini { font-size: 14px; font-weight: 700; }
+  body.lin-side .ws-label { font-size: 13px; font-weight: 600; letter-spacing: -0.005em; }
+  body.lin-side .ws-sub { font-size: 11px; }
+  body.lin-side .ws-sel { color: color-mix(in srgb, var(--text-dim) 60%, transparent); transition: color .15s; }
+  body.lin-side .ws-btn:hover .ws-sel { color: var(--text-soft); }
+  body.lin-side .side-search { height: 32px; gap: 10px; padding: 0 6px 0 10px; margin-bottom: var(--s-3); border: 1px solid transparent; border-radius: 6px;
+    background: rgba(10,10,10,.045); }
+  body.lin-side .side-search:focus-within { background: var(--bg-elev); border-color: var(--line); }
+  body.lin-side .side-search svg { width: 16px; height: 16px; stroke-width: 1.5; color: var(--text-dim); }
+  body.lin-side .side-search input { font-size: 13px; }
+  body.lin-side .side-kbd { height: 20px; padding: 0 5px; font-size: 10px; border-color: var(--line); background: color-mix(in srgb, var(--bg-elev) 60%, transparent); }
+  body.lin-side .side-label { padding: var(--s-4) 10px 4px; font-size: 11px; font-weight: 600; letter-spacing: .07em; text-transform: uppercase;
+    color: color-mix(in srgb, var(--text-dim) 75%, transparent); }
+  body.lin-side .nav-item { height: 32px; padding: 0 10px; gap: 10px; border-radius: 6px; font-size: 13px; font-weight: 400; letter-spacing: .005em;
+    color: var(--text-dim); transition: background .2s, color .2s; }
+  body.lin-side .nav-item svg { width: 16px; height: 16px; stroke-width: 1.5; color: color-mix(in srgb, var(--text-dim) 80%, transparent); transition: color .2s; }
+  body.lin-side .nav-item:hover { background: rgba(10,10,10,.05); color: var(--text); }
+  body.lin-side .nav-item:hover svg { color: var(--text-soft); }
+  body.lin-side .nav-item.active, body.lin-side .nav-item.active:hover { background: rgba(10,10,10,.075); color: var(--text); font-weight: 600; }
+  body.lin-side .nav-item.active svg { color: var(--text); }
+  body.lin-side .nav-item .n { font-size: 11px; color: color-mix(in srgb, var(--text-dim) 75%, transparent); }
+  body.lin-side .nav-item.active .n { color: var(--text-soft); }
+  body.lin-side #backlogCount { min-width: 20px; height: 20px; line-height: 20px; padding: 0 6px; font-size: 10.5px;
+    background: color-mix(in srgb, var(--accent) 14%, transparent); color: var(--accent-text); }
+  body.lin-side .nav-item.active #backlogCount { background: color-mix(in srgb, var(--accent) 18%, transparent); color: var(--accent-text); }
+  body.lin-side .side-foot { padding: var(--s-3) 0 0; gap: var(--s-3); }
+  body.lin-side .side-support { display: flex; flex-direction: column; gap: 1px; padding-top: var(--s-3); border-top: 1px solid var(--line); }
+  body.lin-side .side-foot .btn-primary { height: 36px; border-radius: 8px; border-width: 1px; font-size: 13px; }
+  body.lin-side .side-foot .btn-primary svg { width: 16px; height: 16px; stroke-width: 1.5; }
+
+  /* ---- the rail, WCAG AA (2026-11): every word on the rail clears 4.5:1 on
+     the rail, on a hovered row and on the active tint; icons and the search
+     field clear 3:1. --text-dim is 4.47:1 on --bg-rail, so the rail gets its
+     own quieter-but-legal ink (6.1:1 on the rail, 5.2:1 on the active row),
+     and no text colour is mixed toward transparent. Type one step up: 14px
+     rows, 12px heads, counts and captions. ---- */
+  body.lin-side { --rail-dim: #57534C; }
+  body.lin-side .nav-item { height: 34px; font-size: 14px; color: var(--rail-dim); }
+  body.lin-side .nav-item svg, body.lin-side .nav-item:hover svg { width: 17px; height: 17px; color: var(--rail-dim); }
+  body.lin-side .nav-item:hover { color: var(--text); }
+  body.lin-side .nav-item.active svg { color: var(--text); }
+  body.lin-side .nav-item .n, body.lin-side .nav-item.active .n { font-size: 12px; color: var(--rail-dim); }
+  body.lin-side .side-label { font-size: 12px; letter-spacing: .06em; color: var(--rail-dim); }
+  body.lin-side #backlogCount, body.lin-side .nav-item.active #backlogCount { height: 20px; font-size: 12px; color: #8A2800; }   /* 5.3:1 on its tint */
+  body.lin-side .ws-label { font-size: 14px; }
+  body.lin-side .ws-sub { font-size: 12px; color: var(--rail-dim); }
+  body.lin-side .ws-sel, body.lin-side .ws-btn:hover .ws-sel { color: var(--rail-dim); }
+  body.lin-side .side-search { height: 34px; border-color: var(--edge); background: color-mix(in srgb, var(--bg-elev) 45%, var(--bg-rail)); }   /* the field's edge clears 3:1 */
+  body.lin-side .side-search svg { color: var(--rail-dim); }
+  body.lin-side .side-search input { font-size: 14px; }
+  body.lin-side .side-search input::placeholder { color: var(--rail-dim); opacity: 1; }
+  body.lin-side .side-kbd { height: 22px; font-size: 12px; color: var(--rail-dim); border-color: var(--edge); background: var(--bg-elev); }
+  body.lin-side .side-foot .btn-primary { height: 38px; font-size: 14px; }
+  body.lin-side .side-credit, body.lin-side .side-credit a, body.lin-side .side-credit span { color: var(--rail-dim); }
+  body.lin-side .side-credit a:hover { color: #A23000; }

@@ -328,13 +328,13 @@ function dxBacklogTop(){
   const qi = h.findIndex(x=> /question|pytanie/.test(x)), pi = h.findIndex(x=> /persona/.test(x));
   return sec.table.rows.map(r=>({ q: r[qi>=0?qi:2]||'', who: (r[pi>=0?pi:1]||'').trim() }));
 }
-/* Fresh research, Revolut-style: one line for how many sources are younger
-   than three months, day by day. A new transcript (date:) or new desk research
-   (Evidence retrieved:) lifts it; 92 days later the same source goes out of
-   date and the line steps down — so a project that stops listening slides
-   visibly. A dot marks each day something changed; hovering (or ←/→ on the
-   focused card) scrubs to it and says what happened, the way Revolut names a
-   price. Set-aside sessions and undated files count nowhere. */
+/* Research activity, GitHub-style: the last twelve months as a calendar, one
+   square a day, its ember deeper the more sources arrived that day — a new
+   transcript (date:) or new desk research (Evidence retrieved:). A project
+   that stops listening shows it as a run of empty weeks. The head keeps the
+   freshness count (younger than three months) the old line chart carried.
+   Pointing at a day (or ←/→ on the focused card) says what came in. Set-aside
+   sessions and undated files count nowhere. */
 let DX_FRESH = null;
 const DX_DAY = 86400000;
 const dxDayOf = d => Math.round(Date.UTC(d.getFullYear(), d.getMonth(), d.getDate()) / DX_DAY);
@@ -342,77 +342,79 @@ const dxDateOf = n => { const u = new Date(n * DX_DAY); return new Date(u.getUTC
 const dxDayLabel = n => { const d = dxDateOf(n); return `${d.getDate()} ${dashMon(d.getMonth())} ${d.getFullYear()}`; };
 function dxFresh(){
   DX_FRESH = null;
-  const today = dxDayOf(new Date(graphNow())), WIN = 92;
-  const src = [];
+  const today = dxDayOf(new Date(graphNow())), WIN = 92, per = new Map();
+  let fresh = 0, soon = 0;
   wsEntities().forEach(e=>{
     const d = e.type==='Transcript' && !isExcluded(e) ? parseAnyDate(e.fm.date) : e.type==='Evidence' ? parseAnyDate(e.fm.retrieved) : null;
-    if(d && dxDayOf(d) <= today) src.push({ k: e.type==='Transcript' ? 'tr' : 'ev', n: dxDayOf(d) });
+    const n = d && dxDayOf(d);
+    if(!n || n > today) return;
+    (per.get(n) || per.set(n, { tr: 0, ev: 0 }).get(n))[e.type==='Transcript' ? 'tr' : 'ev']++;
+    if(n + WIN > today){ fresh++; if(n + WIN <= today + 30) soon++; }
   });
-  if(!src.length) return '';
-  const days = new Map(), at = n => days.get(n) || days.set(n, { n, add: { tr: 0, ev: 0 }, out: { tr: 0, ev: 0 } }).get(n);
-  src.forEach(s=>{ at(s.n).add[s.k]++; if(s.n + WIN <= today) at(s.n + WIN).out[s.k]++; });
-  let v = 0;
-  const pts = [...days.values()].sort((a,b)=> a.n - b.n).map(p=> ({ ...p, v: v += p.add.tr + p.add.ev - p.out.tr - p.out.ev }));
-  const what = p => [
-    p.add.tr && trn(p.add.tr, '+{n} transcript', '+{n} transcripts', '+{n} transkrypcja', '+{n} transkrypcje', '+{n} transkrypcji'),
-    p.add.ev && trn(p.add.ev, '+{n} desk research source', '+{n} desk research sources', '+{n} źródło z desk research', '+{n} źródła z desk research', '+{n} źródeł z desk research'),
-    p.out.tr && trn(p.out.tr, '{n} transcript went out of date', '{n} transcripts went out of date', '{n} transkrypcja się zestarzała', '{n} transkrypcje się zestarzały', '{n} transkrypcji się zestarzało'),
-    p.out.ev && trn(p.out.ev, '{n} desk research source went out of date', '{n} desk research sources went out of date', '{n} źródło z desk research się zestarzało', '{n} źródła z desk research się zestarzały', '{n} źródeł z desk research się zestarzało'),
-  ].filter(Boolean).join(' · ');
-  const soon = src.filter(s=> s.n + WIN > today && s.n + WIN <= today + 30).length;
-  const a = pts[0].n - 3, b = Math.max(today, pts[pts.length-1].n), H = 160, top = 14, max = Math.max(...pts.map(p=> p.v), 1);
-  const X = n => (n - a) / Math.max(1, b - a) * 1000, Y = val => H - 4 - val / max * (H - 4 - top);
-  const line = [`M${X(a).toFixed(1)},${Y(0).toFixed(1)}`].concat(pts.map(p=> `L${X(p.n).toFixed(1)},${Y(p.v).toFixed(1)}`), `L${X(b).toFixed(1)},${Y(v).toFixed(1)}`).join('');
-  const area = line + `L${X(b).toFixed(1)},${H}L${X(a).toFixed(1)},${H}Z`;
-  DX_FRESH = {
-    now: v,
-    nowWhat: soon ? trn(soon, '{n} source goes out of date in the next 30 days', '{n} sources go out of date in the next 30 days', 'W ciągu 30 dni zestarzeje się {n} źródło', 'W ciągu 30 dni zestarzeją się {n} źródła', 'W ciągu 30 dni zestarzeje się {n} źródeł') : tr('Nothing goes out of date in the next 30 days'),
-    pts: pts.map(p=> ({ x: X(p.n) / 10, v: p.v, when: dxDayLabel(p.n), what: what(p) })),
-  };
-  const unit = n => trn(n, 'fresh source', 'fresh sources', 'świeże źródło', 'świeże źródła', 'świeżych źródeł');
-  const span = `${dxDayLabel(pts[0].n)} – ${tr('today')}`;
+  if(!per.size) return '';
+  /* 53 weeks, Monday on top, the last column ending today */
+  const dow = n => (dxDateOf(n).getDay() + 6) % 7, W = 53, start = today - dow(today) - (W - 1) * 7;
+  const C = 11, STEP = 14, LW = 30, MH = 18, vw = LW + W * STEP, vh = MH + 7 * STEP;
+  const inRange = [...per].filter(([n])=> n >= start), total = inRange.reduce((s, [, c])=> s + c.tr + c.ev, 0);
+  const max = Math.max(1, ...inRange.map(([, c])=> c.tr + c.ev));
+  const lvl = v => v ? Math.min(4, Math.ceil(v / max * 4)) : 0;
+  const what = c => [
+    c.tr && trn(c.tr, '{n} transcript', '{n} transcripts', '{n} transkrypcja', '{n} transkrypcje', '{n} transkrypcji'),
+    c.ev && trn(c.ev, '{n} desk research source', '{n} desk research sources', '{n} źródło z desk research', '{n} źródła z desk research', '{n} źródeł z desk research'),
+  ].filter(Boolean).join(' · ') || tr('Nothing came in');
+  let cells = '', months = '', lastM = -1, lastX = -99;
+  for(let col = 0; col < W; col++){
+    const m = dxDateOf(start + col * 7 + 6).getMonth(), x = LW + col * STEP;   // a week belongs to the month its Sunday is in
+    if(m !== lastM){ lastM = m; if(x - lastX >= 30){ months += `<text x="${x}" y="11">${esc(dashMon(m))}</text>`; lastX = x; } }
+    for(let row = 0; row < 7; row++){
+      const n = start + col * 7 + row; if(n > today) break;
+      const c = per.get(n), v = c ? c.tr + c.ev : 0;
+      cells += `<rect class="dx-hm-c l${lvl(v)}" data-n="${n}" x="${x}" y="${MH + row * STEP}" width="${C}" height="${C}" rx="2.5" style="--d:${Math.min((col * 7 + row) * 1.4, 520) | 0}ms"/>`;
+    }
+  }
+  const wd = k => new Date(2024, 0, 1 + k).toLocaleDateString(LANG==='pl' ? 'pl-PL' : 'en-US', { weekday: 'short' });   // 1 Jan 2024 was a Monday
+  const days = [0, 2, 4].map(r=> `<text x="0" y="${MH + r * STEP + C / 2}" dominant-baseline="middle">${esc(wd(r))}</text>`).join('');
+  const unit = n => trn(n, 'source', 'sources', 'źródło', 'źródła', 'źródeł');
+  const nowWhat = trn(fresh, '{n} still fresh', '{n} still fresh', '{n} wciąż świeże', '{n} wciąż świeże', '{n} wciąż świeżych')
+    + ' · ' + (soon ? trn(soon, '{n} goes out of date in 30 days', '{n} go out of date in 30 days', '{n} zestarzeje się w ciągu 30 dni', '{n} zestarzeją się w ciągu 30 dni', '{n} zestarzeje się w ciągu 30 dni') : tr('Nothing goes out of date in the next 30 days'));
+  DX_FRESH = { today, start, nowWhat, label: dxDayLabel, what: n => what(per.get(n) || {}) };
+  const legend = [0,1,2,3,4].map(l=> `<i class="dx-hm-k l${l}"></i>`).join('');
   return `<section class="dx-sec">
-      <div class="dx-h2row"><h2 class="dx-h2">${tr('Fresh research')}</h2><span class="dx-h2note">${esc(span)}</span>${dxTip(tr('What is still fresh'), esc(tr('How many of your sources are younger than three months, day by day. A new interview or new desk research lifts the line; three months later it goes out of date and the line steps down. Each dot is a day something changed — point at it to see what. Sessions the researcher set aside count nowhere.')), 'right')}</div>
-      <div class="dx-card dx-fr" tabindex="0" aria-label="${esc(tr('Fresh research over time — use the arrow keys to step through the changes'))}">
-        <div class="dx-fr-head" aria-live="polite"><b class="dx-fr-v">${v}</b><span class="dx-fr-unit" data-one="${esc(unit(1))}" data-many="${esc(unit(2))}" data-lots="${esc(unit(5))}">${esc(unit(v))}</span>
-          <span class="dx-fr-when">${tr('Today')}</span><span class="dx-fr-what">${esc(DX_FRESH.nowWhat)}</span></div>
-        <div class="dx-fr-plot">
-          <svg viewBox="0 0 1000 ${H}" preserveAspectRatio="none" aria-hidden="true"><defs><linearGradient id="dxFrFill" x1="0" y1="0" x2="0" y2="1"><stop offset="0" style="stop-color:var(--accent);stop-opacity:.16"/><stop offset="1" style="stop-color:var(--accent);stop-opacity:0"/></linearGradient></defs>
-            <path class="dx-fr-area" d="${area}"/><path class="dx-fr-line" d="${line}"/></svg>
-          ${pts.map((p,i)=> `<i class="dx-fr-dot ${p.out.tr+p.out.ev ? (p.add.tr+p.add.ev ? 'mix' : 'down') : 'up'}" style="left:${(X(p.n)/10).toFixed(2)}%;top:${(Y(p.v)/H*100).toFixed(2)}%;--i:${i}"></i>`).join('')}
-          <i class="dx-fr-cursor" aria-hidden="true"></i>
-        </div>
-        <div class="dx-fr-axis"><span>${esc(dxDayLabel(a))}</span><span>${tr('today')}</span></div>
+      <div class="dx-h2row"><h2 class="dx-h2">${tr('Research activity')}</h2><span class="dx-h2note">${esc(dxDayLabel(start))} – ${tr('today')}</span>${dxTip(tr('When research came in'), esc(tr('One square a day for the last twelve months. The deeper the colour, the more sources arrived that day — a new interview or new desk research. A source counts as fresh for three months. Point at a day to see what came in. Sessions the researcher set aside count nowhere.')), 'right')}</div>
+      <div class="dx-card dx-fr dx-hm" tabindex="0" aria-label="${esc(tr('Research activity by day — use the arrow keys to step through the days'))}">
+        <div class="dx-fr-head" aria-live="polite"><b class="dx-fr-v">${total}</b><span class="dx-fr-unit">${esc(unit(total))}</span>
+          <span class="dx-fr-when">${tr('Last 12 months')}</span><span class="dx-fr-what">${esc(nowWhat)}</span></div>
+        <div class="dx-hm-scroll"><svg class="dx-hm-svg" viewBox="0 0 ${vw} ${vh}" role="img" aria-label="${esc(total + ' ' + unit(total) + ' · ' + tr('Last 12 months'))}"><g class="dx-hm-t">${months}${days}</g>${cells}</svg></div>
+        <div class="dx-hm-legend">${tr('Less')}${legend}${tr('More')}</div>
       </div>
     </section>`;
 }
-/* scrubbing: the nearest change to the pointer (or ←/→), back to today on leave */
+/* pointing at a day (or ←/→ on the focused card) says what came in; back to the summary on leave */
 function dxFreshWire(){
-  const card = grid.querySelector('.dx-fr'); if(!card || !DX_FRESH) return;
-  const plot = card.querySelector('.dx-fr-plot'), cur = card.querySelector('.dx-fr-cursor'), dots = [...card.querySelectorAll('.dx-fr-dot')];
-  const $ = s => card.querySelector(s), unit = $('.dx-fr-unit');
-  let at = -1;
-  const show = k=>{
-    at = k; dots.forEach((d,j)=> d.classList.toggle('on', j===k)); card.classList.toggle('scrub', k >= 0);
-    const p = k >= 0 ? DX_FRESH.pts[k] : null, v = p ? p.v : DX_FRESH.now;
-    $('.dx-fr-v').textContent = v;
-    unit.textContent = v===1 ? unit.dataset.one : (LANG==='pl' && !(v%10>=2 && v%10<=4 && (v%100<12 || v%100>14))) ? unit.dataset.lots : unit.dataset.many;
-    $('.dx-fr-when').textContent = p ? p.when : tr('Today');
-    $('.dx-fr-what').textContent = p ? p.what : DX_FRESH.nowWhat;
-    if(p) cur.style.left = p.x + '%';
+  const card = grid.querySelector('.dx-hm'); if(!card || !DX_FRESH) return;
+  const F = DX_FRESH, $ = s => card.querySelector(s), head = [$('.dx-fr-v'), $('.dx-fr-unit'), $('.dx-fr-when'), $('.dx-fr-what')];
+  const keep = head.map(x=> x.textContent);
+  let at = null;
+  const show = n=>{
+    card.querySelector('.dx-hm-c.on')?.classList.remove('on');
+    at = n;
+    if(n == null){ head.forEach((x, k)=> x.textContent = keep[k]); return; }
+    card.querySelector(`.dx-hm-c[data-n="${n}"]`)?.classList.add('on');
+    const w = F.what(n), v = (w.match(/\d+/g) || []).reduce((s, x)=> s + +x, 0);
+    head[0].textContent = v;
+    head[1].textContent = trn(v, 'source', 'sources', 'źródło', 'źródła', 'źródeł');
+    head[2].textContent = F.label(n);
+    head[3].textContent = w;
   };
-  plot.onpointermove = ev=>{
-    const r = plot.getBoundingClientRect(), x = (ev.clientX - r.left) / r.width * 100;
-    let k = 0; DX_FRESH.pts.forEach((p,j)=>{ if(Math.abs(p.x - x) < Math.abs(DX_FRESH.pts[k].x - x)) k = j; });
-    if(k !== at) show(k);
-  };
-  plot.onpointerleave = ()=> show(-1);
+  const svg = $('.dx-hm-svg');
+  svg.onpointerover = ev=>{ const r = ev.target.closest('.dx-hm-c'); if(r && +r.dataset.n !== at) show(+r.dataset.n); };
+  svg.onpointerleave = ()=> show(null);
   card.onkeydown = ev=>{
-    const n = DX_FRESH.pts.length;
-    if(ev.key==='ArrowRight' || ev.key==='ArrowLeft'){ ev.preventDefault(); show(Math.max(0, Math.min(n-1, at < 0 ? n-1 : at + (ev.key==='ArrowRight' ? 1 : -1)))); }
-    if(ev.key==='Escape') show(-1);
+    const step = { ArrowRight: 7, ArrowLeft: -7, ArrowDown: 1, ArrowUp: -1 }[ev.key];
+    if(step){ ev.preventDefault(); show(Math.max(F.start, Math.min(F.today, at == null ? F.today : at + step))); }
+    if(ev.key==='Escape') show(null);
   };
-  card.onblur = ()=> show(-1);
+  card.onblur = ()=> show(null);
 }
 
 function renderDashboard(){

@@ -38,7 +38,8 @@ answer. The DPAs you need are with the parties in
 Not documents — working controls a reviewer can test:
 
 - **Nothing leaves on its own.** The app makes no network request when opened;
-  both optional outbound paths are off by default and enforced by a
+  every optional outbound path (favicons, external images, an AI provider the
+  user switches on) is off by default and enforced by a
   Content-Security-Policy inside the shipped file.
 - **Data-subject rights have an implementation**, not just a promise:
   `/forget-participant` (Art. 17), `/subject-access` (Art. 15/20), `/retention`

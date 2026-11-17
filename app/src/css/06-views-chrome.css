@@ -419,3 +419,9 @@
     .doc blockquote { font-size: var(--text-body-lg); }
   }
 
+
+  /* Settings ▸ AI providers (12d): the key field sits under its provider's row */
+  #aiCard .ai-key { display: flex; align-items: center; gap: 10px; flex-wrap: wrap; padding: 0 0 14px; }
+  #aiCard .ai-key .set-input { flex: 1; min-width: 220px; }
+  #aiCard .set-row .ctl:has(#aiHostNew) { display: flex; gap: 8px; }
+  #aiCard .ai-pending { display: flex; align-items: center; justify-content: space-between; gap: 12px; margin-top: 14px; }

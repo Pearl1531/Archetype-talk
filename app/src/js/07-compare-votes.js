@@ -326,8 +326,6 @@ function card(e){
   } else if(e.type==='Transcript'){
     const firstLine = stripLinks((e.body.split('\n').find(l=>/^\*\*/.test(l.trim()))||'').trim());
     const gist = e.fm.abstract ? String(e.fm.abstract) : firstLine;
-    const topics = Array.isArray(e.fm.topics) ? e.fm.topics : [];
-    const nhl = entityHighlights(e).length;
     /* live word search: when the tab filter matches this transcript's body,
        show up to 3 KWIC snippet lines with the term marked */
     let kwic = '';
@@ -343,13 +341,25 @@ function card(e){
           return `<div class="kwic">${from>0?'…':''}${esc(s.slice(from,i))}<b class="find-hit">${esc(s.slice(i,i+q.length))}</b>${esc(s.slice(i+q.length, i+q.length+70))}${s.length>i+q.length+70?'…':''}</div>`;
         }).join('');
     }
-    inner += `<div class="name">${esc(e.title)}</div>
-      ${e.fm.participant?`<div class="kv"><b>${tr('Participant')}</b> — ${esc(e.fm.participant)}</div>`:''}
-      ${e.fm.method?`<div class="kv"><b>Method</b> — ${esc(e.fm.method)}</div>`:''}
-      ${e.fm.date?`<div class="kv"><b>Date</b> — ${esc(e.fm.date)}</div>`:''}
-      ${kwic || (gist?`<div class="excerpt">${esc(trim(gist,220))}</div>`:'')}
-      ${topics.length || nhl ? `<div class="tags">${nhl?`<span class="tag hl-count" title="${esc(tr('Team highlights in this transcript'))}">🖍 ${nhl}</span>`:''}${topics.map(t=>`<span class="tag">${esc(t)}</span>`).join('')}</div>`:''}
-      ${staleNoteHtml(e, true)}`;
+    /* Title: the researcher's own name, else when it happened, else the file's
+       title. The meta line carries whichever of id/date the title doesn't. */
+    const when = trWhen(e), own = e.fm.display_title;
+    const title = own || when || e.title;
+    const meta = [!own && when ? (e.fm.interview_id || '') : '', own || !when ? when : ''].filter(Boolean);
+    const cover = picFor(e, 'cover');
+    const I = d => `<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">${d}</svg>`;
+    el.classList.add('tr-gcard');
+    inner = `${cover && cover.src ? `<div class="tc-cover"><img src="${esc(cover.src)}" alt="" loading="lazy"></div>` : ''}
+      <div class="tc-meta">${meta.map(x=>`<span>${esc(x)}</span>`).join('')}${isExcluded(e)?`<span class="demo-badge exc-badge">${tr('Excluded')}</span>`:''}${e.draft?`<span class="demo-badge draft-badge">${tr('Draft')}</span>`:''}${e.fm.demo?`<span class="demo-badge">${tr('Demo')}</span>`:''}
+        ${rowMenuHtml('tcm-'+e.id, [
+          `<button type="button" role="menuitem" data-tc="name">${I('<path d="M12 20h9"/><path d="M16.5 3.5a2.1 2.1 0 0 1 3 3L7 19l-4 1 1-4z"/>')}${tr('Rename')}</button>`,
+          `<button type="button" role="menuitem" data-tc="cover">${I('<rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="8.5" cy="8.5" r="1.5"/><path d="M21 15l-5-5L5 21"/>')}${tr(cover ? 'Change cover' : 'Add cover image')}</button>`,
+          e.fm.cover ? `<button type="button" role="menuitem" class="danger" data-tc="uncover">${I('<path d="M18 6 6 18M6 6l12 12"/>')}${tr('Remove cover')}</button>` : ''
+        ])}</div>
+      <div class="name">${esc(title)}</div>
+      ${kwic || (gist?`<div class="excerpt tc-sum">${esc(trim(gist,160))}</div>`:'')}
+      ${staleNoteHtml(e, true)}
+      <span class="tc-open">${tr('Open transcript')} →</span>`;
   } else if(e.type==='Competitor'){
     const tags = Array.isArray(e.fm.tags)? e.fm.tags : [];
     inner += `<div class="persona-id">${compTileHtml(e,40)}<div><div class="name">${esc(e.title)}</div></div></div>
@@ -368,7 +378,72 @@ function card(e){
   wireVotes(el);
   el.querySelectorAll('[data-promote]').forEach(b=> b.onclick = ev=>{ ev.stopPropagation(); promoteHypothesis(b.dataset.promote); });
   el.querySelectorAll('[data-exclude]').forEach(b=> b.onclick = ev=>{ ev.stopPropagation(); toggleExcluded(ENTITIES[b.dataset.exclude], true); });
+  el.querySelectorAll('.row-menu').forEach(m=> m.onclick = ev=> ev.stopPropagation());   // the menu lives inside the card link
+  el.querySelectorAll('[data-tc]').forEach(b=> b.onclick = ev=>{ ev.stopPropagation(); b.closest('[popover]')?.hidePopover(); trCardAction(e, b.dataset.tc); });
   return el;
+}
+
+/* "2 listopada 2026, 14:30" from `date:` (DD.MM.YYYY or YYYY-MM-DD, a time may
+   follow it) plus an optional `time:` field. '' when there is no usable date. */
+function trWhen(e){
+  const m = String(e.fm.date||'').match(/(\d{1,2})\.(\d{1,2})\.(\d{4})(?:[ T,]+(\d{1,2}:\d{2}))?|(\d{4})-(\d{2})-(\d{2})(?:[ T](\d{1,2}:\d{2}))?/);
+  if(!m) return '';
+  const [d, mo, y] = m[1] ? [m[1], m[2], m[3]] : [m[7], m[6], m[5]];
+  const t = m[4] || m[8] || (String(e.fm.time||'').match(/\d{1,2}:\d{2}/)||[])[0];
+  const s = new Date(+y, mo-1, +d).toLocaleDateString(LANG==='pl' ? 'pl-PL' : 'en-US', { day:'numeric', month:'long', year:'numeric' });
+  return t ? s + ', ' + t : s;
+}
+
+/* The card's ⋯ menu: rename (`display_title:`, shown everywhere the transcript
+   is named) and the cover image (`cover:`). A cover goes next to the file as
+   covers/<file>.jpg so a megabyte of base64 never sits in the frontmatter an
+   agent greps; a draft or the demo sandbox has no folder, so it keeps it inline. */
+async function trCardAction(e, act){
+  e = await ensureWritable(e); if(!e) return;
+  let md;
+  if(act === 'name'){
+    const v = prompt(tr('Name this transcript (empty = back to the date)'), e.fm.display_title || '');
+    if(v === null) return;
+    const s = v.replace(/\s+/g, ' ').trim();
+    md = setFmField(e.md, 'display_title', s ? `'${s.replace(/'/g, "''")}'` : null);
+  } else if(act === 'uncover'){
+    md = setFmField(e.md, 'cover', null);   // the image file stays — deleting is the researcher's call
+  } else {
+    const f = await new Promise(res=>{
+      const inp = Object.assign(document.createElement('input'), { type:'file', accept:'image/*' });
+      inp.onchange = ()=> res(inp.files[0] || null); inp.click();
+    });
+    if(!f) return;
+    const c = await trCoverCanvas(f);
+    const uri = c.toDataURL('image/jpeg', .82);
+    let val = uri;
+    if(e.handle && typeof DIRHANDLE !== 'undefined' && DIRHANDLE){
+      const name = e.file.split('/').pop().replace(/\.md$/, '') + '.jpg';
+      const path = e.file.replace(/[^/]*$/, '') + 'covers/' + name;
+      try{
+        await writeRepoFile(path, await new Promise(r=> c.toBlob(r, 'image/jpeg', .82)));
+        delete REPO_FILE_SEEN[path];   // a binary, not text: replacing it later is not a drift
+      }catch(err){ toastSaveFailed(err); return; }
+      picStore(path, uri);
+      val = `'covers/${name.replace(/'/g, "''")}'`;
+    }
+    md = setFmField(e.md, 'cover', val);
+  }
+  if(await saveEntityText(e, md)) toast(tr('Saved to {file} ✓').replace('{file}', e.file), { label: tr('Undo'), fn: undoLastSave });
+}
+// fit inside 1200×800, never upscale — a card shows it ~360px wide, 2× for retina is plenty
+function trCoverCanvas(file){
+  return new Promise((res, rej)=>{
+    const img = new Image();
+    img.onload = ()=>{
+      const r = Math.min(1, 1200/img.width, 800/img.height);
+      const c = Object.assign(document.createElement('canvas'), { width: Math.round(img.width*r), height: Math.round(img.height*r) });
+      c.getContext('2d').drawImage(img, 0, 0, c.width, c.height);
+      URL.revokeObjectURL(img.src); res(c);
+    };
+    img.onerror = rej;
+    img.src = URL.createObjectURL(file);
+  });
 }
 function trim(s,n){ s=(s||'').replace(/\s+/g,' ').trim(); return s.length>n? s.slice(0,n).replace(/[,;.]?\s+\S*$/,'')+'…' : s; }
 function ideaGrounding(e){

@@ -72,10 +72,34 @@ def inline_images(text):
     return IMG_TOKEN.sub(sub, text)
 
 
+# The in-app chat (12e-chat.js) runs the persona-talk skill itself: these files
+# ride along verbatim, so changing the skill changes the chat on the next build
+# and there is no second copy of the rules to drift. Only the references a
+# chat can use — no mockups (no images), no competitor mode (off by default).
+CHAT_SKILL = [".claude/skills/persona-talk/SKILL.md",
+              ".claude/skills/persona-talk/references/session-setup.md",
+              ".claude/skills/persona-talk/references/behavior-examples.md",
+              ".claude/skills/persona-talk/references/framing.md",
+              ".claude/skills/persona-talk/references/panel-mode.md",
+              ".claude/skills/persona-talk/references/exit-and-debrief.md",
+              ".claude/skills/ai-persona/references/levels.md"]
+
+
+def skill_block():
+    root = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+    parts = []
+    for rel in CHAT_SKILL:
+        with open(os.path.join(root, rel), encoding="utf-8") as fh:
+            parts.append(f"<!-- file: {rel} -->\n" + fh.read().replace("\r\n", "\n").strip())
+    body = "\n\n".join(parts).replace("</script", "<\\/script")
+    return f'<script type="text/markdown" id="skillPersonaTalk">\n{body}\n</script>'
+
+
 def build():
     shell = read("shell.html")
     for ph, part in [("/*__STYLES__*/", read_dir("css", ".css")),
                      ("<!--__EMBEDDED__-->", read("embedded-graph.html")),
+                     ("<!--__SKILLS__-->", skill_block()),
                      ("//__APP_JS__", read_dir("js", ".js"))]:
         part = part.rstrip("\n")
         assert shell.count(ph) == 1, f"placeholder {ph} missing in shell.html"

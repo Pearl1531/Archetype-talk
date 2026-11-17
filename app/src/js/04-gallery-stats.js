@@ -18,7 +18,7 @@ const TYPE_VIEWS = {
   Hypothesis: ['table'],
   IdeaForImprovement: ['list'],
   Competitor: ['map','list','compare'],
-  Transcript: ['cards','list','table','hl']
+  Transcript: ['cards']
 };
 const VIEW_BTN = { folders:'viewFoldersBtn', cards:'viewCardsBtn', list:'viewListBtn', table:'viewTableBtn', map:'viewMapBtn', compare:'viewCompareBtn', affinity:'viewAffinityBtn', hl:'viewHlBtn', sources:'viewSourcesBtn' };
 function viewsFor(t){ return TYPE_VIEWS[t] || ['cards']; }

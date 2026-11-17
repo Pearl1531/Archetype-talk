@@ -5,6 +5,9 @@ interview_id: <INT-xx>
 participant: '<pseudonymized profile — code, age, role, city>'
 method: '<In-depth interview / usability test, remote / in person>'
 date: DD.MM.YYYY
+# time: 'HH:MM'          # optional — the card shows date + time as its title
+# display_title: '…'     # optional — your own name for it (the app's ⋯ ▸ Rename writes this)
+# cover: 'covers/<file>.jpg'   # optional — card cover image (the app's ⋯ ▸ Add cover image writes this)
 # recording_url: 'https://…'   # optional — the recording; each [12:04] in the text opens it at that moment
 # --- data lifecycle — OPTIONAL, and nothing breaks without it ---------------
 # Absence means "not recorded", never "not allowed": every skill keeps working,

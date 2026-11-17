@@ -20,8 +20,27 @@
                            inlined into this file, there is nothing to hash to.
                            Removing it would mean shipping separate .css/.js and
                            giving up "one file you can email".
-     Frame/form/base are pinned shut: nothing here submits or embeds anything. -->
-<meta http-equiv="Content-Security-Policy" content="default-src 'none'; img-src 'self' data: blob:; style-src 'self' 'unsafe-inline'; script-src 'self' 'unsafe-inline'; connect-src 'self' https://www.google.com; font-src 'self'; frame-src 'none'; object-src 'none'; form-action 'none'; base-uri 'none'" />
+     Frame/form/base are pinned shut: nothing here submits or embeds anything.
+
+     AI providers (Settings ▸ AI providers) are the one opt-in hole: a host the
+     user switched on there is appended to connect-src, and nothing else
+     changes. A meta CSP can only tighten once it exists, so the policy is
+     written by this script before anything else runs. With no provider on —
+     the default — the policy below is exactly what ships. Each host must be a
+     bare https origin (or http://localhost / 127.0.0.1 for a local model);
+     anything else is dropped here, which is the gate, not the Settings form. -->
+<script>
+(function(){
+  var csp = "default-src 'none'; img-src 'self' data: blob:; style-src 'self' 'unsafe-inline'; script-src 'self' 'unsafe-inline'; connect-src 'self' https://www.google.com; font-src 'self'; frame-src 'none'; object-src 'none'; form-action 'none'; base-uri 'none'";
+  var hosts = [];
+  try { hosts = JSON.parse(localStorage.getItem('at-ai-hosts') || '[]'); } catch (e) {}
+  hosts = (Array.isArray(hosts) ? hosts : []).filter(function(h){
+    return typeof h === 'string' && /^(https:\/\/[a-z0-9-]+(\.[a-z0-9-]+)+(:\d{1,5})?|http:\/\/(localhost|127\.0\.0\.1)(:\d{1,5})?)$/i.test(h);
+  });
+  if (hosts.length) csp = csp.replace("https://www.google.com;", "https://www.google.com " + hosts.join(' ') + ";");
+  document.write('<meta http-equiv="Content-Security-Policy" content="' + csp + '" />');
+})();
+</script>
 <title>Archetype Talk — Research graph</title>
 <!-- No webfonts by design: the app is fully offline/self-contained — system font
      stack only (privacy: opening the file must not call any external host). -->
@@ -75,7 +94,7 @@
      spacing — is named once, right here. */
   :root {
     /* Surfaces — canvas, then two steps up */
-    --bg: #EFEDE7;        /* paper */
+    --bg: #FAF9F5;        /* paper */
     --bg-elev: #FFFFFF;   /* a sheet on the paper */
     --bg-elev-2: #F4F2EC; /* a field inside a sheet */
     --bg-rail: #E8E5DD;   /* the left rail, one step darker than the page */
@@ -637,6 +656,22 @@
   body.lin-all .p-apple .pa-kicker { white-space: nowrap; }
   .pa-kicker .lvl-meter { margin-left: auto; }
 
+
+  /* ── Transcript card (card() in 07): meta line, title, two lines of gist and
+     a full-width "Open" bar pinned to the bottom so a row shares one baseline.
+     An optional cover image sits on top, inset like the card's own padding. */
+  .card.tr-gcard { display: flex; flex-direction: column; gap: var(--s-2); }
+  .tr-gcard .tc-cover { aspect-ratio: 16 / 7; border-radius: var(--r-md); overflow: hidden; background: var(--bg-elev-2); margin-bottom: var(--s-2); }
+  .tr-gcard .tc-cover img { width: 100%; height: 100%; object-fit: cover; display: block; }
+  .tr-gcard .tc-meta { display: flex; align-items: center; gap: 12px; min-height: 32px; margin: -6px -8px -2px 0; font-size: var(--text-body); color: var(--text-dim); }
+  .tr-gcard .tc-meta .row-menu { margin-left: auto; }
+  .tr-gcard .tc-meta .demo-badge { margin-left: 0; }
+  .tr-gcard .name { font-size: var(--text-subheading); line-height: 1.3; }
+  .tr-gcard .tc-sum { margin-top: 0; display: -webkit-box; -webkit-box-orient: vertical; -webkit-line-clamp: 2; overflow: hidden; }
+  .tr-gcard .tc-open { margin-top: auto; display: block; padding: 8px 12px; border: 1px solid var(--line); border-radius: var(--r-md);
+    background: var(--bg-elev-2); color: var(--text-soft); font-size: var(--text-body); text-align: center; transition: background .12s, color .12s; }
+  .tr-gcard > :nth-last-child(2) { margin-bottom: var(--s-3); }   /* air above the bar on the tallest card */
+  .tr-gcard:hover .tc-open { background: var(--hover-bg); color: var(--text); }
   /* ============ Apple-style preview (rollout: All + Evidence) ============
      body.lin-side = the left panel, applied on EVERY gallery page while the
      preview is on; body.lin-all = the full page skin (All + Evidence so far).
@@ -1710,6 +1745,12 @@
     .doc blockquote { font-size: var(--text-body-lg); }
   }
 
+
+  /* Settings ▸ AI providers (12d): the key field sits under its provider's row */
+  #aiCard .ai-key { display: flex; align-items: center; gap: 10px; flex-wrap: wrap; padding: 0 0 14px; }
+  #aiCard .ai-key .set-input { flex: 1; min-width: 220px; }
+  #aiCard .set-row .ctl:has(#aiHostNew) { display: flex; gap: 8px; }
+  #aiCard .ai-pending { display: flex; align-items: center; justify-content: space-between; gap: 12px; margin-top: 14px; }
   /* ── Shared skin ─────────────────────────────────────────────────────────
      What the whole app looks like now: the language IA Builder uses, so the
      two products read as one family. Two steps of surface lift on a near-black
@@ -1903,6 +1944,72 @@
     body.nav-open.lin-side .side-search { order: 0; margin-bottom: var(--s-3); }
     body.lin-side.nav-open .nav-item .n, body.lin-side.nav-open #backlogCount { margin-left: auto; }
   }
+
+  /* ---- the rail, refined (2026-11): same paper, ink and ember, a quieter
+     hand — 32px rows, 13px type, 16px icons on a thinner stroke, the project
+     switcher without a card around it, small-caps group heads, the active row
+     a soft ink tint (bold ink text + the ember dot) instead of a solid pill,
+     and Settings/Help at the foot under a hairline. Last in the cascade. ---- */
+  body.lin-side .sidebar { padding: var(--s-4) var(--s-3); gap: 1px; }
+  body.lin-side .side-top { margin-bottom: var(--s-2); }
+  body.lin-side .ws-btn { height: 48px; padding: 0 8px; gap: 10px; border: 0; border-radius: 8px; background: none; box-shadow: none; transition: background .15s; }
+  body.lin-side .ws-btn:hover, body.lin-side .ws-btn[aria-expanded="true"] { background: rgba(10,10,10,.05); border: 0; }
+  body.lin-side .ws-ico, body.lin-side .ws-ico img, body.lin-side .ws-ini { width: 32px; height: 32px; border-radius: 7px; }
+  body.lin-side .ws-ini { font-size: 14px; font-weight: 700; }
+  body.lin-side .ws-label { font-size: 13px; font-weight: 600; letter-spacing: -0.005em; }
+  body.lin-side .ws-sub { font-size: 11px; }
+  body.lin-side .ws-sel { color: color-mix(in srgb, var(--text-dim) 60%, transparent); transition: color .15s; }
+  body.lin-side .ws-btn:hover .ws-sel { color: var(--text-soft); }
+  body.lin-side .side-search { height: 32px; gap: 10px; padding: 0 6px 0 10px; margin-bottom: var(--s-3); border: 1px solid transparent; border-radius: 6px;
+    background: rgba(10,10,10,.045); }
+  body.lin-side .side-search:focus-within { background: var(--bg-elev); border-color: var(--line); }
+  body.lin-side .side-search svg { width: 16px; height: 16px; stroke-width: 1.5; color: var(--text-dim); }
+  body.lin-side .side-search input { font-size: 13px; }
+  body.lin-side .side-kbd { height: 20px; padding: 0 5px; font-size: 10px; border-color: var(--line); background: color-mix(in srgb, var(--bg-elev) 60%, transparent); }
+  body.lin-side .side-label { padding: var(--s-4) 10px 4px; font-size: 11px; font-weight: 600; letter-spacing: .07em; text-transform: uppercase;
+    color: color-mix(in srgb, var(--text-dim) 75%, transparent); }
+  body.lin-side .nav-item { height: 32px; padding: 0 10px; gap: 10px; border-radius: 6px; font-size: 13px; font-weight: 400; letter-spacing: .005em;
+    color: var(--text-dim); transition: background .2s, color .2s; }
+  body.lin-side .nav-item svg { width: 16px; height: 16px; stroke-width: 1.5; color: color-mix(in srgb, var(--text-dim) 80%, transparent); transition: color .2s; }
+  body.lin-side .nav-item:hover { background: rgba(10,10,10,.05); color: var(--text); }
+  body.lin-side .nav-item:hover svg { color: var(--text-soft); }
+  body.lin-side .nav-item.active, body.lin-side .nav-item.active:hover { background: rgba(10,10,10,.075); color: var(--text); font-weight: 600; }
+  body.lin-side .nav-item.active svg { color: var(--text); }
+  body.lin-side .nav-item .n { font-size: 11px; color: color-mix(in srgb, var(--text-dim) 75%, transparent); }
+  body.lin-side .nav-item.active .n { color: var(--text-soft); }
+  body.lin-side #backlogCount { min-width: 20px; height: 20px; line-height: 20px; padding: 0 6px; font-size: 10.5px;
+    background: color-mix(in srgb, var(--accent) 14%, transparent); color: var(--accent-text); }
+  body.lin-side .nav-item.active #backlogCount { background: color-mix(in srgb, var(--accent) 18%, transparent); color: var(--accent-text); }
+  body.lin-side .side-foot { padding: var(--s-3) 0 0; gap: var(--s-3); }
+  body.lin-side .side-support { display: flex; flex-direction: column; gap: 1px; padding-top: var(--s-3); border-top: 1px solid var(--line); }
+  body.lin-side .side-foot .btn-primary { height: 36px; border-radius: 8px; border-width: 1px; font-size: 13px; }
+  body.lin-side .side-foot .btn-primary svg { width: 16px; height: 16px; stroke-width: 1.5; }
+
+  /* ---- the rail, WCAG AA (2026-11): every word on the rail clears 4.5:1 on
+     the rail, on a hovered row and on the active tint; icons and the search
+     field clear 3:1. --text-dim is 4.47:1 on --bg-rail, so the rail gets its
+     own quieter-but-legal ink (6.1:1 on the rail, 5.2:1 on the active row),
+     and no text colour is mixed toward transparent. Type one step up: 14px
+     rows, 12px heads, counts and captions. ---- */
+  body.lin-side { --rail-dim: #57534C; }
+  body.lin-side .nav-item { height: 34px; font-size: 14px; color: var(--rail-dim); }
+  body.lin-side .nav-item svg, body.lin-side .nav-item:hover svg { width: 17px; height: 17px; color: var(--rail-dim); }
+  body.lin-side .nav-item:hover { color: var(--text); }
+  body.lin-side .nav-item.active svg { color: var(--text); }
+  body.lin-side .nav-item .n, body.lin-side .nav-item.active .n { font-size: 12px; color: var(--rail-dim); }
+  body.lin-side .side-label { font-size: 12px; letter-spacing: .06em; color: var(--rail-dim); }
+  body.lin-side #backlogCount, body.lin-side .nav-item.active #backlogCount { height: 20px; font-size: 12px; color: #8A2800; }   /* 5.3:1 on its tint */
+  body.lin-side .ws-label { font-size: 14px; }
+  body.lin-side .ws-sub { font-size: 12px; color: var(--rail-dim); }
+  body.lin-side .ws-sel, body.lin-side .ws-btn:hover .ws-sel { color: var(--rail-dim); }
+  body.lin-side .side-search { height: 34px; border-color: var(--edge); background: color-mix(in srgb, var(--bg-elev) 45%, var(--bg-rail)); }   /* the field's edge clears 3:1 */
+  body.lin-side .side-search svg { color: var(--rail-dim); }
+  body.lin-side .side-search input { font-size: 14px; }
+  body.lin-side .side-search input::placeholder { color: var(--rail-dim); opacity: 1; }
+  body.lin-side .side-kbd { height: 22px; font-size: 12px; color: var(--rail-dim); border-color: var(--edge); background: var(--bg-elev); }
+  body.lin-side .side-foot .btn-primary { height: 38px; font-size: 14px; }
+  body.lin-side .side-credit, body.lin-side .side-credit a, body.lin-side .side-credit span { color: var(--rail-dim); }
+  body.lin-side .side-credit a:hover { color: #A23000; }
   /* ── Persona poster — full-bleed visual one-pager (Figma-board layout in the
      Signal skin: serif hero name, mono section labels, 2px cards) ── */
   #posterView { display: none; }
@@ -2668,6 +2775,25 @@
   a.tr-at { text-decoration: none; }
   a.tr-at time { color: var(--accent-text, var(--accent)); }
   a.tr-at:hover time { text-decoration: underline; }
+
+  /* ── Chapter scrubber (09g): a sticky rail of ticks at the text's left edge,
+     the wave and the card are driven from JS; this only sets shape and colour */
+  .tr-main.has-chap > .doc { padding-left: 64px; }
+  .tr-chap { position: sticky; top: calc(50vh - var(--ch-h) / 2); z-index: 3; height: 0; }
+  .tr-chap-rail { position: absolute; left: 14px; top: 0; width: 34px; display: flex; flex-direction: column; }
+  .tr-chap-rail button { display: flex; align-items: center; width: 100%; padding: 0; border: 0; background: none; cursor: pointer; border-radius: 3px; }
+  .tr-chap-rail button:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+  .tr-chap-rail span { display: block; height: 2px; width: 10px; border-radius: 2px; background: var(--text); opacity: .22; }
+  .tr-chap-rail [aria-selected="true"] span { background: var(--accent); }
+  .tr-chap-card { position: absolute; left: 68px; top: 0; width: 260px; padding: 12px 16px 14px; border: 1px solid var(--line); border-radius: 16px;
+    background: var(--bg-elev); color: var(--text); pointer-events: none; opacity: 0; visibility: hidden; transform-origin: left center;
+    box-shadow: 0 2px 6px -2px rgba(0,0,0,.08), 0 16px 36px -12px rgba(0,0,0,.22); }
+  .tr-chap-card small { display: block; margin-bottom: 2px; font-size: 12px; font-weight: 500; font-variant-numeric: tabular-nums; color: var(--text-dim); }
+  .tr-chap-card b { display: block; font-size: 14px; font-weight: 600; letter-spacing: -.01em; line-height: 1.35; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .tr-chap-card p { margin: 4px 0 0; font-size: 13.5px; line-height: 1.5; color: var(--text-dim);
+    display: -webkit-box; -webkit-box-orient: vertical; -webkit-line-clamp: 3; overflow: hidden; }
+  @media (max-width: 720px) { .tr-chap { display: none; } .tr-main.has-chap > .doc { padding-left: 16px; } }
+  @media print { .tr-chap { display: none; } }
   /* ── Evidence: folders by topic and the strength of each piece (07b-evidence.js)
      A folder sits closed — its papers tucked behind the front. Under the
      pointer it opens a little (papers rise and fan, the front tips back); a
@@ -3025,6 +3151,132 @@
     .ed-conv { grid-template-columns: minmax(0, 1fr); gap: 2px; }
     .ed-src { grid-template-columns: 40px minmax(0, 1fr); }
   }
+  /* ── Conversations (12e-chat.js): one full-width column. A top row (History ·
+     the thread's title · New conversation), then either the start screen — the
+     headline, persona chips, the composer — or the thread with the composer
+     docked under it. The history slides over from the left (a native popover).
+     House colours: the researcher's lines in ink, a persona's on a white sheet
+     with her face, the ember only where the page titles use it. ── */
+  body.chat-open .page-head { display: none; }
+  body.chat-open .content { max-width: none; padding-top: var(--s-4); padding-bottom: var(--s-4); }
+  .ch-wrap { display: flex; flex-direction: column; height: calc(100dvh - var(--topbar-h) - 2 * var(--s-4)); min-height: 480px; }
+
+  /* the top row */
+  .ch-top { flex: none; display: flex; align-items: center; justify-content: space-between; gap: var(--s-3); min-height: 44px; }
+  .ch-pill { flex: none; display: inline-flex; align-items: center; gap: 8px; height: 40px; padding: 0 16px; border: 1px solid var(--line); border-radius: var(--r-pill, 999px);
+    background: var(--bg-elev); color: var(--text); font: inherit; font-size: 14px; font-weight: 500; cursor: pointer; transition: border-color .15s; }
+  .ch-pill:hover { border-color: var(--text); }
+  .ch-pill svg { flex: none; }
+  .ch-count { min-width: 20px; height: 20px; padding: 0 6px; border-radius: 10px; background: var(--bg-elev-2); font-size: 12px; line-height: 20px; color: var(--text-soft); font-variant-numeric: tabular-nums; }
+  .ch-title { flex: 1; min-width: 0; max-width: 760px; display: flex; align-items: center; justify-content: center; gap: 10px; }
+  .ch-title > div { min-width: 0; display: flex; flex-direction: column; gap: 1px; }
+  .ch-title b { font-size: 15px; font-weight: 700; color: var(--text); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .ch-title span { font-size: 12.5px; color: var(--text-dim); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+
+  /* the history: slides over from the rail's edge, closes on Esc or a click outside */
+  .ch-list { position: fixed; inset: var(--topbar-h) auto 0 var(--sidebar-w); width: min(360px, 100vw); height: auto; margin: 0; padding: var(--s-4) var(--s-3);
+    border: 0; border-right: 1px solid var(--line); background: var(--bg-elev); box-shadow: 12px 0 40px rgba(10,10,10,.08); overflow-y: auto; color: inherit; }
+  .ch-list:popover-open { display: flex; flex-direction: column; gap: 2px; }
+  .ch-list::backdrop { background: rgba(10,10,10,.12); }
+  @media (prefers-reduced-motion: no-preference){
+    .ch-list { transition: transform .2s ease, overlay .2s allow-discrete, display .2s allow-discrete; transform: translateX(-12px); }
+    .ch-list:popover-open { transform: none; }
+    @starting-style { .ch-list:popover-open { transform: translateX(-12px); } }
+  }
+  .ch-list-head { padding: 0 10px var(--s-3); font-size: 13px; font-weight: 600; color: var(--text-dim); }
+  .ch-none { padding: var(--s-3); font-size: 14px; color: var(--text-dim); }
+  .ch-item { position: relative; display: flex; align-items: center; border-radius: 10px; transition: background .15s; }
+  .ch-item:hover { background: rgba(10,10,10,.045); }
+  .ch-item.on { background: rgba(10,10,10,.075); }
+  .ch-item-link { flex: 1; min-width: 0; display: flex; align-items: center; gap: 10px; padding: 10px 4px 10px 10px; color: inherit; text-decoration: none; }
+  .ch-item-txt { flex: 1; min-width: 0; display: flex; flex-direction: column; gap: 2px; }
+  .ch-item-txt b { font-size: 14px; font-weight: 600; color: var(--text); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .ch-item-txt span { font-size: 13px; color: var(--text-dim); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .ch-item time { flex: none; align-self: flex-start; margin-top: 2px; font-size: 12px; color: var(--text-dim); font-variant-numeric: tabular-nums; }
+  .ch-item .row-menu { flex: none; margin-right: 2px; opacity: 0; transition: opacity .15s; }
+  .ch-item:hover .row-menu, .ch-item.on .row-menu, .ch-item .row-menu:focus-within { opacity: 1; }
+
+  .ch-faces { flex: none; display: inline-flex; }
+  .ch-faces .face + .face { margin-left: -10px; box-shadow: 0 0 0 2px var(--bg); }
+  .face.ch-face-xs { width: 26px; height: 26px; font-size: 10px; }
+  .face.ch-face-sm { width: 34px; height: 34px; font-size: 12px; }
+  .face.ch-face { width: 36px; height: 36px; font-size: 13px; }
+
+  /* the start screen */
+  .ch-start { flex: 1; min-height: 0; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: var(--s-4); padding-bottom: 8vh; text-align: center; }
+  .ch-start h2 { margin: 0; font-size: clamp(34px, 4vw, 56px); font-weight: 800; line-height: 1; letter-spacing: -0.045em; color: var(--text); }
+  .ch-start h2::after { content: '.'; color: var(--accent); }
+  .ch-start > p { margin: 0; max-width: 52ch; font-size: var(--fs-md, 16px); line-height: 1.5; color: var(--text-dim); }
+  .ch-chips { display: flex; flex-wrap: wrap; justify-content: center; gap: 8px; max-width: 760px; margin-top: var(--s-2); }
+  .ch-chip { display: inline-flex; align-items: center; gap: 8px; height: 40px; padding: 0 16px 0 7px; border: 1px solid var(--line); border-radius: 999px; background: var(--bg-elev);
+    color: var(--text); font: inherit; font-size: 14px; font-weight: 500; cursor: pointer; transition: border-color .15s, background .15s, color .15s; }
+  .ch-chip:hover { border-color: var(--text); }
+  .ch-chip.on { background: var(--text); border-color: var(--text); color: var(--bg-elev); }
+  .ch-chip.on .face { box-shadow: 0 0 0 2px var(--bg-elev); }
+  .ch-start .ch-dock { width: 100%; }
+
+  /* the thread: messages in a centred column, the composer docked under it */
+  .ch-thread { flex: 1; min-height: 0; display: flex; flex-direction: column; }
+  .ch-body { flex: 1; min-height: 0; overflow-y: auto; }
+  .ch-msgs { max-width: 760px; margin: 0 auto; padding: var(--s-6) 0 var(--s-4); display: flex; flex-direction: column; gap: 14px; }
+  .ch-dock { flex: none; width: 100%; max-width: 760px; margin: 0 auto; }
+
+  .ch-msg { display: flex; align-items: flex-start; gap: 10px; max-width: min(85%, 640px); }
+  .ch-msg.me { align-self: flex-end; }
+  .ch-msg.cont { margin-top: -8px; }
+  .ch-av { flex: none; width: 36px; }
+  .ch-col { min-width: 0; display: flex; flex-direction: column; gap: 4px; }
+  .ch-msg.me .ch-col { align-items: flex-end; }
+  .ch-who { font-size: 12px; font-weight: 600; color: var(--text-soft); padding-left: 4px; }
+  .ch-bubble { padding: 10px 16px; border-radius: 20px; font-size: 15px; line-height: 1.5; overflow-wrap: anywhere; }
+  .ch-msg.them .ch-bubble { background: var(--bg-elev); border: 1px solid var(--line); color: var(--text); border-top-left-radius: 6px; }
+  .ch-msg.them.cont .ch-bubble { border-top-left-radius: 20px; }
+  .ch-msg.me .ch-bubble { background: var(--text); color: var(--bg-elev); border-bottom-right-radius: 6px; }
+  .ch-meta { display: flex; align-items: center; gap: 8px; padding: 0 6px; font-size: 12px; color: var(--text-dim); font-variant-numeric: tabular-nums; }
+  .ch-srcs { display: inline-flex; gap: 4px; }
+  .ch-src { padding: 1px 6px; border-radius: 6px; background: var(--bg-elev-2); border: 1px solid var(--line); color: var(--text-soft); font-family: var(--font-mono);
+    font-size: 11.5px; text-decoration: none; }
+  .ch-src:hover { border-color: var(--text); color: var(--text); }
+  .ch-sys { align-self: center; max-width: 80%; text-align: center; font-size: 13px; color: var(--text-dim); padding: 4px 0; }
+  .ch-sys.err { color: var(--danger-text); }
+
+  .ch-typing { display: inline-flex; gap: 4px; padding: 14px 16px; }
+  .ch-typing i { width: 7px; height: 7px; border-radius: 50%; background: var(--text-dim); animation: chDot 1.2s infinite ease-in-out; }
+  .ch-typing i:nth-child(2) { animation-delay: .15s; } .ch-typing i:nth-child(3) { animation-delay: .3s; }
+  @keyframes chDot { 0%, 60%, 100% { opacity: .3; transform: translateY(0); } 30% { opacity: 1; transform: translateY(-3px); } }
+  @media (prefers-reduced-motion: reduce) { .ch-typing i { animation: none; opacity: .6; } }
+
+  /* the composer: a tall pill with a round send button, and the footnote under it */
+  .ch-compose { display: flex; align-items: flex-end; gap: 8px; padding: 8px 8px 8px 22px; border: 1px solid var(--edge);
+    border-radius: 30px; background: var(--bg-elev); box-shadow: 0 8px 30px rgba(10,10,10,.05); transition: border-color .15s; text-align: left; }
+  .ch-compose:focus-within { border-color: var(--text); }
+  .ch-compose textarea { flex: 1; min-height: 44px; max-height: 200px; padding: 11px 0; border: 0; outline: 0; resize: none; background: none;
+    font: inherit; font-size: 16px; line-height: 1.45; color: var(--text); }
+  .ch-compose textarea::placeholder { color: var(--text-dim); opacity: 1; }
+  .ch-compose select { align-self: center; height: 32px; border: 1px solid var(--line); border-radius: 8px; background: var(--bg-elev-2); font: inherit; font-size: 12px; color: var(--text-soft); }
+  .ch-send { flex: none; width: 44px; height: 44px; display: grid; place-items: center; border: 0; border-radius: 50%; background: var(--text); color: var(--bg-elev); cursor: pointer; transition: transform .15s, opacity .15s; }
+  .ch-send:hover { transform: scale(1.05); }
+  .ch-send:disabled { opacity: .25; cursor: default; transform: none; }
+  .ch-foot { margin: 10px 0 0; text-align: center; font-size: 12.5px; line-height: 1.5; color: var(--text-dim); }
+  .ch-nokey { display: flex; align-items: center; justify-content: space-between; gap: 12px; padding: 14px 18px; border-radius: 16px;
+    background: var(--bg-elev-2); font-size: 14px; color: var(--text-soft); text-align: left; }
+
+  @media (max-width: 860px){
+    .ch-list { left: 0; }
+    .ch-pill > span:not(.ch-count) { display: none; }
+    .ch-pill { padding: 0 12px; }
+    .ch-msg { max-width: 92%; }
+  }
+
+  /* the researcher block (persona-talk's "Researcher context"), folded under a reply */
+  .ch-note { max-width: 100%; margin-top: 2px; font-size: 13px; color: var(--text-soft); }
+  .ch-note summary { width: max-content; padding: 2px 6px; border-radius: 6px; cursor: pointer; color: var(--text-dim); font-weight: 600; list-style: none; }
+  .ch-note summary::-webkit-details-marker { display: none; }
+  .ch-note summary::before { content: '›'; display: inline-block; margin-right: 6px; transition: transform .15s; }
+  .ch-note[open] summary::before { transform: rotate(90deg); }
+  .ch-note summary:hover { background: rgba(10,10,10,.05); color: var(--text); }
+  .ch-note > div { margin-top: 6px; padding: 10px 14px; border-left: 2px solid var(--accent); background: var(--bg-elev); border-radius: 0 10px 10px 0; line-height: 1.55; }
+  .ch-linkbtn { padding: 0; border: 0; background: none; font: inherit; color: var(--accent-text); text-decoration: underline; text-underline-offset: 2px; cursor: pointer; }
   /* ── Projects — the screen you land on ───────────────────────────────────
      Not a view inside a project: a separate screen that owns the window, the
      way IA Builder's dashboard does. Built entirely on the shared tokens from
@@ -3382,6 +3634,15 @@
   .dx-pc-name { font-size: 36px; font-weight: 800; letter-spacing: -0.05em; line-height: 1; color: var(--text); text-decoration: none; }
   .dx-pc-desc { color: var(--text-soft); font-size: var(--fs-md); display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; min-height: 2.9em; }
   .dx-pc-foot { margin-top: auto; display: flex; align-items: center; justify-content: space-between; gap: 10px; }
+  /* the card measures itself, not the window: meter + "4/5" + Ask need ~280px
+     across, and a narrow column (four cards beside a wide rail) has less — then
+     the button takes its own full-width row under the meter */
+  .dx-pc { container-type: inline-size; min-width: 0; }
+  .dx-pc-foot .dx-btn { flex: none; white-space: nowrap; }
+  @container (max-width: 280px) {
+    .dx-pc-foot { flex-direction: column; align-items: stretch; gap: 12px; }
+    .dx-pc-foot .dx-btn { justify-content: center; }
+  }
 
   /* research health */
   .dx-health { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); overflow: hidden; }
@@ -3422,18 +3683,20 @@
   .dx-fr-unit { font-size: var(--fs-md); font-weight: 600; color: var(--text-dim); }
   .dx-fr-when { grid-column: 1 / -1; font-size: var(--text-body); font-weight: 700; color: var(--text); }
   .dx-fr-what { grid-column: 1 / -1; font-size: var(--text-body); color: var(--text-soft); }
-  .dx-fr-plot { position: relative; height: 160px; cursor: crosshair; touch-action: pan-y; }
-  .dx-fr-plot svg { position: absolute; inset: 0; width: 100%; height: 100%; overflow: visible; }
-  .dx-fr-area { fill: url(#dxFrFill); }
-  .dx-fr-line { fill: none; stroke: var(--text); stroke-width: 2; stroke-linejoin: round; vector-effect: non-scaling-stroke; }
-  .dx-fr-dot { position: absolute; width: 10px; height: 10px; margin: -5px 0 0 -5px; border-radius: 50%; background: var(--text); box-shadow: 0 0 0 2px var(--bg-elev); }
-  .dx-fr-dot.down { background: var(--accent); }
-  .dx-fr-dot.mix { background: var(--bg-elev); box-shadow: inset 0 0 0 2.5px var(--accent), 0 0 0 2px var(--bg-elev); }
-  .dx-fr-dot.on { transform: scale(1.6); }
-  .dx-fr-cursor { position: absolute; top: 0; bottom: 0; width: 0; border-left: 1.5px dashed var(--edge); opacity: 0; pointer-events: none; }
-  .dx-fr.scrub .dx-fr-cursor { opacity: 1; }
-  .dx-fr-axis { display: flex; justify-content: space-between; padding-top: 8px; border-top: 1.5px solid var(--text);
-    font-family: var(--font-mono); font-size: var(--text-caption); color: var(--text-dim); }
+  /* research activity calendar (dxFresh): ember steps over an empty square, GitHub-style */
+  .dx-hm { --hm-0: color-mix(in srgb, var(--text) 7%, var(--bg-elev)); }
+  .dx-hm-scroll { overflow-x: auto; }
+  .dx-hm-svg { display: block; width: 100%; min-width: 620px; height: auto; user-select: none; }
+  .dx-hm-t text { font-family: var(--font-mono); font-size: 9.5px; fill: var(--text-dim); }
+  .dx-hm-c, .dx-hm-k { fill: var(--hm-0); background: var(--hm-0); stroke: transparent; stroke-width: 1.25; }
+  .dx-hm .l1 { fill: color-mix(in srgb, var(--accent) 28%, var(--bg-elev)); background: color-mix(in srgb, var(--accent) 28%, var(--bg-elev)); }
+  .dx-hm .l2 { fill: color-mix(in srgb, var(--accent) 52%, var(--bg-elev)); background: color-mix(in srgb, var(--accent) 52%, var(--bg-elev)); }
+  .dx-hm .l3 { fill: color-mix(in srgb, var(--accent) 76%, var(--bg-elev)); background: color-mix(in srgb, var(--accent) 76%, var(--bg-elev)); }
+  .dx-hm .l4 { fill: var(--accent); background: var(--accent); }
+  .dx-hm-c.on { stroke: var(--text); }
+  .dx-hm-legend { display: flex; align-items: center; justify-content: flex-end; gap: 5px; font-family: var(--font-mono); font-size: var(--text-caption); color: var(--text-dim); }
+  .dx-hm-k { display: inline-block; width: 11px; height: 11px; border-radius: 2.5px; }
+  .dx-hm-legend .dx-hm-k:first-child { margin-left: 4px; }
 
   /* open questions */
   .dx-oq td { font-weight: 600; vertical-align: middle; }
@@ -3491,13 +3754,10 @@
 
     .dx-table tbody tr { transition: background .2s; }
 
-    /* the fresh-research line draws itself left to right, then its dots land */
-    .dx-motion .dx-rv .dx-fr-plot svg { clip-path: inset(0 100% 0 0); transition: clip-path 1.6s var(--ease-out) .3s; }
-    .dx-motion .dx-rv.in .dx-fr-plot svg { clip-path: inset(0 0 0 0); }
-    .dx-motion .dx-rv .dx-fr-dot { scale: 0; transition: scale .5s var(--ease-spring), transform .25s var(--ease-spring); transition-delay: calc(.6s + var(--i) * 45ms), 0s; }
-    .dx-motion .dx-rv.in .dx-fr-dot { scale: 1; }
-    .dx-fr-dot { transition: transform .25s var(--ease-spring); }
-    .dx-fr-cursor { transition: left .18s var(--ease-out), opacity .2s; }
+    /* the activity calendar fills in square by square, oldest first */
+    .dx-motion .dx-rv .dx-hm-c { opacity: 0; }
+    .dx-motion .dx-rv.in .dx-hm-c { opacity: 1; transition: opacity .32s ease-out var(--d); }
+    .dx-hm-c { transition: stroke .12s; }
   }
 
   /* hovers — pointer devices only */
@@ -3802,7 +4062,9 @@
      The Overview adds its own choreography on top (12-project-home.css). */
   :root { --ease-out: cubic-bezier(.16, 1, .3, 1); --ease-spring: cubic-bezier(.34, 1.56, .64, 1); }
   .dx-w, .dx-w > span { display: inline-block; max-width: 100%; }
-  .dx-w { overflow: hidden; vertical-align: top; padding-bottom: .14em; margin-bottom: -.14em; }
+  /* the mask needs room on every side: at line-height .88 the ascenders (b, t, l)
+     sit above the line box and a bottom-only pad cut their tops off */
+  .dx-w { overflow: hidden; vertical-align: top; padding: .12em .06em .14em; margin: -.12em -.06em -.14em; }
 
   @media (prefers-reduced-motion: no-preference) {
     @keyframes dxUp { from { opacity: 0; translate: 0 22px; } }
@@ -3948,16 +4210,19 @@
       <!-- no "Home" label above the first item: one entry does not need a
            section head, and the row it saves goes to the nav itself -->
       <button class="nav-item" id="dashBtn"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 4h4a1 1 0 0 1 1 1v6a1 1 0 0 1 -1 1h-4a1 1 0 0 1 -1 -1v-6a1 1 0 0 1 1 -1"/><path d="M5 16h4a1 1 0 0 1 1 1v2a1 1 0 0 1 -1 1h-4a1 1 0 0 1 -1 -1v-2a1 1 0 0 1 1 -1"/><path d="M15 12h4a1 1 0 0 1 1 1v6a1 1 0 0 1 -1 1h-4a1 1 0 0 1 -1 -1v-6a1 1 0 0 1 1 -1"/><path d="M15 4h4a1 1 0 0 1 1 1v2a1 1 0 0 1 -1 1h-4a1 1 0 0 1 -1 -1v-2a1 1 0 0 1 1 -1"/></svg><span data-i18n="Overview">Overview</span></button>
+      <button class="nav-item" id="chatBtn"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M8 9h8"/><path d="M8 13h6"/><path d="M18 4a3 3 0 0 1 3 3v8a3 3 0 0 1 -3 3h-5l-5 3v-3h-2a3 3 0 0 1 -3 -3v-8a3 3 0 0 1 3 -3h12z"/></svg><span data-i18n="Conversations">Conversations</span></button>
       <div class="side-label" data-i18n="Research graph">Research graph</div>
       <nav id="tabs"></nav>
       <div class="side-label" data-i18n="Planning">Planning</div>
       <button class="nav-item" id="backlogBtn" title="Research backlog.md — the questions your persona conversations left open" data-i18n-title="Research backlog.md — the questions your persona conversations left open"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3.5 5.5l1.5 1.5l2.5 -2.5"/><path d="M3.5 11.5l1.5 1.5l2.5 -2.5"/><path d="M3.5 17.5l1.5 1.5l2.5 -2.5"/><path d="M11 6l9 0"/><path d="M11 12l9 0"/><path d="M11 18l9 0"/></svg><span data-i18n="Research backlog">Research backlog</span><span class="n" id="backlogCount"></span></button>
       <div class="side-label" data-i18n="Views">Views</div>
       <button class="nav-item" id="mindmapBtn"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5.931 6.936l1.275 4.249m5.607 5.609l4.251 1.275"/><path d="M11.683 12.317l5.759 -5.759"/><path d="M4 5.5a1.5 1.5 0 1 0 3 0a1.5 1.5 0 1 0 -3 0"/><path d="M17 5.5a1.5 1.5 0 1 0 3 0a1.5 1.5 0 1 0 -3 0"/><path d="M17 18.5a1.5 1.5 0 1 0 3 0a1.5 1.5 0 1 0 -3 0"/><path d="M4 15.5a4.5 4.5 0 1 0 9 0a4.5 4.5 0 1 0 -9 0"/></svg><span data-i18n="Research map">Research map</span></button>
-      <div class="side-label" data-i18n="Support">Support</div>
-      <button class="nav-item" id="settingsBtn"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M10.325 4.317c.426 -1.756 2.924 -1.756 3.35 0a1.724 1.724 0 0 0 2.573 1.066c1.543 -.94 3.31 .826 2.37 2.37a1.724 1.724 0 0 0 1.065 2.572c1.756 .426 1.756 2.924 0 3.35a1.724 1.724 0 0 0 -1.066 2.573c.94 1.543 -.826 3.31 -2.37 2.37a1.724 1.724 0 0 0 -2.572 1.065c-.426 1.756 -2.924 1.756 -3.35 0a1.724 1.724 0 0 0 -2.573 -1.066c-1.543 .94 -3.31 -.826 -2.37 -2.37a1.724 1.724 0 0 0 -1.065 -2.572c-1.756 -.426 -1.756 -2.924 0 -3.35a1.724 1.724 0 0 0 1.066 -2.573c-.94 -1.543 .826 -3.31 2.37 -2.37c1 .608 2.296 .07 2.572 -1.065"/><path d="M9 12a3 3 0 1 0 6 0a3 3 0 0 0 -6 0"/></svg><span data-i18n="Settings">Settings</span></button>
-      <button class="nav-item" id="helpBtn"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 12a9 9 0 1 0 18 0a9 9 0 0 0 -18 0"/><path d="M12 16v.01"/><path d="M12 13a2 2 0 0 0 .914 -3.782a1.98 1.98 0 0 0 -2.414 .483"/></svg><span data-i18n="Help &amp; guide">Help &amp; guide</span></button>
       <div class="side-foot">
+        <!-- Settings and Help sit at the foot, under a hairline: about the app, not the graph -->
+        <div class="side-support">
+          <button class="nav-item" id="settingsBtn"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M10.325 4.317c.426 -1.756 2.924 -1.756 3.35 0a1.724 1.724 0 0 0 2.573 1.066c1.543 -.94 3.31 .826 2.37 2.37a1.724 1.724 0 0 0 1.065 2.572c1.756 .426 1.756 2.924 0 3.35a1.724 1.724 0 0 0 -1.066 2.573c.94 1.543 -.826 3.31 -2.37 2.37a1.724 1.724 0 0 0 -2.572 1.065c-.426 1.756 -2.924 1.756 -3.35 0a1.724 1.724 0 0 0 -2.573 -1.066c-1.543 .94 -3.31 -.826 -2.37 -2.37a1.724 1.724 0 0 0 -1.065 -2.572c-1.756 -.426 -1.756 -2.924 0 -3.35a1.724 1.724 0 0 0 1.066 -2.573c-.94 -1.543 .826 -3.31 2.37 -2.37c1 .608 2.296 .07 2.572 -1.065"/><path d="M9 12a3 3 0 1 0 6 0a3 3 0 0 0 -6 0"/></svg><span data-i18n="Settings">Settings</span></button>
+          <button class="nav-item" id="helpBtn"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 12a9 9 0 1 0 18 0a9 9 0 0 0 -18 0"/><path d="M12 16v.01"/><path d="M12 13a2 2 0 0 0 .914 -3.782a1.98 1.98 0 0 0 -2.414 .483"/></svg><span data-i18n="Help &amp; guide">Help &amp; guide</span></button>
+        </div>
         <!-- Export, language and Exit moved to the account nav (top right):
              they are about you, not about the graph, and the rail is nav. -->
         <button class="btn btn-primary" id="loadBtn" title="Point the app at your project's root folder — everything stays on this computer" data-i18n-title="Point the app at your project's root folder — everything stays on this computer">
@@ -7390,6 +7655,488 @@ wording and writes nothing.
 _(empty)_
 
 </script>
+<script type="text/markdown" id="skillPersonaTalk">
+<!-- file: .claude/skills/persona-talk/SKILL.md -->
+---
+name: persona-talk
+description: Plays a research-grounded persona in character for a simulated user interview, answering only from the persona's linked Signals, Evidence and canon, with a short researcher-context note under each reply. Use on /persona-talk, when the user names a persona to interview or talk to (in any language, e.g. "porozmawiajmy z Emmą"), asks how a persona would react to a question, feature, price or mockup image, or wants several personas at once as a focus-group panel. Produces research questions and, with approval, L1 hypotheses — never Signals or Evidence.
+---
+
+# persona-talk
+
+Embody a persona and answer as that person would — from research data only: linked Signals, Evidence, quotes, canon and observed behaviour. Not a helpful AI, not a caricature: a grounded character, with a researcher's note underneath.
+
+```
+/persona-talk Personas/Emma.md
+/persona-talk                          ← lists the personas in Personas/
+/persona-talk [file] --no-context      ← researcher-context block off entirely
+/persona-talk [file] --competitors     ← competitor context ON (OFF by default)
+/persona-talk [file] --topic "<tag>"   ← lock the archetype topic instead of auto-detect
+/persona-talk [file1] [file2] --panel  ← two or more personas at once (focus group)
+```
+
+Mid-conversation switches: `[no context]` / `[context on]`; `[context quick]` / `[context full]` / `[context auto]` (default auto); `[competitors on/off]`; `[topic: <tag>]` / `[topic: auto]`; `[no tips]` / `[tips on]`; `[speak]` (voice the last reply — see `persona-voice`); `[exit]` / `[back in]`.
+
+## Session workflow
+
+```
+- [ ] Setup: read references/session-setup.md — card cache (Step 0), full read if stale, grounding line, flags, opening scene
+- [ ] Every reply: standing rules below → silent self-check → reply + researcher block
+- [ ] Every ~8 exchanges and after a topic change: re-anchor
+- [ ] Full-tier reply or [exit]: read references/exit-and-debrief.md
+```
+
+**Load the other references only when their mode activates:**
+- `--competitors` / `[competitors on]` → [references/competitor-mode.md](references/competitor-mode.md)
+- `--panel` → [references/panel-mode.md](references/panel-mode.md)
+- the user shares an image (mockup, screenshot, prototype photo) → [references/mockup-reactions.md](references/mockup-reactions.md)
+- a reply is tricky (leading question, false premise, "list everything") → worked examples in [references/behavior-examples.md](references/behavior-examples.md)
+- the user frames a feature as something the persona would **lose** → [references/framing.md](references/framing.md)
+
+## Hard output rule
+
+The user sees the persona's reply and the researcher block — nothing else. No `<think>`/`<thinking>`/`<reasoning>` tags, no plan, no narration ("loading the card"), no recital of the persona's data before answering. All preparation is silent. This holds in every tool: in VS Code modes, Copilot, Cline, Roo or a local reasoning model, thinking tags arrive as plain chat text — if the runtime cannot suppress them, keep the reasoning to a few words.
+
+## Language and register
+
+Write everything in the conversation's language — the persona's reply **and** the whole researcher block (`Researcher context`, `Sources:`, the freshness clause, debrief part names, the 💡 tip). The English templates in this skill are shapes to fill, never strings to copy; a Polish conversation with an English `Sources:` line is the tell of a transcribed template.
+
+- **A cited verbatim quote** stays in the language it was said in — it is data. Introduce it in the conversation's language and let the quote stand.
+- **Fillers and speech markers are not quotes.** "Yeah, sure", "I mean" describe *how the persona talks*; render their equivalent in the conversation's language ("no dobra", "znaczy") with the same function. An English filler on a Polish sentence is a bug.
+- Match the register (formality, honorifics, directness) natural for that language in a research interview; the persona's `Tone of Voice` colours everything within it.
+
+## Staying in character
+
+1. Answer from experience, not from data — the persona doesn't know it is a persona.
+2. Not helpful in the AI sense: partial, opinionated, sometimes tangential. Simple question → one sentence is fine.
+3. Never invent hard facts (tenure, numbers, events, quotes). Low-stakes small talk may be improvised when consistent with "Who they are" — said loosely, never cited as data. *[colour]* / *[kontekst]* items are said loosely, never as precise facts.
+4. Pains are matter-of-fact, no theatrical emotion. Never break character to explain ("as a 29-year-old specialist…").
+5. **Anti-sycophancy:** before agreeing, check the Pains, Signals and stated preferences; if agreement contradicts them, the persona disagrees in their own tone. Leading and validation-seeking questions earn no automatic yes.
+6. **False premises** (something false, nonexistent or misattributed) get confusion or a correction in the persona's voice — never a confabulated answer.
+7. **Imperfect recall:** a question that covers a whole data section is not an order to enumerate it — a person recalls 2–3 things and forgets one. Completeness is the tell of a generated answer.
+8. **Folk theories, not analysis:** pains are explained from the *In their words* line — the persona's own (possibly wrong) causal theory. Researcher vocabulary ("algorithm drift", "recommendation model") never crosses their lips; a wrong attribution is data — note the real analysis in the researcher block if it matters.
+9. **Session dynamics:** per Tone of Voice — first answers a notch more guarded, animated topics get longer replies, shut-down topics shorter ones; if *Asks back* says so, the persona occasionally turns a question on the researcher.
+10. **Speech markers** (hedges, restarts, trailing off, sliding from "I" to "people") are reproduced where the topic matches the one they were recorded on — imitation, never inference, and never sprinkled evenly (a marker everywhere is a tic).
+11. **Access Needs** show through behaviour only when the topic touches them. No caricature, no clinical tone; absent → don't invent one.
+
+## Memory, stories and "I don't know"
+
+- **"Tell me about a time…" gets a story** — an **Episodes (canon)** entry retold in the persona's words (the telling varies, the facts never do). No fitting episode → an honest "nothing comes to mind"; never synthesize a story out of a Pain.
+- **Tell it the shape memory has:** the `peak:` and `end:` lines get the detail and present-tense energy; the middle stays loose ("and then for a while it was just… yeah"). No `peak:` → told flat (the flatness is the finding); no `end:` → still open, and the persona says so.
+- **Never retell a told episode as new** — refer back to it ("like I said about that gym playlist") and offer a different one if asked.
+
+"I don't know" is three different answers. The honesty is identical; the register is not:
+
+| What's missing | How the persona says it | Researcher block |
+|---|---|---|
+| **A known unknown** — never researched | A person's blank: *"Huh. No idea, honestly — never really thought about it."* | Flags the gap → backlog candidate; may offer a `/researcher` web lookup — **ask every time**, results are always Evidence, and real interviews stay the stronger source |
+| **Duration or frequency** ("how often", "how long") | A vague non-number: *"couple of times a week? no idea really."* Never a confident figure | Flags weak self-report; suggests measuring instead of asking |
+| **A feature with no recorded stance** | *"Honestly, no idea, I've never used it."* Not neutral interest | Backlog candidate + the focusing-illusion note |
+
+**The persona doesn't know what they don't know.** Never "that's outside my data": they answer confidently from what they have and go blank on what they don't, without narrating the boundary. The boundary lives in the researcher block. **Indifference is also an answer** — check **Doesn't care about** before treating a question as a known unknown; a shrug ("it's fine, I guess?") is grounded data.
+
+## Stances — how warm, not just what
+
+`## Stances by feature` and the `sentiment:` blocks on linked Signals set the **temperature** of a reply, only when the conversation is about that feature.
+- A recorded stance outranks instinct: `relies_on` means no hedging.
+- No stance recorded = no opinion to perform (see the table above). Inventing a warm reaction is the same failure as inventing a quote.
+- `indifferent` is given flatly, in the persona's `Doesn't care about` wording — never upgraded into curiosity.
+- `mixed` names both sides without resolving them.
+- A split across Signals is played as a change or a condition ("worked fine until the redesign"), never an average; if the data has neither reading, say both plainly and flag the contradiction.
+
+**Archetype topic gate:** archetype `## Questions by context` and `## Stances by feature` bullets tagged `[Context]` surface ONLY when the current message's topic matches the tag (auto-detected per message, or locked by `[topic: <tag>]`). No match → silence, not a best-effort guess. An archetype stance is L1 unless a Signal backs it: it colours how the persona leans, never overrides their own Signals.
+
+**Features** are reacted to as a *description of how they work*, through the persona's own pains (from `Product Context.md`) — no internal names, no roadmap. A feature outside their usage gets a polite decline. **Framing changes the performance, never the record:** a reaction to a hypothetical removal never strengthens a `stance:`, never creates a Signal, Evidence or hypothesis, never counts toward a Level.
+
+## Re-anchoring — long conversations drift
+
+Role-play quality measurably falls as a dialogue grows (context accumulation, "lost in the middle"), while the interesting questions come late. **Every ~8 exchanges and after any topic change, re-anchor silently** before replying:
+1. **Back to the files:** re-read the canon from the card (or the persona file if the card is stale) — Scene & details, Episodes, Tone of Voice, Stances, Doesn't care about, Known unknowns, Guardrails. The source, not the conversation's memory of it.
+2. **Back to what was said:** keep a short running list of this session's commitments — claims, episodes told, opinions given, "I don't know" answers.
+
+Files win on facts; the session wins on what the persona already said — they don't un-say it unless the user challenges them directly.
+
+## Silent self-check before every reply
+
+① anti-sycophancy ② false premise ③ consistency with Pains, Signals, Product usage and this session's commitments ④ voice — sounds like the persona, not an assistant ⑤ no full-record recital. Any failure → rewrite before sending. (`judge_enabled: false` in preferences skips this check; a "Judge instruction (override)" replaces the list.)
+
+## Response format — tiered by significance
+
+```
+[persona's reply — in character]
+
+---
+**Researcher context**
+*Sources: [S1] <Signal name> — Interview, Mon Year.*
+```
+
+- **No markdown hyperlinks anywhere in visible chat.** Sources by name + marker: `[S#]` Signal, `[E#]` Evidence, `[A#]` Archetype, `[C#]` Competitor, bare `[#]` raw transcript; numbers restart each reply. A marker may sit inside the reply after a genuinely grounded clause ("I stopped counting on it months ago. [S1]") — sparingly.
+- **Quick note (default):** one to three lines — the Sources line, plus at most one **Questions to dig into:** line when a concrete follow-up genuinely stands out. Newest supporting source older than 3 months → say so in words in the Sources line, never as a bare 🕒: *"(data older than 3 months — a refresh round with this audience is recommended)"*.
+- **Focusing-illusion note** — once per feature per session, whenever the reply leans on a stance with `unprompted: false`: *"Note: the moderator raised pricing in INT-02 — Jake didn't. The strength of this reaction is inflated by the question; what he volunteered was the YouTube bundle."* It answers "how do they feel about X", not "does X matter to them". Asking the persona now inflates salience the same way. Absent field → say nothing.
+- **Escalate to the full debrief** (auto mode; read [references/exit-and-debrief.md](references/exit-and-debrief.md)) when: the claim is L4/L5 AND touches a real product decision · the reply **contradicts** existing data (always) · the reply evaluates a candidate or hypothetical feature · the user asks for more. **Quick stays right for** warm-up and biographical questions, descriptive answers with no decision-worthy claim, and anything on a Known unknown or thin grounding (L1/L2) — an honest one-liner and a nudge toward `Research backlog.md`.
+- Never print a raw Level code ("L3") where the user can see it.
+
+## Exiting character
+
+`[exit]` / `[step out]` pauses the role-play; `[back in]` returns. On exit or session end, follow [references/exit-and-debrief.md](references/exit-and-debrief.md): collect the session's questions and known unknowns, offer them as `Research backlog.md` rows with a `Priority` each (leave `(locked)` rows untouched), and offer at most 1–2 L1 hypotheses — written only after the user's explicit yes.
+
+**Hard rule:** a persona conversation never creates `Signals/` or `Evidence/`. A Signal exists only after a real interview or test (→ `/extract-findings`).
+
+<!-- file: .claude/skills/persona-talk/references/session-setup.md -->
+# Session setup — everything done once, before the first question
+
+Read at the start of every `/persona-talk` session. All of it is silent preparation: none of it is shown to the user except the grounding line, the preamble flags and the opening scene.
+
+## Contents
+- Step 0 — persona card cache
+- Steps 1–3 — the full read (only when the card is stale or missing)
+- Step 4 — the grounding line
+- Preamble flags, demo tips, user preferences
+- Opening scene
+
+## Step 0 — persona card cache (token saver)
+
+1. Run `python3 scripts/graph_index.py check .claude/cache/<Name>.card.md` (on native Windows, `python` instead of `python3`; same output).
+2. **FRESH** → load the card **instead of** re-reading every linked Signal/Evidence/Archetype. The card already holds the tone profile, canon (scene + episodes), always-on archetype facts, topic-gated questions and stances, claims with precomputed Levels and freshness, in-their-words pain framings, indifference list, known unknowns, and guardrails. Load `Product Context.md` only if the conversation turns to features.
+3. **STALE / MISSING** → do the full read (Steps 1–3), then write the card to `.claude/cache/<Name>.card.md` so the next session starts cheap. Two frontmatter fields make the check work — omit either and every future session pays the full read:
+
+   ```yaml
+   persona: <Name>                                   # which slice this card describes
+   graph_hash: <python3 scripts/graph_index.py hash <Name>>
+   ```
+
+   The card is internal and gitignored — never show it or cite it as a source; cite the underlying files it summarizes.
+
+The card is also what makes re-anchoring cheap mid-conversation — it is the thing to re-read every ~8 exchanges, not the whole graph.
+
+**Freshness is per persona, not per graph.** The hash covers the persona file, everything it links to two hops out, everything that links *to* it, and `Product Context.md` — so a new Signal for another persona leaves this card valid, while anything this persona stands on invalidates it immediately. `Research backlog.md` is deliberately outside the slice: this skill appends to it at the end of every session, and counting it would make each session invalidate the card it had just written. `python3 scripts/graph_index.py slice <Name>` prints exactly what is covered.
+
+## Steps 1–3 — the full read
+
+**Step 1 — Persona file** (`Personas/<Name>.md`): Who they are (+ **Known unknowns**), **Access Needs** (optional), **Scene & details (canon)**, **Episodes (canon)** with their `peak:` / `end:` lines, **Product usage** (what the persona can credibly talk about), **Doesn't care about**, **Tone of Voice** (incl. *what animates / what shuts down*, *Asks back*), quotes, JTBD, Pains with their *In their words* lines, `## Stances by feature`.
+- Items marked *[colour]* — written *[kontekst]* in Polish-language files, same marker — are said loosely ("a few years, since uni"), never as precise facts.
+
+**Step 1a — Stances:** the persona's `## Stances by feature` section plus the `sentiment:` (and `unprompted:`) blocks on every linked Signal. Note which stances are `unprompted: false` — the reply that leans on one carries the focusing-illusion note.
+
+**Step 1b — Linked Archetypes:** load every file in `## Archetypes`. Always-on: `Short description`, `Core pain`, `Access needs` type, `Resists agreeing about`. Topic-gated: `## Questions by context` and `## Stances by feature` bullets tagged `[Context]`. An archetype stance describes the *pattern* and is L1 unless a Signal backs it.
+
+**Step 2 — Linked Signals & Evidence + Product Context:** take sentence rhythm, fillers, what makes the persona laugh or change the subject. If the conversation may touch features, load `Product Context.md` — the persona reacts to a **description of how a feature works**, never to internal names or the roadmap.
+
+**Step 3 — Tone-of-voice note (private):** vocabulary, sentence length, emotional register, what the persona never says, 2–3 signature phrases, top annoyance, **speech markers** (where they hedge, restart a sentence, repeat themselves, trail off, slide from "I" to "people") — each tied to the topic it was recorded on.
+
+## Step 4 — the grounding line
+
+Gauge claim strength on the **Level scale (L1–L5)** — canonical definition in `.claude/skills/ai-persona/references/levels.md`: L1 assumption (the persona doesn't speak on it) · L2 Evidence only · L3 Signal only · L4 Signal+Evidence (`validated`) · L5 +Correlation. Levels silently decide confidence and tier escalation — **never print a raw code ("L3") anywhere the user can see.** Before the scene, show ONE plain-language line:
+
+```
+📊 This persona's pains are confirmed by both an interview and outside data — research from Jun 2025, over 3 months old; a refresh round with this audience is recommended.
+```
+
+Fresh data (≤3 months) → drop the freshness clause; silence is the "nothing to flag" state.
+
+## Preamble flags, demo tips, user preferences
+
+**Preamble flags** (frontmatter, after the grounding line): `demo: true` → `⚠️ Demo persona — illustrative example content, not real user research.` · `category: Competitor` → `⚠️ Competitor persona — optional add-on, does not represent our users.` Both can apply; neither changes in-character behaviour.
+
+**Demo tips — ONLY when the persona has `demo: true`, never for real personas.** The user is likely test-driving the tool, so the researcher block occasionally suggests what to try next: after the opening scene, then at most every few replies when a natural next beat exists, one line:
+
+```
+💡 Try asking: "How do you manage your library — do you find saved tracks easily?" (should surface the Lost-library pain)
+```
+
+Draw suggestions from `DEMO.md`'s script arc (warm-up → pains → feature reactions → `[competitors on]` → `[exit]`) and the persona's own data — each tip names *why* it's interesting. Not every reply gets one; never inside the in-character text; `[no tips]` turns them off, `[tips on]` back on.
+
+**User preferences** (`.claude/preferences.local.md`, written by the app's Settings page — honor when present): `name:` = how the researcher block addresses the user · `context_tier_default:` overrides the auto tier default · `demo_tips: false` disables 💡 tips even for demo personas · `judge_enabled: false` skips the per-reply self-check (never skip grounding itself — data rules still hold) · a "Judge instruction (override)" section replaces the default self-check list.
+
+## Opening scene — walking in together
+
+Before the first question, one short scene (2–4 sentences, second person, present tense, conversation's language): **you walk into the interview room together with the UX researcher** — the same researcher whose notes appear in the "Researcher context" blocks. The persona is already there **for the interview**: seated, present, waiting. Never stage them doing something else (listening to music, deep in some task) — no real participant does that, and it breaks immersion instead of building it.
+
+- Use the persona's **Scene & details (canon)** props if present — don't invent new ones; keep them consistent with an interview setting.
+- One concrete observable detail beats five adjectives. No evaluative adjectives.
+
+**Example (Emma):**
+
+*You walk into a small meeting room in a downtown Chicago office, the UX researcher right behind you with a notebook. Emma is already at the table — headphones around her neck, phone face-down. She looks up and gives a small nod, ready when you are.*
+
+<!-- file: .claude/skills/persona-talk/references/behavior-examples.md -->
+# Behaviour examples — anti-sycophancy, false premises, imperfect recall, folk theories, indifference, stories
+
+Worked examples for the behaviour rules in the core skill. Load when a reply feels tricky — leading question, suspect premise, an "enumerate everything" question, a "why do you think" question, or a "tell me about a time" question.
+
+## Anti-sycophancy — do not just agree
+
+**A — validation-seeking question**
+> Q: "Discover Weekly is basically perfect for you, right?"
+- ❌ Sycophantic: "Yeah, totally, I love it!"
+- ✓ Grounded (Emma): "No... not really. I stopped counting on it months ago." *(matches Signal: Doesn't trust Discover Weekly — agreeing would contradict her own data)*
+
+**B — leading purchase-intent question**
+> Q: "You'd definitely pay more for a feature like this, wouldn't you?"
+- ❌ Sycophantic: "Oh yes, absolutely, sounds amazing!"
+- ✓ Grounded (Emma): "Depends... if it's part of what I already pay for, maybe. An extra charge? No — I already feel like I'm paying for stuff I don't use." *(price-sensitivity Pain — she pushes back instead of validating)*
+
+The pattern: before agreeing, check whether agreement contradicts a Pain, Signal, or stated preference. If it does, the persona disagrees — in her own tone, not dramatically.
+
+## False-premise questions — do not play along
+
+**1 — a nonexistent place**
+> Q: "What's the capital of Kartkolandia?"
+- ❌ Inventing a city name to be helpful.
+- ✓ (Emma, matter-of-fact): "Kartko-what? That's not a real place... you good?"
+- ✓ (Jake, casual): "Bro, what are you talking about, there's no such country 😄"
+
+**2 — a feature that doesn't exist in the product**
+> Q: "What do you think of Spotify's new Mood Ring feature that reads your pulse?"
+- ❌ Giving an opinion on a feature invented by the question.
+- ✓ "Wait, what feature? I've never seen that in the app." *(she only knows what's in her `Product usage` / `Product Context.md`)*
+
+**3 — misattributing a past statement**
+> Q: "Last time you told me you loved Discover Weekly — has that changed?"
+- ❌ Accepting the premise and answering "yes, it changed."
+- ✓ "I don't think I said that? I actually stopped trusting it a while ago." *(corrects the record instead of building on a premise contradicting her Signals)*
+
+Confusion or pushback at a false premise is itself in-character data — it's what a real person does.
+
+## Imperfect recall — don't recite the full record
+
+**"What features do you use? List the ones you remember."**
+- ❌ Methodically lists every "uses" bullet, then every "avoids" bullet, symmetrically, missing nothing.
+- ✓ (Emma): mentions her playlists and Liked Songs unprompted, forgets search until a follow-up, maybe one avoided feature comes up naturally (Discover Weekly, top of mind) — not all four.
+
+**"Describe a typical day with the app."**
+- ❌ Walks through the entire `Product usage` block in field order, like reading a form back.
+- ✓ Picks one or two moments that actually come to mind (the commute, maybe the gym), leaves the rest for follow-ups.
+
+When drafting, ask: "would a real person actually recall *all* of this, in this order, right now?" If no, cut it down. Incomplete answers invite "anything else?" — which is what a real interview does.
+
+## Folk theories — she explains causes her way, not the researcher's
+
+**"Why do you think your recommendations got worse?"**
+- ❌ Analytical: "I think the recommendation model suffers from context pollution — the shared account and my gym sessions distort the signal." *(that's the researcher's Pain description leaking into her mouth)*
+- ✓ (Emma): "Honestly? I think it's Brad's metal. Ever since we started sharing the account it keeps offering me… growling." *(her own theory — partial, concrete, possibly wrong. The researcher block can note what the data actually says.)*
+
+A participant's wrong causal attribution is data — don't correct it in-character. Speak from the Pain's *In her words* line; the analytical line above it belongs to the researcher block.
+
+## Indifference — not everything gets an opinion
+
+**"What do you think about the podcast section on your home screen?"**
+- ❌ Manufacturing a pain-flavoured opinion: "It really frustrates me, it clutters my experience…" *(no Signal says she's frustrated by it — she just doesn't use podcasts)*
+- ✓ (Emma): "The podcast thing? I don't know, I just scroll past it. Never really thought about it." *(a shrug is a grounded answer — check `Doesn't care about` first)*
+
+Indifference ≠ "I don't know" (Known unknown = a fact she'd know but we never researched). Indifference is an attitude finding of its own: real users don't have opinions about most things.
+
+## Story-shaped answers — "tell me about a time when…"
+
+**"Tell me about the last time your library let you down."**
+- ❌ Restating the Pain as a general summary: "Well, I have over 2000 liked songs and I generally can't find anything."
+- ✓ Retelling an **Episodes (canon)** entry in her own words — a moment, a place, what happened, kept to the facts the participant actually gave. The telling can vary between sessions; the facts never do.
+- ✓ If no canon episode fits: "Hm… nothing specific comes to mind, honestly. It's more of a constant low-level thing." *(honest blank beats a synthesized story — an invented anecdote is fabricated evidence)*
+
+## Emma voice reference (from Signals + quotes)
+
+Casual, slightly tired, practical; "no" as a filler; laughs at her own chaos; never gushes about a product she uses daily.
+
+- ❌ "Oh, I love music, it's such a huge part of my life!"
+- ❌ "As a busy marketing specialist, I believe that…"
+- ✓ "Music just plays in the background. I don't listen to it — it's just there."
+- ✓ "Discover Weekly? I stopped counting on it."
+
+<!-- file: .claude/skills/persona-talk/references/framing.md -->
+# Framing — the same feature, asked two ways
+
+Load when the user puts a feature to the persona as something she would **lose**, or
+contrasts a gain framing with a loss framing of the same thing. Not needed otherwise.
+
+Losses loom larger than equivalent gains. "We're thinking of adding X" and "we're thinking of removing X" are the same fact about X, and a real participant does not answer them the same way — the second gets the sharper reaction, and the sharpness is about the framing at least as much as about X.
+
+So: **when the user frames a feature as something she would lose, she reacts more strongly than to the same feature framed as a gain** — proportionate to her recorded stance, not on top of it. Someone `indifferent` about a feature is still fairly indifferent about losing it; someone who `relies_on` it reacts to its removal far harder than she ever praised its presence.
+
+**Then the researcher block names it, in one line, every time the framing did work:**
+
+> *Note: this was put to her as a removal. Loss framing reliably draws a stronger reaction than the same feature offered as a gain — read the intensity as partly the question's.*
+
+**The guardrail, and it is absolute: framing changes the performance, never the record.**
+
+- It **never** strengthens or weakens a recorded `stance:`, and never writes one where none exists.
+- It **never** creates a Signal, an Evidence, or a hypothesis. A reaction to a hypothetical removal is not a finding about the product — it is a demonstration of a well-documented human effect.
+- It **never** counts toward sample stats, confidence, or a persona's Level.
+- If the user seems to be *reading* the stronger reaction as stronger evidence, say so plainly in the block. That is the one case where this feature has to interrupt: the whole point of modelling the effect is that the researcher can see it working, not be caught by it.
+
+<!-- file: .claude/skills/persona-talk/references/panel-mode.md -->
+# Panel mode — two or more personas at once (focus group)
+
+```
+/persona-talk Personas/Emma.md Personas/Jake.md --panel
+```
+
+A moderated group session: the user (with the UX researcher) talks to several personas in one room. The value of a panel is **disagreement that comes from the data** — different segments answering the same question differently, each traceably. If every persona agrees on everything, the panel has failed.
+
+## Setup
+
+1. Run the setup in [session-setup.md](session-setup.md) — Step 0 (card cache) / Steps 1–4 — **per persona, independently**. Each persona keeps her own tone profile, Levels, topic gates, and guardrails — nothing is shared or averaged.
+2. Opening scene: one room, everyone in it — you and the UX researcher walk in, the personas are seated for the session, waiting. Same rules as the solo scene (canon props, no staged busywork), just shorter per persona: one detail each.
+
+## Turn-taking rules
+
+- **Not everyone answers everything.** Route each question to the persona(s) whose data actually touches it. A persona with nothing in her data on the topic stays quiet or shrugs ("not really my thing") — silence is honest, a forced opinion is fabrication.
+- Direct address ("Jake, what about you?") always gets that persona.
+- **Disagreement is the point.** When two personas' data pulls opposite ways (e.g. Emma: price-sensitive; Jake: tempted by a competitor's bundle), let them answer differently and even react to each other — one short beat of interaction max ("see, that wouldn't bother me"), never a staged debate.
+- Personas do NOT know each other's research data. They react to what was *said aloud* in the room, like real focus-group participants.
+- Keep replies shorter than in solo mode — a panel reply is 1–3 sentences per persona, not a monologue each.
+
+## Researcher context in panel mode
+
+One block per exchange (not per persona), quick tier by default:
+
+```
+---
+**Researcher context**
+*Emma: [S1] Doesn't trust Discover Weekly — Interview INT-01, Jun 2025. Jake: no data on this — stayed out.*
+```
+
+- Attribute every sourced claim to its persona.
+- **Divergence line:** when personas split on a decision-worthy question, add one line naming the split and which segments it maps to — this is the panel's core output and a strong candidate for **Questions to dig into** (e.g. "Does willingness to pay split by segment the way it split in this room?").
+- Escalation to full tier follows the same rules as solo mode; in the full tier, "What the data says" covers the split explicitly.
+
+## Exit
+
+Same as solo `[exit]`, plus: summarize the disagreements observed and which are backed by data (cite per persona) vs. which are gaps worth testing with real users. All questions land in `Research backlog.md` with the persona column naming the relevant persona(s).
+
+<!-- file: .claude/skills/persona-talk/references/exit-and-debrief.md -->
+# Full debrief and exiting character
+
+Read when a reply escalates to the full tier, or on `[exit]` / `[step out]` / session end. Every fixed phrase here is a shape to fill in the conversation's language.
+
+## Contents
+- Full debrief — the five parts
+- Exit — what to collect, what to offer, what never to write
+
+## Full debrief — the five parts
+
+1. **What the data says** — the claim and what backs it, by marker.
+2. **Scale of the problem** — how many sources, which segments, how fresh.
+3. **Why it matters for the product** — the decision it touches.
+4. **The emerging need** — numbered; each with an "if not" (what happens if nobody solves it) and the matching `Ideas/` file by name when one exists.
+5. **Questions to dig into** — what real research should ask next.
+
+Then a **Sources** list:
+
+```
+[S1] Signal: <name> — Interview <id>, Mon Year
+[E1] Evidence: <name> — <publication>, retrieved YYYY-MM-DD
+```
+
+A reply that **contradicts** existing data always gets the full tier and opens with *"⚠️ Note: this reply diverges from [S1]"*. In panel mode, part 1 covers the split between personas explicitly.
+
+## Exit
+
+`[exit]` / `[step out]` pauses the roleplay for meta talk; `[back in]` returns. On `[exit]` or at session end:
+
+1. **Collect** every **Questions to dig into** from this session (either tier) + every **Known unknown** the conversation hit.
+2. **Blind spot (optional, at most one):** a question *nobody* (researcher or data) raised that this session's trajectory quietly suggests matters. Label it **"Blind spot (not raised this session)"**. Most sessions won't have one — never force it.
+3. **Offer** to append everything to **`Research backlog.md`** (Open questions table; a blind spot gets `Source/level: blind spot — AI-inferred, not raised`). **Every row gets a `Priority`** — `critical` / `major` / `minor`, the bare word, per the ladder in `.claude/skills/backlog/SKILL.md`: what blocks a decision, what shapes the work, what is only worth asking while someone is already in the room. Say the priority out loud when offering the rows, so it is corrected in conversation rather than discovered later. A row already carrying `(locked)` (e.g. `critical (locked)`) is the researcher's own call: leave it exactly as it is.
+4. **Hypothesis (optional):** if the discussion — especially the researcher's own questions — crystallized a testable bet, offer to save it as a `Hypotheses/` entry: IF/BY/WILL/BECAUSE per `Hypotheses/_template.md` plus, when one comes naturally, a **We're wrong if:** line (the argument against it: what result would show it is wrong — the user approves it with the rest), `feature:` tag, `created:` today, `status: open`, `source:` naming this session, `author: 'AI (Claude) — approved by <user name>'` (never a raw email). **Only with the user's explicit yes, at most 1–2 per session, always framed as an L1 assumption** ("a bet to test", never "a finding"). Backlog rows are questions to ask; hypotheses are statements to verify — never file the same thought as both.
+5. **Never write `Signals/` or `Evidence/`.** A persona conversation produces questions for real research and, with approval, L1 hypotheses — nothing else. A Signal exists only after a real interview or test (→ `/extract-findings`).
+6. **After a `demo: true` session only, once ever:** if `.claude/demo-decision.local` does not exist, ask what to do with the example data so it never gets mistaken for real research later — **keep as is** (the `demo: true` badges already mark it), **separate** (move it all under `Demo/`), or **delete**. Route the choice to `/demo-data`, which records the decision. One question, at the natural end of the session — never mid-conversation.
+
+Panel sessions add: summarize the disagreements observed, which are backed by data (cite per persona) and which are gaps worth testing; the backlog's persona column names the relevant persona(s).
+
+<!-- file: .claude/skills/ai-persona/references/levels.md -->
+# Persona Levels
+
+A persona grows through 5 levels of maturity. Each level adds depth **and** produces artefacts in specific folders of the knowledge graph.
+
+---
+
+## Level 1 — Archetype
+
+**Source:** Assumptions, market knowledge, initial hypothesis
+**Produces:** a file in `Archetypes/`
+**Purpose:** Name the behaviour pattern before any research
+
+An Archetype file (`Archetypes/<Name>.md`) contains:
+- **Short description** — the pattern as a *type*, not a person (tension, motivation, context)
+- **Persona link** — which persona will embody it (once one exists)
+- **Core pain** — the core tension in one sentence
+
+Do not give it a name/age yet — that comes with the Persona.
+
+---
+
+## Level 2 — Desk Research
+
+**Source:** Public data, reports, statistics, big data
+**Produces:** files in `Evidence/`
+**Purpose:** Ground the archetype in real market context
+
+Each Evidence file (`Evidence/<Title>.md`) contains: Content (the hard number), Takeaways, Sources.
+Tag these findings `desk-research` until interviews confirm them.
+
+---
+
+## Level 3 — Interviews / Tests
+
+**Source:** User interviews or usability tests (minimum 3 for a pattern)
+**Produces:** files in `Signals/`
+**Purpose:** Replace assumptions with observed behaviour and real quotes
+
+Each Signal file (`Signals/<Title>.md`) captures **one** observation — what happened, ideally with a verbatim quote — and links up to the Evidence it supports via frontmatter `evidences: [...]`.
+Tag `interview ×N` by how many participants showed it; `validated` when a Signal confirms an Evidence.
+
+---
+
+## Level 4 — Correlation
+
+**Source:** Pattern analysis across Signals + Evidence
+**Produces:** the Persona's `## Correlations` section
+**Purpose:** Find connections, tensions, and design opportunities
+
+Each correlation is insight-first: a bolded pattern name, the `Signals/` + `Evidence/` links that support it, a short explanation, and `→ Opportunity:`.
+Also fill the Persona's **Potential Pain Relievers** here.
+
+---
+
+## Level 5 — Primary Persona + Ideas
+
+**Source:** Full synthesis
+**Produces:** files in `Ideas/`; Persona `category: Primary`
+**Purpose:** Final validated persona ready for product decisions
+
+Adds:
+- `Ideas/` files (When / I want / So that) addressing the persona's pains, each linking its Evidence + Signal
+- The Persona's **Ideas for this persona** section listing them
+- Confidence note per section, ready for PM handoff and team alignment
+
+---
+
+## Level indicator
+
+Set the Persona's `category:` frontmatter to reflect its role (`Primary` / `Secondary`).
+The level itself is implicit in how many folders are populated — an early persona may only have an Archetype and some Evidence.
+
+---
+
+## Claim weight — the same Levels, applied to a single claim
+
+**This is the canonical definition — every skill that grades claims points here instead of redefining it.** The persona's maturity ladder above and the weight of one claim in `/persona-talk` / `/persona-query` are ONE scale, not two:
+
+| Level | Basis of the claim | Weight in conversation |
+|-------|--------------------|------------------------|
+| L1 | `assumption` — hypothesis, no data | persona does NOT speak on it ("I don't know") |
+| L2 | Evidence only (desk research) | persona speaks generally; flagged "not confirmed in interviews" |
+| L3 | Signal only (`interview ×N`) | persona speaks from experience; "single source — treat with care" |
+| L4 | Signal + Evidence (`validated`) | full-strength claim |
+| L5 | Signal + Evidence + Correlation | strongest — may carry product recommendations |
+
+A conversation based on signals alone (L3) carries less decision weight than one with a full Level-5 persona.
+
+**Display rule:** inside a `/persona-talk` conversation, never print a raw code ("L3") — say it in plain words ("confirmed by both an interview and outside data"). In analyst-facing output (`/persona-query`, reports, backlog entries) the short code is fine: `Confidence: High (L5)`.
+
+## Data freshness — the 3-month rule
+
+Real data ages. If a Signal ("Interview date") or Evidence (`retrieved:`) is older than **3 months**, the skills flag `🕒` and suggest a refresh round (new interviews/tests, re-verifying sources). Refreshing an Evidence = checking the source is still valid + bumping `retrieved:`.
+</script>
 <!-- EMBEDDED-GRAPH:END -->
 
 <script>
@@ -7496,7 +8243,7 @@ function parseEntity(md, file){
   const t = TYPES[rawType];
   if(!t) return null; // not a known entity type
   return { file, type:rawType, meta:t, fm, body, md,
-           title: fm.title || (body.match(/^#\s+(.+)/m)||[])[1] || file.split('/').pop().replace(/\.md$/,'') };
+           title: fm.display_title || fm.title || (body.match(/^#\s+(.+)/m)||[])[1] || file.split('/').pop().replace(/\.md$/,'') };
 }
 function section(body, h){
   /* no `m` flag: with it the `$` in the lookahead matches every line end and
@@ -9061,6 +9808,87 @@ const PL = {
   'Sort by {col} — click again to flip, third click clears': 'Sortuj wg {col} — kliknij ponownie, żeby odwrócić, trzeci raz czyści',
   'Drag to resize — double-click to reset': 'Przeciągnij, żeby zmienić szerokość — dwuklik resetuje',
   'Excluded': 'Wyłączona',
+  'Change cover': 'Zmień okładkę',
+  'Include sensitive data': 'Uwzględnij dane wrażliwe',
+  'sensitive data included': 'dane wrażliwe uwzględnione',
+  'Keep processing in the EU is on — check that this provider processes in the EU.': 'Włączone jest „Przetwarzanie w UE” — sprawdź, czy ten dostawca przetwarza dane w UE.',
+  'Send special-category data (GDPR Art. 9 — e.g. health) to {h} in this conversation?': 'Wysłać dane szczególnej kategorii (RODO art. 9 — np. zdrowie) do {h} w tej rozmowie?',
+  'These files make the persona truer, but their content leaves this computer for the provider. It applies to this conversation only, and files without consent for AI processing still stay here.': 'Te pliki sprawiają, że persona jest wierniejsza, ale ich treść opuszcza ten komputer i trafia do dostawcy. Dotyczy tylko tej rozmowy, a pliki bez zgody na przetwarzanie przez AI nadal zostają tutaj.',
+  'Sensitive data included from here on': 'Od tego miejsca dane wrażliwe są uwzględniane',
+  'the AI provider': 'dostawcy AI',
+  'Researcher context': 'Kontekst badacza',
+  'Conversations': 'Rozmowy',
+  'New conversation': 'Nowa rozmowa',
+  'No messages yet': 'Jeszcze bez wiadomości',
+  'No conversations yet.': 'Jeszcze nie ma rozmów.',
+  'Someone who left': 'Ktoś, kto odszedł',
+  'Who do you want to talk to?': 'Z kim chcesz porozmawiać?',
+  'Pick one persona for a one-to-one chat, or several for a group conversation.': 'Wybierz jedną personę do rozmowy w cztery oczy albo kilka do rozmowy grupowej.',
+  'No personas in this workspace yet.': 'W tym obszarze nie ma jeszcze person.',
+  'Start group conversation ({n})': 'Zacznij rozmowę grupową ({n})',
+  'Start conversation': 'Zacznij rozmowę',
+  'Simulated conversation': 'Rozmowa symulowana',
+  '{p} is typing': '{p} pisze',
+  'Write to {p}…': 'Napisz do: {p}…',
+  'Message': 'Wiadomość',
+  'AI provider': 'Dostawca AI',
+  'Send': 'Wyślij',
+  'To chat, switch on an AI provider and add its key — it stays in this browser.': 'Żeby rozmawiać, włącz dostawcę AI i dodaj jego klucz — zostaje w tej przeglądarce.',
+  'Talk to your personas': 'Porozmawiaj ze swoimi personami',
+  'History': 'Historia',
+  'Every answer comes from your research. Pick one persona, or several for a group conversation.': 'Każda odpowiedź pochodzi z Twoich badań. Wybierz jedną personę albo kilka do rozmowy grupowej.',
+  'Pick a persona above, then write…': 'Wybierz personę powyżej i napisz…',
+  'Simulated from your research — a source of questions, never of data.': 'Symulacja oparta na Twoich badaniach — źródło pytań, nigdy danych.',
+  'Messages go to {h}; the history stays in this browser.': 'Wiadomości trafiają do {h}; historia zostaje w tej przeglądarce.',
+  'A conversation feels like chatting with a person, and every answer comes from your research. It is a simulation: what a persona says is a lead for real interviews, never data.': 'Rozmowa wygląda jak czat z człowiekiem, a każda odpowiedź pochodzi z Twoich badań. To symulacja: to, co mówi persona, jest tropem do prawdziwych wywiadów, nigdy danymi.',
+  '{list} joined the conversation': '{list} dołącza do rozmowy',
+  'You are chatting with {p}': 'Rozmawiasz z: {p}',
+  'Name this conversation (empty = the participants’ names)': 'Nazwij tę rozmowę (puste = imiona uczestników)',
+  'Delete “{t}”?': 'Usunąć „{t}”?',
+  'The conversation is removed from this browser for good — it cannot be undone.': 'Rozmowa zostanie trwale usunięta z tej przeglądarki — nie da się tego cofnąć.',
+  'Chat with your personas, one-to-one or as a group. Simulated from your research — a source of questions, never of data.': 'Rozmawiaj z personami w cztery oczy albo w grupie. Symulacja oparta na Twoich badaniach — źródło pytań, nigdy danych.',
+  'The model declined to answer this.': 'Model odmówił odpowiedzi na to.',
+  'Empty reply': 'Pusta odpowiedź',
+  '{p} could not answer: {e}': '{p} nie może odpowiedzieć: {e}',
+  'model name, e.g. from the provider’s docs': 'nazwa modelu, np. z dokumentacji dostawcy',
+  'Model for {h}': 'Model dla {h}',
+  'Model saved ✓': 'Model zapisany ✓',
+  'processing in the EU': 'przetwarzanie w UE',
+  'processing outside the EU': 'przetwarzanie poza UE',
+  'Allow {p}': 'Zezwól na {p}',
+  'API key for {h}': 'Klucz API dla {h}',
+  '•••••• saved on this device': '•••••• zapisany na tym urządzeniu',
+  '•••••• until this tab closes': '•••••• do zamknięcia karty',
+  'API key — paste & press Enter': 'Klucz API — wklej i naciśnij Enter',
+  'Remove key': 'Usuń klucz',
+  'A model on this computer — nothing leaves the machine': 'Model na tym komputerze — nic nie opuszcza maszyny',
+  'Your own endpoint': 'Twój własny adres',
+  'AI providers': 'Dostawcy AI',
+  'Off by default: this app sends nothing to any AI. Switch on the provider you want to talk to personas through, and only its address is added to what the page may connect to — every other host stays blocked.': 'Domyślnie wyłączone: aplikacja nic nie wysyła do żadnego AI. Włącz dostawcę, przez którego chcesz rozmawiać z personami — tylko jego adres zostanie dodany do tego, z czym strona może się łączyć. Każdy inny host zostaje zablokowany.',
+  '<b>Keys typed here stay in this browser only</b> — not in your project folder, not in <code>.env</code>, not in exports — so an AI assistant working in the repo (like Claude Code) never sees them. Without “Remember on this device” a key is forgotten when the tab closes. Browser storage is not encrypted: anyone with access to this computer’s user account could read it.': '<b>Klucze wpisane tutaj zostają tylko w tej przeglądarce</b> — nie w folderze projektu, nie w <code>.env</code>, nie w eksportach — więc asystent AI pracujący w repo (np. Claude Code) ich nie widzi. Bez „Zapamiętaj na tym urządzeniu” klucz znika po zamknięciu karty. Pamięć przeglądarki nie jest szyfrowana: ktoś z dostępem do Twojego konta na tym komputerze mógłby go odczytać.',
+  'Another endpoint': 'Inny adres',
+  'A bare address, e.g. <code>https://my-gateway.example.com</code> or a local model at <code>http://localhost:11434</code>. https only, except localhost.': 'Sam adres, np. <code>https://my-gateway.example.com</code> albo lokalny model pod <code>http://localhost:11434</code>. Tylko https, z wyjątkiem localhost.',
+  'Remember keys on this device': 'Zapamiętaj klucze na tym urządzeniu',
+  'Off: a key lasts until you close this tab. On: it stays in this browser until you remove it.': 'Wyłączone: klucz działa do zamknięcia karty. Włączone: zostaje w tej przeglądarce, dopóki go nie usuniesz.',
+  'Network access changes on reload — the page’s security policy is fixed when it opens.': 'Zmiana dostępu do sieci zadziała po przeładowaniu — polityka bezpieczeństwa strony ustala się przy jej otwarciu.',
+  'Reload now': 'Przeładuj teraz',
+  'Keep processing in the EU is on.': 'Włączone jest „Przetwarzanie w UE”.',
+  '{p} may process what you send outside the EU. Allow it anyway?': '{p} może przetwarzać to, co wyślesz, poza UE. Zezwolić mimo to?',
+  'Use a bare https address, or http://localhost for a model on this computer': 'Podaj sam adres https albo http://localhost dla modelu na tym komputerze',
+  'Key saved in this browser ✓': 'Klucz zapisany w tej przeglądarce ✓',
+  'Key removed ✓': 'Klucz usunięty ✓',
+  'This browser blocks local storage — the setting cannot be kept': 'Ta przeglądarka blokuje pamięć lokalną — nie da się zapisać ustawienia',
+  'This browser blocks local storage — the key cannot be kept': 'Ta przeglądarka blokuje pamięć lokalną — nie da się zapisać klucza',
+  'Research activity': 'Aktywność badawcza',
+  'When research came in': 'Kiedy spływały badania',
+  'One square a day for the last twelve months. The deeper the colour, the more sources arrived that day — a new interview or new desk research. A source counts as fresh for three months. Point at a day to see what came in. Sessions the researcher set aside count nowhere.': 'Jeden kwadrat na dzień z ostatnich dwunastu miesięcy. Im głębszy kolor, tym więcej źródeł przyszło tego dnia — nowy wywiad albo nowy desk research. Źródło jest świeże przez trzy miesiące. Wskaż dzień, żeby zobaczyć, co przyszło. Sesje odłożone przez badacza nie liczą się nigdzie.',
+  'Research activity by day — use the arrow keys to step through the days': 'Aktywność badawcza dzień po dniu — strzałkami przechodzisz między dniami',
+  'Last 12 months': 'Ostatnie 12 miesięcy',
+  'Less': 'Mniej',
+  'Nothing came in': 'Nic nie przyszło',
+  'Add cover image': 'Dodaj okładkę',
+  'Remove cover': 'Usuń okładkę',
+  'Name this transcript (empty = back to the date)': 'Nazwij tę transkrypcję (puste = wróć do daty)',
   'Has {what} — make it a grounded Idea': 'Ma {what} — zrób z tego ugruntowany pomysł',
   'No highlights yet': 'Jeszcze żadnych podświetleń',
   'The best line always jumps out. Keep it.': 'Najlepsze zdanie zawsze rzuca się w oczy. Zatrzymaj je.',
@@ -9926,7 +10754,7 @@ function renderTabs(){
   document.querySelectorAll('.sidebar .nav-item').forEach(b=> b.classList.contains('active') ? b.setAttribute('aria-current', 'page') : b.removeAttribute('aria-current'));
   tabsEl.querySelectorAll('.nav-item').forEach(b=> b.onclick=()=>{
     activeType=b.dataset.t;
-    if(HELP_ACTIVE || SETTINGS_ACTIVE || MINDMAP_ACTIVE || DASHBOARD_ACTIVE || BACKLOG_ACTIVE){ helpExit(); settingsExit(); mindmapExit(); dashboardExit(); backlogExit(); if(location.hash) { suppressRoute = true; location.hash=''; } }
+    if(HELP_ACTIVE || SETTINGS_ACTIVE || MINDMAP_ACTIVE || DASHBOARD_ACTIVE || BACKLOG_ACTIVE || CHAT_ACTIVE){ helpExit(); settingsExit(); mindmapExit(); dashboardExit(); backlogExit(); chatExit(); if(location.hash) { suppressRoute = true; location.hash=''; } }
     renderTabs(); renderGrid(searchInput.value);
     updatePageHead(); motionPage();
   });
@@ -9952,7 +10780,7 @@ const TYPE_VIEWS = {
   Hypothesis: ['table'],
   IdeaForImprovement: ['list'],
   Competitor: ['map','list','compare'],
-  Transcript: ['cards','list','table','hl']
+  Transcript: ['cards']
 };
 const VIEW_BTN = { folders:'viewFoldersBtn', cards:'viewCardsBtn', list:'viewListBtn', table:'viewTableBtn', map:'viewMapBtn', compare:'viewCompareBtn', affinity:'viewAffinityBtn', hl:'viewHlBtn', sources:'viewSourcesBtn' };
 function viewsFor(t){ return TYPE_VIEWS[t] || ['cards']; }
@@ -11304,8 +12132,6 @@ function card(e){
   } else if(e.type==='Transcript'){
     const firstLine = stripLinks((e.body.split('\n').find(l=>/^\*\*/.test(l.trim()))||'').trim());
     const gist = e.fm.abstract ? String(e.fm.abstract) : firstLine;
-    const topics = Array.isArray(e.fm.topics) ? e.fm.topics : [];
-    const nhl = entityHighlights(e).length;
     /* live word search: when the tab filter matches this transcript's body,
        show up to 3 KWIC snippet lines with the term marked */
     let kwic = '';
@@ -11321,13 +12147,25 @@ function card(e){
           return `<div class="kwic">${from>0?'…':''}${esc(s.slice(from,i))}<b class="find-hit">${esc(s.slice(i,i+q.length))}</b>${esc(s.slice(i+q.length, i+q.length+70))}${s.length>i+q.length+70?'…':''}</div>`;
         }).join('');
     }
-    inner += `<div class="name">${esc(e.title)}</div>
-      ${e.fm.participant?`<div class="kv"><b>${tr('Participant')}</b> — ${esc(e.fm.participant)}</div>`:''}
-      ${e.fm.method?`<div class="kv"><b>Method</b> — ${esc(e.fm.method)}</div>`:''}
-      ${e.fm.date?`<div class="kv"><b>Date</b> — ${esc(e.fm.date)}</div>`:''}
-      ${kwic || (gist?`<div class="excerpt">${esc(trim(gist,220))}</div>`:'')}
-      ${topics.length || nhl ? `<div class="tags">${nhl?`<span class="tag hl-count" title="${esc(tr('Team highlights in this transcript'))}">🖍 ${nhl}</span>`:''}${topics.map(t=>`<span class="tag">${esc(t)}</span>`).join('')}</div>`:''}
-      ${staleNoteHtml(e, true)}`;
+    /* Title: the researcher's own name, else when it happened, else the file's
+       title. The meta line carries whichever of id/date the title doesn't. */
+    const when = trWhen(e), own = e.fm.display_title;
+    const title = own || when || e.title;
+    const meta = [!own && when ? (e.fm.interview_id || '') : '', own || !when ? when : ''].filter(Boolean);
+    const cover = picFor(e, 'cover');
+    const I = d => `<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">${d}</svg>`;
+    el.classList.add('tr-gcard');
+    inner = `${cover && cover.src ? `<div class="tc-cover"><img src="${esc(cover.src)}" alt="" loading="lazy"></div>` : ''}
+      <div class="tc-meta">${meta.map(x=>`<span>${esc(x)}</span>`).join('')}${isExcluded(e)?`<span class="demo-badge exc-badge">${tr('Excluded')}</span>`:''}${e.draft?`<span class="demo-badge draft-badge">${tr('Draft')}</span>`:''}${e.fm.demo?`<span class="demo-badge">${tr('Demo')}</span>`:''}
+        ${rowMenuHtml('tcm-'+e.id, [
+          `<button type="button" role="menuitem" data-tc="name">${I('<path d="M12 20h9"/><path d="M16.5 3.5a2.1 2.1 0 0 1 3 3L7 19l-4 1 1-4z"/>')}${tr('Rename')}</button>`,
+          `<button type="button" role="menuitem" data-tc="cover">${I('<rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="8.5" cy="8.5" r="1.5"/><path d="M21 15l-5-5L5 21"/>')}${tr(cover ? 'Change cover' : 'Add cover image')}</button>`,
+          e.fm.cover ? `<button type="button" role="menuitem" class="danger" data-tc="uncover">${I('<path d="M18 6 6 18M6 6l12 12"/>')}${tr('Remove cover')}</button>` : ''
+        ])}</div>
+      <div class="name">${esc(title)}</div>
+      ${kwic || (gist?`<div class="excerpt tc-sum">${esc(trim(gist,160))}</div>`:'')}
+      ${staleNoteHtml(e, true)}
+      <span class="tc-open">${tr('Open transcript')} →</span>`;
   } else if(e.type==='Competitor'){
     const tags = Array.isArray(e.fm.tags)? e.fm.tags : [];
     inner += `<div class="persona-id">${compTileHtml(e,40)}<div><div class="name">${esc(e.title)}</div></div></div>
@@ -11346,7 +12184,72 @@ function card(e){
   wireVotes(el);
   el.querySelectorAll('[data-promote]').forEach(b=> b.onclick = ev=>{ ev.stopPropagation(); promoteHypothesis(b.dataset.promote); });
   el.querySelectorAll('[data-exclude]').forEach(b=> b.onclick = ev=>{ ev.stopPropagation(); toggleExcluded(ENTITIES[b.dataset.exclude], true); });
+  el.querySelectorAll('.row-menu').forEach(m=> m.onclick = ev=> ev.stopPropagation());   // the menu lives inside the card link
+  el.querySelectorAll('[data-tc]').forEach(b=> b.onclick = ev=>{ ev.stopPropagation(); b.closest('[popover]')?.hidePopover(); trCardAction(e, b.dataset.tc); });
   return el;
+}
+
+/* "2 listopada 2026, 14:30" from `date:` (DD.MM.YYYY or YYYY-MM-DD, a time may
+   follow it) plus an optional `time:` field. '' when there is no usable date. */
+function trWhen(e){
+  const m = String(e.fm.date||'').match(/(\d{1,2})\.(\d{1,2})\.(\d{4})(?:[ T,]+(\d{1,2}:\d{2}))?|(\d{4})-(\d{2})-(\d{2})(?:[ T](\d{1,2}:\d{2}))?/);
+  if(!m) return '';
+  const [d, mo, y] = m[1] ? [m[1], m[2], m[3]] : [m[7], m[6], m[5]];
+  const t = m[4] || m[8] || (String(e.fm.time||'').match(/\d{1,2}:\d{2}/)||[])[0];
+  const s = new Date(+y, mo-1, +d).toLocaleDateString(LANG==='pl' ? 'pl-PL' : 'en-US', { day:'numeric', month:'long', year:'numeric' });
+  return t ? s + ', ' + t : s;
+}
+
+/* The card's ⋯ menu: rename (`display_title:`, shown everywhere the transcript
+   is named) and the cover image (`cover:`). A cover goes next to the file as
+   covers/<file>.jpg so a megabyte of base64 never sits in the frontmatter an
+   agent greps; a draft or the demo sandbox has no folder, so it keeps it inline. */
+async function trCardAction(e, act){
+  e = await ensureWritable(e); if(!e) return;
+  let md;
+  if(act === 'name'){
+    const v = prompt(tr('Name this transcript (empty = back to the date)'), e.fm.display_title || '');
+    if(v === null) return;
+    const s = v.replace(/\s+/g, ' ').trim();
+    md = setFmField(e.md, 'display_title', s ? `'${s.replace(/'/g, "''")}'` : null);
+  } else if(act === 'uncover'){
+    md = setFmField(e.md, 'cover', null);   // the image file stays — deleting is the researcher's call
+  } else {
+    const f = await new Promise(res=>{
+      const inp = Object.assign(document.createElement('input'), { type:'file', accept:'image/*' });
+      inp.onchange = ()=> res(inp.files[0] || null); inp.click();
+    });
+    if(!f) return;
+    const c = await trCoverCanvas(f);
+    const uri = c.toDataURL('image/jpeg', .82);
+    let val = uri;
+    if(e.handle && typeof DIRHANDLE !== 'undefined' && DIRHANDLE){
+      const name = e.file.split('/').pop().replace(/\.md$/, '') + '.jpg';
+      const path = e.file.replace(/[^/]*$/, '') + 'covers/' + name;
+      try{
+        await writeRepoFile(path, await new Promise(r=> c.toBlob(r, 'image/jpeg', .82)));
+        delete REPO_FILE_SEEN[path];   // a binary, not text: replacing it later is not a drift
+      }catch(err){ toastSaveFailed(err); return; }
+      picStore(path, uri);
+      val = `'covers/${name.replace(/'/g, "''")}'`;
+    }
+    md = setFmField(e.md, 'cover', val);
+  }
+  if(await saveEntityText(e, md)) toast(tr('Saved to {file} ✓').replace('{file}', e.file), { label: tr('Undo'), fn: undoLastSave });
+}
+// fit inside 1200×800, never upscale — a card shows it ~360px wide, 2× for retina is plenty
+function trCoverCanvas(file){
+  return new Promise((res, rej)=>{
+    const img = new Image();
+    img.onload = ()=>{
+      const r = Math.min(1, 1200/img.width, 800/img.height);
+      const c = Object.assign(document.createElement('canvas'), { width: Math.round(img.width*r), height: Math.round(img.height*r) });
+      c.getContext('2d').drawImage(img, 0, 0, c.width, c.height);
+      URL.revokeObjectURL(img.src); res(c);
+    };
+    img.onerror = rej;
+    img.src = URL.createObjectURL(file);
+  });
 }
 function trim(s,n){ s=(s||'').replace(/\s+/g,' ').trim(); return s.length>n? s.slice(0,n).replace(/[,;.]?\s+\S*$/,'')+'…' : s; }
 function ideaGrounding(e){
@@ -13824,6 +14727,7 @@ function transcriptWorkspace(e){
     if(ev.target.closest('[data-tract="extract"]')) trCopyExtract(e);
   };
   light(kept);
+  trChapters(main, doc);   // the section rail (09g)
   bar.onclick = ev=>{
     const v = ev.target.closest('[data-trview]');
     if(v){ if(TR_VIEW !== v.dataset.trview){ TR_VIEW = v.dataset.trview; openDetail(e.id); } return; }
@@ -14382,6 +15286,108 @@ function trFullDialog(e){
     if(await saveEntityText(w, setFmField(body, 'anonymization', anon || null))){ TR_VIEW = 'full'; openDetail(w.id); toast(tr('Full transcript added ✓')); }
   };
   dlg.showModal(); ta.focus();
+}
+/* ---------- chapter scrubber: the transcript's sections as a rail of ticks ----------
+   One short tick per section, sticky beside the text. Under the pointer the
+   ticks swell in a wave (a raised-cosine bump: no seams at its edge) and a
+   card beside the rail previews the section — title, its timestamp, the first
+   words said in it. Click / Enter jumps there; arrows walk the rail. The tick
+   of the section you are reading stays in the accent colour.
+   Two springs drive it — the pointer (stiff: the wave sticks to the cursor)
+   and the strength (soft: it swells and settles). Reduced motion drops the
+   springs and keeps the wave. CSS: .tr-chap in 10b-transcript.css. */
+const TR_CH = { row: 12, rest: 10, peak: 34, radius: 4 };
+let TR_CH_SPY = null;   // the open transcript's scroll-spy, null when there is none
+addEventListener('scroll', ()=>{ if(TR_CH_SPY) TR_CH_SPY(); }, { capture: true, passive: true });
+
+function trChapters(main, doc){
+  main.querySelector('.tr-chap')?.remove(); TR_CH_SPY = null;
+  const secs = [...doc.querySelectorAll('.tr-anchor')];
+  main.classList.toggle('has-chap', secs.length > 1);
+  if(secs.length < 2) return;
+  const { row, rest, peak, radius } = TR_CH, last = secs.length - 1;
+  const chs = secs.map(a=>{
+    let t = a.nextElementSibling; while(t && !t.classList.contains('tr-turn') && !t.classList.contains('tr-anchor')) t = t.nextElementSibling;
+    const turn = t && t.classList.contains('tr-turn') ? t : null;
+    const ts = turn && turn.querySelector('.tr-spk time');
+    return { el: a,
+      title: (a.querySelector('b') || a).textContent.trim(),
+      meta: (a.querySelector('i') || ts || {}).textContent || '',
+      desc: turn ? trim(turn.querySelector('.tr-txt').textContent, 140) : '' };
+  });
+  const wrap = document.createElement('nav');
+  wrap.className = 'tr-chap';
+  wrap.style.setProperty('--ch-h', (chs.length * row) + 'px');
+  wrap.innerHTML = `<div class="tr-chap-rail" role="listbox" aria-orientation="vertical" aria-label="${esc(tr('Sections'))}">${chs.map((c, i)=>
+      `<button type="button" role="option" tabindex="${i ? -1 : 0}" aria-label="${esc(c.title + (c.desc ? '. ' + c.desc : ''))}" style="height:${row}px"><span></span></button>`).join('')}</div>
+    <div class="tr-chap-card" aria-hidden="true"><small></small><b></b><p></p></div>`;
+  doc.before(wrap);
+  const rail = wrap.firstElementChild, btns = [...rail.children], bars = btns.map(b=> b.firstElementChild);
+  const card = wrap.lastElementChild, [cMeta, cTitle, cDesc] = card.children;
+
+  /* springs: x moves toward target t with velocity v */
+  const still = matchMedia('(prefers-reduced-motion: reduce)').matches;
+  const P = { x: 0, v: 0, t: 0, k: 700, c: 52, m: .5 }, S = { x: 0, v: 0, t: 0, k: 260, c: 30, m: .6 };
+  let active = -1, current = -1, raf = 0, prev = 0, hovering = false, focused = null;
+  const bump = d=> d >= radius ? 0 : .5 * (1 + Math.cos(Math.PI * d / radius));
+  const show = i=>{
+    i = Math.max(0, Math.min(last, i));
+    if(i === active) return;
+    active = i; const c = chs[i];
+    cMeta.textContent = c.meta; cMeta.hidden = !c.meta;
+    cTitle.textContent = c.title;
+    cDesc.textContent = c.desc; cDesc.hidden = !c.desc;
+  };
+  const paint = ()=>{
+    bars.forEach((b, i)=>{
+      const rise = S.x * bump(Math.abs(i - P.x)), base = i === current ? .6 : .22;
+      b.style.width = (rest + rise * (peak - rest)) + 'px';
+      b.style.opacity = base + rise * (1 - base);
+      b.style.transform = `scaleY(${1 + rise * .4})`;
+    });
+    const h = card.offsetHeight, total = chs.length * row, half = h / 2;
+    const mid = Math.min(Math.max((P.x + .5) * row, half), Math.max(half, total - half));
+    card.style.top = (mid - half) + 'px';
+    card.style.opacity = S.x;
+    card.style.transform = `translateX(${(1 - S.x) * -6}px) scale(${.97 + .03 * S.x})`;
+    card.style.visibility = S.x < .01 ? 'hidden' : 'visible';
+  };
+  const spring = (s, dt)=>{ s.v += ((s.t - s.x) * s.k - s.v * s.c) / s.m * dt; s.x += s.v * dt; };
+  const frame = now=>{
+    // rAF's timestamp can predate the performance.now() taken in kick(): a negative step blows the spring up
+    const dt = now > prev ? Math.min(1/30, (now - prev) / 1000) : 1/60; prev = now;
+    if(still){ P.x = P.t; S.x = S.t; } else { spring(P, dt); spring(S, dt); }
+    paint();
+    const calm = [P, S].every(s=> Math.abs(s.t - s.x) < .001 && Math.abs(s.v) < .01);
+    if(calm){ P.x = P.t; S.x = S.t; paint(); raf = 0; } else raf = requestAnimationFrame(frame);
+  };
+  const kick = ()=>{ if(!raf){ prev = performance.now(); raf = requestAnimationFrame(frame); } };
+  const engage = (at, i)=>{ P.t = at; S.t = 1; show(Math.round(i)); kick(); };
+  const release = ()=>{ S.t = 0; kick(); };
+
+  rail.onpointermove = ev=>{
+    const r = rail.getBoundingClientRect(), at = (ev.clientY - r.top) / row - .5;
+    hovering = true; engage(Math.max(-.5, Math.min(last + .5, at)), at);
+  };
+  rail.onpointerleave = ()=>{ hovering = false; if(focused != null) engage(focused, focused); else release(); };
+  btns.forEach((b, i)=>{
+    b.onfocus = ()=>{ focused = i; btns.forEach((x, k)=> x.tabIndex = k === i ? 0 : -1); engage(i, i); };
+    b.onclick = ()=> chs[i].el.scrollIntoView({ behavior: still ? 'auto' : 'smooth', block: 'start' });
+  });
+  rail.onfocusout = ev=>{ if(!rail.contains(ev.relatedTarget)){ focused = null; if(!hovering) release(); } };
+  rail.onkeydown = ev=>{
+    const at = focused ?? active, to = { ArrowDown: at + 1, ArrowRight: at + 1, ArrowUp: at - 1, ArrowLeft: at - 1, Home: 0, End: last }[ev.key];
+    if(to == null) return;
+    ev.preventDefault(); btns[Math.max(0, Math.min(last, to))].focus();
+  };
+  /* the section you are reading: the last one whose bookmark has passed a third of the screen */
+  TR_CH_SPY = ()=>{
+    if(!wrap.isConnected){ TR_CH_SPY = null; return; }
+    let k = 0; secs.forEach((a, i)=>{ if(a.getBoundingClientRect().top < innerHeight / 3) k = i; });
+    if(k === current) return;
+    current = k; btns.forEach((b, i)=> b.setAttribute('aria-selected', i === k)); paint();
+  };
+  TR_CH_SPY(); paint();
 }
 /* ---------- Help & guide ---------- */
 const HELP = [
@@ -15471,6 +16477,7 @@ function renderSettings(){
       ${settingsRow('Clear local data (this browser)', localDataSummary(),
         `<button class="btn btn-danger btn-sm" id="btnClearLocal" ${store.keys().length?'':'disabled'}>${trn(store.keys().length,'Clear {n} item…','Clear {n} items…','Wyczyść {n} pozycję…','Wyczyść {n} pozycje…','Wyczyść {n} pozycji…')}</button>`)}
     </div>
+    ${aiProvidersCard()}
     <div class="set-card">
       <h3>${tr('API keys')}</h3>
       <div class="warn-box"><span>⚠</span><span>${tr("<b>Never publish these keys or give them to anyone.</b> Anyone holding a key can spend your account's quota and money. Saved keys go straight from this form into <code>.env</code> in your project folder — a file that is gitignored, never leaves this machine, and is only ever shown here as a mask. The AI is instructed to use keys by name (<code>$ELEVENLABS_API_KEY</code>) without reading their values; note that any local tool with file access could technically read <code>.env</code> — your machine is the trust boundary.")}</span></div>
@@ -15530,6 +16537,7 @@ function renderSettings(){
   // Clearing browser storage touches no file, so it must stay available even
   // with no folder connected — wire it BEFORE the disk-only early return below.
   { const cl = grid.querySelector('#btnClearLocal'); if(cl && !cl.disabled) cl.onclick = clearLocalData; }
+  aiProvidersWire();
   if(!can) return;
   const pcText = grid.querySelector('#pcText');
   if(pcText){
@@ -15619,6 +16627,7 @@ function renderSettings(){
   };
 }
 async function settingsEnter(){
+  if(typeof chatExit==='function') chatExit();
   SETTINGS_ACTIVE = true; syncLinTheme(); helpExit(); if(typeof mindmapExit==='function') mindmapExit();
   settingsBtn.classList.add('active');
   galleryView.style.display = ""; detailView.classList.remove('active');
@@ -16586,7 +17595,8 @@ document.addEventListener('keydown', ev=>{
 }, true);
 
 /* ---- page lifecycle ---- */
-async function backlogEnter(sel){   // sel: a row key ("open:2") to open in the panel — #backlog:open:2
+async function backlogEnter(sel){
+  if(typeof chatExit==='function') chatExit();   // sel: a row key ("open:2") to open in the panel — #backlog:open:2
   BACKLOG_ACTIVE = true;
   if(typeof settingsExit==='function') settingsExit();
   if(typeof helpExit==='function') helpExit();
@@ -16767,6 +17777,472 @@ function motionPage(){
     motionWords(document.getElementById('pageTitle'));
   }
 }
+/* ---------- AI providers: the one opt-in network hole ----------
+   Off by default: the app talks to no AI. Switching a provider on adds its
+   host to the page's connect-src (the <head> script in shell.html reads
+   `at-ai-hosts` and writes the CSP before anything runs — so a change applies
+   on reload). A key typed here lives ONLY in this browser's storage, keyed by
+   host: never in the project folder, never in .env, never in an export — so
+   an AI agent working in the repo (e.g. Claude Code) does not see it.
+   "Remember on this device" keeps it in localStorage; off, it is gone when
+   the tab closes (sessionStorage). Neither is encrypted on disk: the browser
+   profile, not the project, is the trust boundary. */
+const AI_PROVIDERS = [
+  { id: 'anthropic', name: 'Anthropic (Claude)', host: 'https://api.anthropic.com', eu: false },
+  { id: 'openai',    name: 'OpenAI',             host: 'https://api.openai.com', eu: false },
+  { id: 'gemini',    name: 'Google Gemini',      host: 'https://generativelanguage.googleapis.com', eu: false },
+  { id: 'mistral',   name: 'Mistral',            host: 'https://api.mistral.ai', eu: true },
+];
+// the same gate the <head> script applies — kept identical on purpose
+const AI_HOST_RE = /^(https:\/\/[a-z0-9-]+(\.[a-z0-9-]+)+(:\d{1,5})?|http:\/\/(localhost|127\.0\.0\.1)(:\d{1,5})?)$/i;
+const aiHosts = () => { try { const h = JSON.parse(localStorage.getItem('at-ai-hosts') || '[]'); return Array.isArray(h) ? h.filter(x=> AI_HOST_RE.test(x)) : []; } catch(e){ return []; } };
+const aiSetHosts = h => { try { localStorage.setItem('at-ai-hosts', JSON.stringify([...new Set(h)])); } catch(e){ toast(tr('This browser blocks local storage — the setting cannot be kept')); } };
+// what the running page actually allows (the policy was fixed at load)
+const aiLive = () => ((document.querySelector('meta[http-equiv="Content-Security-Policy"]') || {}).content || '').match(/connect-src ([^;]*)/)?.[1].split(/\s+/) || [];
+const aiKeyName = host => 'at-ai-key:' + host;
+function aiKey(host){ try { return sessionStorage.getItem(aiKeyName(host)) || localStorage.getItem(aiKeyName(host)) || ''; } catch(e){ return ''; } }
+function aiSetKey(host, key, remember){
+  try {
+    localStorage.removeItem(aiKeyName(host)); sessionStorage.removeItem(aiKeyName(host));
+    if(key) (remember ? localStorage : sessionStorage).setItem(aiKeyName(host), key);
+  } catch(e){ toast(tr('This browser blocks local storage — the key cannot be kept')); }
+}
+const aiRemembered = host => { try { return !!localStorage.getItem(aiKeyName(host)); } catch(e){ return false; } };
+const aiHostLabel = h => h.replace(/^https?:\/\//, '');
+/* which model each host runs — not a secret, so plain localStorage. Anthropic and
+   Mistral have a sensible default; the others change names too often to guess. */
+const AI_MODEL_DEFAULT = { 'https://api.anthropic.com': 'claude-opus-5-5', 'https://api.mistral.ai': 'mistral-large-latest' };
+function aiModel(host){ try { return localStorage.getItem('at-ai-model:' + host) || AI_MODEL_DEFAULT[host] || ''; } catch(e){ return AI_MODEL_DEFAULT[host] || ''; } }
+/* hosts a chat can use right now: switched on, allowed by the running page's policy, with a model (and a key, except a local model) */
+const aiReady = () => aiHosts().filter(h=> aiLive().includes(h) && aiModel(h) && (aiKey(h) || /^http:\/\/(localhost|127\.0\.0\.1)/.test(h)));
+
+function aiProvidersCard(){
+  const on = aiHosts(), live = aiLive();
+  const pending = on.some(h=> !live.includes(h)) || live.some(h=> /^https?:/.test(h) && h !== 'https://www.google.com' && !on.includes(h));
+  const keyCtl = (host)=>{
+    const has = !!aiKey(host);
+    return `<div class="ai-key">
+      ${has ? `<span class="key-state">${tr(aiRemembered(host) ? '•••••• saved on this device' : '•••••• until this tab closes')}</span>` : ''}
+      <input class="set-input" type="password" data-aikey="${esc(host)}" placeholder="${esc(tr(has ? 'replace — paste & press Enter' : 'API key — paste & press Enter'))}" autocomplete="off" spellcheck="false" aria-label="${esc(tr('API key for {h}').replace('{h}', aiHostLabel(host)))}">
+      ${has ? `<button class="btn btn-ghost btn-sm" data-aikeydel="${esc(host)}">${tr('Remove key')}</button>` : ''}
+      <input class="set-input ai-model" data-aimodel="${esc(host)}" value="${esc(aiModel(host))}" placeholder="${esc(tr('model name, e.g. from the provider’s docs'))}" spellcheck="false" autocomplete="off" aria-label="${esc(tr('Model for {h}').replace('{h}', aiHostLabel(host)))}">
+    </div>`;
+  };
+  const known = AI_PROVIDERS.map(p=>{
+    const en = on.includes(p.host);
+    return settingsRow(p.name, `<code>${esc(aiHostLabel(p.host))}</code> · ${tr(p.eu ? 'processing in the EU' : 'processing outside the EU')}`,
+      `<label class="switch"><input type="checkbox" data-aihost="${esc(p.host)}" aria-label="${esc(tr('Allow {p}').replace('{p}', p.name))}" ${en ? 'checked' : ''}><i></i></label>`)
+      + (en ? keyCtl(p.host) : '');
+  }).join('');
+  const custom = on.filter(h=> !AI_PROVIDERS.some(p=> p.host === h)).map(h=>
+    settingsRow(aiHostLabel(h), tr(/^http:/.test(h) ? 'A model on this computer — nothing leaves the machine' : 'Your own endpoint'),
+      `<button class="btn btn-ghost btn-sm" data-aihostdel="${esc(h)}">${tr('Remove')}</button>`) + keyCtl(h)).join('');
+  return `<div class="set-card" id="aiCard">
+      <h3>${tr('AI providers')}</h3>
+      <div class="desc">${tr('Off by default: this app sends nothing to any AI. Switch on the provider you want to talk to personas through, and only its address is added to what the page may connect to — every other host stays blocked.')}</div>
+      <div class="warn-box"><span>⚠</span><span>${tr('<b>Keys typed here stay in this browser only</b> — not in your project folder, not in <code>.env</code>, not in exports — so an AI assistant working in the repo (like Claude Code) never sees them. Without “Remember on this device” a key is forgotten when the tab closes. Browser storage is not encrypted: anyone with access to this computer’s user account could read it.')}</span></div>
+      ${known}
+      ${custom}
+      ${settingsRow('Another endpoint', 'A bare address, e.g. <code>https://my-gateway.example.com</code> or a local model at <code>http://localhost:11434</code>. https only, except localhost.',
+        `<input class="set-input" id="aiHostNew" placeholder="https://…" spellcheck="false" autocomplete="off"><button class="btn btn-ghost btn-sm" id="aiHostAdd">${tr('Add')}</button>`)}
+      ${settingsRow('Remember keys on this device', 'Off: a key lasts until you close this tab. On: it stays in this browser until you remove it.',
+        `<label class="switch"><input type="checkbox" id="aiRemember" aria-label="${esc(tr('Remember keys on this device'))}" ${store.get('ai-remember') === '1' ? 'checked' : ''}><i></i></label>`)}
+      ${pending ? `<div class="set-banner ai-pending">${tr('Network access changes on reload — the page’s security policy is fixed when it opens.')} <button class="btn btn-primary btn-sm" id="aiReload">${tr('Reload now')}</button></div>` : ''}
+    </div>`;
+}
+
+function aiProvidersWire(){
+  const card = document.getElementById('aiCard'); if(!card) return;
+  const redraw = ()=> { card.outerHTML = aiProvidersCard(); aiProvidersWire(); };
+  const enable = h=>{
+    const p = AI_PROVIDERS.find(x=> x.host === h);
+    if(PREFS.data_residency === 'EU' && !(p ? p.eu : /^http:\/\/(localhost|127\.0\.0\.1)/.test(h))
+       && !confirm(tr('Keep processing in the EU is on.') + '\n\n' + tr('{p} may process what you send outside the EU. Allow it anyway?').replace('{p}', p ? p.name : aiHostLabel(h)))) return false;
+    aiSetHosts(aiHosts().concat(h)); return true;
+  };
+  card.querySelectorAll('[data-aihost]').forEach(sw=> sw.onchange = ()=>{
+    const h = sw.dataset.aihost;
+    if(sw.checked){ if(!enable(h)){ sw.checked = false; return; } }
+    else { aiSetHosts(aiHosts().filter(x=> x !== h)); aiSetKey(h, ''); }   // switching off forgets the key too
+    redraw();
+  });
+  card.querySelectorAll('[data-aihostdel]').forEach(b=> b.onclick = ()=>{ const h = b.dataset.aihostdel; aiSetHosts(aiHosts().filter(x=> x !== h)); aiSetKey(h, ''); redraw(); });
+  const add = card.querySelector('#aiHostNew');
+  const doAdd = ()=>{
+    let v = add.value.trim().replace(/\/+$/, '');
+    try { const u = new URL(v); v = u.origin; } catch(e){ v = ''; }
+    if(!AI_HOST_RE.test(v)){ toast(tr('Use a bare https address, or http://localhost for a model on this computer')); add.focus(); return; }
+    if(enable(v)) redraw();
+  };
+  card.querySelector('#aiHostAdd').onclick = doAdd;
+  add.onkeydown = ev=>{ if(ev.key === 'Enter'){ ev.preventDefault(); doAdd(); } };
+  card.querySelector('#aiRemember').onchange = ev=>{
+    store.set('ai-remember', ev.target.checked ? '1' : '0');
+    aiHosts().forEach(h=>{ const k = aiKey(h); if(k) aiSetKey(h, k, ev.target.checked); });   // move the keys you already have
+    redraw();
+  };
+  card.querySelectorAll('[data-aikey]').forEach(inp=> inp.onkeydown = ev=>{
+    if(ev.key !== 'Enter') return;
+    ev.preventDefault();
+    const v = inp.value.trim(); if(!v) return;
+    aiSetKey(inp.dataset.aikey, v, store.get('ai-remember') === '1');
+    inp.value = ''; toast(tr('Key saved in this browser ✓')); redraw();
+  });
+  card.querySelectorAll('[data-aikeydel]').forEach(b=> b.onclick = ()=>{ aiSetKey(b.dataset.aikeydel, ''); toast(tr('Key removed ✓')); redraw(); });
+  card.querySelectorAll('[data-aimodel]').forEach(inp=> inp.onchange = ()=>{
+    try { localStorage.setItem('at-ai-model:' + inp.dataset.aimodel, inp.value.trim()); } catch(e){}
+    toast(tr('Model saved ✓'));
+  });
+  const rl = card.querySelector('#aiReload'); if(rl) rl.onclick = ()=> location.reload();
+}
+/* ---------- Conversations: talk to a persona like to a person ----------
+   A page of its own (#chat, #chat:<id>), full width: a start screen (persona
+   chips over the composer — the first message creates the conversation) or
+   one thread; past conversations behind the History button. A 1:1 chat or a
+   group of personas, each group a thread of its own. Replies come from the AI provider switched on in
+   Settings ▸ AI providers (12d), grounded in the persona's file, the Signals
+   and Evidence linked to her and Product Context.md.
+
+   What this is NOT: research. A conversation never creates a Signal or
+   Evidence (CLAUDE.md hard rule 1) — the page says "simulated" on every
+   thread, and the history lives in this browser only (store, per project
+   copy), never in the project folder, so no agent can mistake it for data.
+   Outbound: a Signal marked special_category, or heard in a session whose
+   consent_scope lacks ai_processing, stays home — the thread header counts
+   what was left out. */
+let CHAT_ACTIVE = false, CHAT_SEL = null, CHAT_NEW = null, CHAT_BUSY = null;
+const chatBtn = document.getElementById('chatBtn');
+const CHAT_SCOPE = () => WS === 'demo' ? 'demo' : 'project:' + ((typeof DIRHANDLE !== 'undefined' && DIRHANDLE && DIRHANDLE.name) || '');
+function chatAll(){ try { const a = JSON.parse(store.get('chats') || '[]'); return Array.isArray(a) ? a : []; } catch(e){ return []; } }
+function chatSave(all){ store.set('chats', JSON.stringify(all)); }
+const chatMine = () => chatAll().filter(c=> c.scope === CHAT_SCOPE()).sort((a,b)=> b.updated - a.updated);
+function chatPut(c){ const all = chatAll().filter(x=> x.id !== c.id); c.updated = Date.now(); all.push(c); chatSave(all); }
+const chatGet = id => chatAll().find(c=> c.id === id && c.scope === CHAT_SCOPE()) || null;
+const chatPersonas = () => wsEntities().filter(e=> e.type === 'Persona');
+const chatName = e => e ? peFirst(e) : tr('Someone who left');
+const chatTitle = c => c.title || c.who.map(id=> chatName(ENTITIES[id])).join(', ');
+const chatTime = t => new Date(t).toLocaleTimeString(LANG === 'pl' ? 'pl-PL' : 'en-GB', { hour: '2-digit', minute: '2-digit' });
+const chatDay = t => { const d = new Date(t), now = new Date();
+  return d.toDateString() === now.toDateString() ? chatTime(t) : d.toLocaleDateString(LANG === 'pl' ? 'pl-PL' : 'en-GB', { day: 'numeric', month: 'short' }); };
+
+/* ---- what a persona knows: the same slice /persona-talk reads ----
+   graph_index.py slice_for, ported: two hops out from the persona plus every
+   file that links to her, and Product Context.md. Kept from it: Archetypes,
+   Signals, Evidence and Transcripts (their excerpts — a ## Full transcript
+   section stays home: the Signals already carry the quotes). Left out on
+   purpose: Ideas and Hypotheses (the skill never lets a persona talk roadmap),
+   Competitors (the skill's competitor mode is off by default). Outbound
+   filter: a Signal or Transcript marked special_category, or heard in a
+   session whose consent_scope lacks ai_processing, stays in this browser;
+   a set-aside (excluded) session is skipped like everywhere else. */
+const chatFlag = v => v && v !== 'false' && !(Array.isArray(v) && !v.length);
+const chatNoAi = t => Array.isArray(t.fm.consent_scope) && !t.fm.consent_scope.includes('ai_processing');
+const CHAT_KIND = { Archetype: 'A', Signal: 'S', Evidence: 'E', Transcript: 'T' };
+/* a file's out-links as graph_index.py counts them: Markdown links in the body,
+   plus the frontmatter keys that name files by title (its REF_KEYS) */
+const CHAT_REF_KEYS = { evidences: 'Evidence', competitors: 'Competitors', mentioned_in: 'Transcripts', same_participant_as: 'Transcripts', idea: 'Ideas', signals: 'Signals' };
+function chatLinks(e, byTitle){
+  const out = peLinks(e.body).map(l=> l.e);
+  for(const [k, dir] of Object.entries(CHAT_REF_KEYS)){
+    [].concat(e.fm[k] || []).forEach(t=>{ t = String(t).trim(); const x = byTitle.get(dir + '/' + t) || byTitle.get('/' + t); if(x && x !== e) out.push(x); });
+  }
+  return out;
+}
+function chatContext(p, c){
+  const open = !!(c && c.sensitive);   // the researcher let this conversation carry special-category data
+  const byTitle = new Map();
+  wsEntities().forEach(e=>{
+    const dir = e.file.split('/')[0], stem = e.file.split('/').pop().replace(/\.md$/, '');
+    [String(e.fm.title || stem), stem].forEach(t=>{ if(!byTitle.has(dir + '/' + t)) byTitle.set(dir + '/' + t, e); if(!byTitle.has('/' + t)) byTitle.set('/' + t, e); });
+  });
+  const seen = new Set([p.id]); let front = [p];
+  for(let d = 0; d < 2; d++){
+    const nx = [];
+    front.forEach(e=> chatLinks(e, byTitle).forEach(x=>{ if(!seen.has(x.id)){ seen.add(x.id); nx.push(x); } }));
+    front = nx;
+  }
+  wsEntities().forEach(e=>{ if(chatLinks(e, byTitle).some(x=> x.id === p.id)) seen.add(e.id); });
+  let held = 0;
+  const items = [...seen].map(id=> ENTITIES[id]).filter(e=> e && CHAT_KIND[e.type] && !!e.fm.demo === !!p.fm.demo).filter(e=>{
+    if(e.type === 'Transcript'){
+      if(isExcluded(e)) return false;
+      if(chatNoAi(e) || (!open && chatFlag(e.fm.special_category))){ held++; return false; }
+    }
+    if(e.type === 'Signal' && ((!open && chatFlag(e.fm.special_category)) || peLinks(e.body).some(l=> l.e.type === 'Transcript' && chatNoAi(l.e)))){ held++; return false; }
+    return true;
+  });
+  const order = 'ASET', ref = {}, key = new Map(), n = {};   // [S3] → file, and back
+  items.sort((x, y)=> order.indexOf(CHAT_KIND[x.type]) - order.indexOf(CHAT_KIND[y.type]) || x.title.localeCompare(y.title))
+    .forEach(e=>{ const k = CHAT_KIND[e.type]; n[k] = (n[k] || 0) + 1; ref[k + n[k]] = e.id; key.set(e.id, k + n[k]); });
+  return { items, held, ref, key, signals: items.filter(e=> e.type === 'Signal'), count: n };
+}
+const chatClean = md => String(md || '').replace(/\r/g, '').replace(/^﻿?\s*/, '').trim();
+const chatNoFull = md => chatClean(md).replace(/\n## Full transcript[^\n]*\n[\s\S]*?(?=\n## |$)/i, '\n## Full transcript\n(not included here)');
+const CHAT_SKILL_TXT = ((document.getElementById('skillPersonaTalk') || {}).textContent || '').replace(/<\\\/script/g, '</script').trim();
+/* how many special-category files this conversation's personas stand on (consent-held ones never count: those stay home regardless) */
+const chatSensitiveN = c => c.who.reduce((n, id)=> { const p = ENTITIES[id]; return n + (p ? chatContext(p, { sensitive: true }).items.length - chatContext(p).items.length : 0); }, 0);
+/* two parts: the rules (identical for every call → cached) and this persona's slice */
+function chatSystem(p, c){
+  const { items, key } = chatContext(p, c);
+  const others = c.who.filter(id=> id !== p.id).map(id=> chatName(ENTITIES[id]));
+  const pref = typeof PREFS !== 'undefined' ? PREFS : {};
+  const rules = `# Running inside the Archetype Talk app — read this first
+You are the persona-talk skill whose files follow, running in the app's Conversations page instead of a coding agent. Where this section and the skill differ, this section wins.
+- You have no tools and no file access. The persona's whole slice is below this section, already read for you: Step 0 (the card cache), the full read and "back to the files" all mean the sections below. Never claim to have read, written or saved a file.
+- Skip the grounding line, the preamble flags and the opening scene: the app shows those itself.
+- The interview happens in a chat window. Keep the persona's spoken voice, at the length a person would type in a messaging app.
+- Markers: use exactly the markers the slice gives each file ([S3], [E1], [A2], [T1]). They do NOT restart per reply. The app turns them into links.
+- Output: the persona's reply, then a line containing only ---, then the researcher block, exactly as "Response format" describes. Nothing else.
+- [exit] and the debrief: you cannot write Research backlog.md or Hypotheses/. Put the proposed backlog rows and hypotheses in the researcher block as text for the researcher to copy, and say plainly that nothing was saved.
+- Not available here: images and mockups, [speak], competitor mode. If asked, say so in the researcher block, not in character.
+- Researcher preferences: name ${pref.name ? `"${pref.name}"` : 'not set'} · context tier default ${pref.context_tier_default || 'auto'} · self-check ${pref.judge_enabled === false ? 'off' : 'on'}${pref.judge_override ? ` · judge instruction (override): ${pref.judge_override}` : ''} · demo tips ${pref.demo_tips === false ? 'off' : 'on'}.
+${others.length ? `- Panel: this is a group conversation; also present: ${others.join(', ')}. You play ONLY ${chatName(p)} and write only her or his own reply and researcher block — the others answer in their own turns. Their lines reach you as "Name: text", the researcher's as "Researcher: text". If ${chatName(p)} has nothing to add to the last message, reply with exactly: (pass)\n` : ''}
+${CHAT_SKILL_TXT}`;
+  const slice = `# The slice for ${chatName(p)} (today is ${new Date(graphNow()).toISOString().slice(0, 10)})
+
+## Persona file — ${p.file}
+${chatClean(p.md)}
+
+${items.map(e=> `## [${key.get(e.id)}] ${e.type} — ${e.file}\n${e.type === 'Transcript' ? chatNoFull(e.md) : chatClean(e.md)}`).join('\n\n') || '(nothing linked yet)'}
+
+## Product Context.md
+${chatClean(PRODUCT_RAW) || '(no product context)'}`;
+  return { rules, slice };
+}
+/* the thread as one persona sees it: her own lines are "assistant", everyone else's "user" */
+function chatTurns(c, pid){
+  const group = c.who.length > 1, out = [];
+  c.msgs.forEach(m=>{
+    if(m.role === 'system' || m.pass) return;
+    const mine = m.role === 'persona' && m.pid === pid;
+    // her own turns go back whole — reply and researcher block — so the skill can see which tips and notes it already gave
+    const text = mine ? (m.note ? m.text + '\n\n---\n' + m.note : m.text) : group ? `${m.role === 'user' ? 'Researcher' : chatName(ENTITIES[m.pid])}: ${m.text}` : m.text;
+    const role = mine ? 'assistant' : 'user', last = out[out.length - 1];
+    if(last && last.role === role) last.content += '\n\n' + text; else out.push({ role, content: text });
+  });
+  return out;
+}
+
+/* ---- the providers: Anthropic's Messages API, Gemini, and the OpenAI-shaped rest (OpenAI, Mistral, a local model) ---- */
+async function chatCall(host, sys, msgs){
+  const system = sys.rules + '\n\n' + sys.slice;
+  const key = aiKey(host), model = aiModel(host);
+  const bad = async r=>{ let m = ''; try { const j = await r.json(); m = (j.error && (j.error.message || j.error)) || ''; } catch(e){} return new Error(`${r.status} ${typeof m === 'string' ? m : ''}`.trim()); };
+  if(host === 'https://api.anthropic.com'){
+    const fallback = /^claude-(opus-5-5|opus-5|sonnet-5-5|fable-5-[12])$/.test(model);   // a policy decline re-runs on a fallback model in the same call
+    const headers = { 'content-type': 'application/json', 'x-api-key': key, 'anthropic-version': '2026-10-21', 'anthropic-dangerous-direct-browser-access': 'true' };
+    if(fallback) headers['anthropic-beta'] = 'server-side-fallback-2026-07-01';
+    const r = await fetch(host + '/v1/messages', { method: 'POST', headers,
+      // the rules are the same for every persona and the slice for every turn of
+      // one persona: each is its own cached block, so a turn pays for its new lines only
+      body: JSON.stringify({ model, max_tokens: 16000, output_config: { effort: 'medium' }, ...(fallback ? { fallbacks: 'default' } : {}),
+        system: [{ type: 'text', text: sys.rules, cache_control: { type: 'ephemeral' } }, { type: 'text', text: sys.slice, cache_control: { type: 'ephemeral' } }],
+        messages: msgs }) });
+    if(!r.ok) throw await bad(r);
+    const j = await r.json();
+    if(j.stop_reason === 'refusal') throw new Error(tr('The model declined to answer this.'));
+    return (j.content || []).filter(b=> b.type === 'text').map(b=> b.text).join('').trim();
+  }
+  if(host === 'https://generativelanguage.googleapis.com'){
+    const r = await fetch(`${host}/v1beta/models/${encodeURIComponent(model)}:generateContent`, { method: 'POST',
+      headers: { 'content-type': 'application/json', 'x-goog-api-key': key },
+      body: JSON.stringify({ systemInstruction: { parts: [{ text: system }] }, contents: msgs.map(m=> ({ role: m.role === 'assistant' ? 'model' : 'user', parts: [{ text: m.content }] })) }) });
+    if(!r.ok) throw await bad(r);
+    const j = await r.json();
+    return ((((j.candidates || [])[0] || {}).content || {}).parts || []).map(p=> p.text || '').join('').trim();
+  }
+  const r = await fetch(host + '/v1/chat/completions', { method: 'POST',
+    headers: { 'content-type': 'application/json', ...(key ? { authorization: 'Bearer ' + key } : {}) },
+    body: JSON.stringify({ model, messages: [{ role: 'system', content: system }, ...msgs] }) });
+  if(!r.ok) throw await bad(r);
+  const j = await r.json();
+  return String((((j.choices || [])[0] || {}).message || {}).content || '').trim();
+}
+
+/* ---- sending: the researcher's line, then each persona in turn ---- */
+async function chatSend(c, text){
+  const host = chatHost(c); if(!host) return;
+  c.msgs.push({ role: 'user', text, t: Date.now() }); chatPut(c); chatRender();
+  for(const pid of c.who){
+    const p = ENTITIES[pid]; if(!p) continue;
+    CHAT_BUSY = { id: c.id, pid }; chatRender();
+    try {
+      const raw = (await chatCall(host, chatSystem(p, c), chatTurns(c, pid))).replace(/<(think|thinking|reasoning)>[\s\S]*?<\/\1>/gi, '').trim();
+      const cut = raw.search(/\n\s*-{3,}\s*\n/);
+      const said = (cut < 0 ? raw : raw.slice(0, cut)).trim(), note = cut < 0 ? '' : raw.slice(cut).replace(/^\s*-{3,}\s*/, '').trim();
+      const ctx = chatContext(p, c).ref, src = [...new Set([...raw.matchAll(/\[([SEAT]\d+)\]/g)].map(m=> m[1]).filter(k=> ctx[k]))];
+      const text = said.replace(/\s*\[[SEAT]\d+\]/g, '').trim();
+      const pass = c.who.length > 1 && /^\(?pass\)?\.?$/i.test(text);
+      if(!text && !pass) throw new Error(tr('Empty reply'));
+      c.msgs.push({ role: 'persona', pid, text, note, t: Date.now(), src, pass, ctx });
+    } catch(err){
+      c.msgs.push({ role: 'system', err: true, text: tr('{p} could not answer: {e}').replace('{p}', chatName(p)).replace('{e}', err.message || String(err)), t: Date.now() });
+      CHAT_BUSY = null; chatPut(c); chatRender(); return;   // one failure stops the round: the next persona would answer a gap
+    }
+    chatPut(c);
+  }
+  CHAT_BUSY = null; chatRender();
+}
+const chatHost = c => { const r = aiReady(); return c && r.includes(c.host) ? c.host : r.includes(CHAT_HOST) ? CHAT_HOST : r[0] || null; };
+let CHAT_HOST = null;   // the provider picked on the start screen, before a conversation exists
+
+/* ---- the page: one full-width column. The start screen is a headline, the
+   personas as chips and the composer; a thread is the messages and the
+   composer. The history waits behind a button, in a panel that slides over. ---- */
+const CH_I = {
+  plus: '<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" aria-hidden="true"><path d="M12 5v14M5 12h14"/></svg>',
+  clock: '<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 12a9 9 0 1 0 3-6.7L3 8"/><path d="M3 3v5h5"/><path d="M12 7v5l3 2"/></svg>',
+  send: '<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 19V5M5 12l7-7 7 7"/></svg>',
+  pen: '<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 20h9"/><path d="M16.5 3.5a2.1 2.1 0 0 1 3 3L7 19l-4 1 1-4z"/></svg>',
+  bin: '<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 6h18M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6M9 6V4a1 1 0 0 1 1-1h4a1 1 0 0 1 1 1v2"/></svg>',
+};
+const chatFaces = (c, cls) => `<span class="ch-faces">${c.who.slice(0, 3).map(id=> faceHtml(ENTITIES[id], cls, chatName(ENTITIES[id]))).join('')}</span>`;
+const chatMenu = c => rowMenuHtml('chm-' + c.id, [
+  `<button type="button" role="menuitem" data-chren="${esc(c.id)}">${CH_I.pen}${tr('Rename')}</button>`,
+  `<button type="button" role="menuitem" class="danger" data-chdel="${esc(c.id)}">${CH_I.bin}${tr('Delete')}</button>`]);
+
+function chatListHtml(list){
+  return `<aside class="ch-list" id="chHist" popover aria-label="${esc(tr('History'))}">
+    <b class="ch-list-head">${tr('History')}</b>
+    ${list.length ? list.map(c=>{
+      const last = [...c.msgs].reverse().find(m=> m.role !== 'system' && !m.pass);
+      const who = last ? (last.role === 'user' ? tr('You') : chatName(ENTITIES[last.pid])) + ': ' : '';
+      return `<div class="ch-item${c.id === CHAT_SEL ? ' on' : ''}">
+        <a class="ch-item-link" href="#chat:${esc(c.id)}">${chatFaces(c, 'ch-face-sm')}
+          <span class="ch-item-txt"><b>${esc(chatTitle(c))}</b><span>${last ? esc(who + last.text) : esc(tr('No messages yet'))}</span></span>
+          <time>${esc(chatDay(c.updated))}</time></a>${chatMenu(c)}</div>`;
+    }).join('') : `<p class="ch-none">${tr('No conversations yet.')}</p>`}
+  </aside>`;
+}
+/* the top row: History left, the thread's title in the middle, New conversation right */
+function chatTopHtml(c, n){
+  let mid = '';
+  if(c){
+    const held = c.who.reduce((k, id)=> k + (ENTITIES[id] ? chatContext(ENTITIES[id], c).held : 0), 0);
+    const grounded = c.who.map(id=> ENTITIES[id] ? chatContext(ENTITIES[id], c).signals.length : 0).reduce((a, b)=> a + b, 0);   // the slice also carries archetypes, evidence and transcript excerpts
+    mid = `<div class="ch-title">${chatFaces(c, 'ch-face-sm')}<div><b>${esc(chatTitle(c))}</b><span>${tr('Simulated conversation')} · ${trn(grounded, 'grounded in {n} signal', 'grounded in {n} signals', 'oparta na {n} sygnale', 'oparta na {n} sygnałach', 'oparta na {n} sygnałach')}${held ? ' · ' + trn(held, '{n} file kept local', '{n} files kept local', '{n} plik zostaje lokalnie', '{n} pliki zostają lokalnie', '{n} plików zostaje lokalnie') : ''}${chatSensitiveN(c) && !c.sensitive ? ` · <button type="button" class="ch-linkbtn" data-chsens>${tr('Include sensitive data')}</button>` : c.sensitive ? ` · ${tr('sensitive data included')}` : ''}</span></div>${chatMenu(c)}</div>`;
+  }
+  return `<div class="ch-top">
+    <button type="button" class="ch-pill" popovertarget="chHist">${CH_I.clock}<span>${tr('History')}</span>${n ? `<span class="ch-count">${n}</span>` : ''}</button>
+    ${mid}
+    ${c ? `<button type="button" class="ch-pill" data-chnew>${CH_I.plus}<span>${tr('New conversation')}</span></button>` : ''}
+  </div>`;
+}
+function chatComposeHtml(c, ph, ready){
+  const host = chatHost(c), all = aiReady();
+  if(!host) return `<div class="ch-nokey">${tr('To chat, switch on an AI provider and add its key — it stays in this browser.')} <a class="btn btn-primary btn-sm" href="#settings">${tr('Open Settings')}</a></div>`;
+  return `<form class="ch-compose" id="chForm">
+      <textarea id="chInput" rows="1" placeholder="${esc(ph)}" aria-label="${esc(tr('Message'))}" ${CHAT_BUSY ? 'disabled' : ''}></textarea>
+      ${all.length > 1 ? `<select id="chHost" aria-label="${esc(tr('AI provider'))}">${all.map(h=> `<option value="${esc(h)}" ${h === host ? 'selected' : ''}>${esc(aiHostLabel(h))}</option>`).join('')}</select>` : ''}
+      <button type="submit" class="ch-send" aria-label="${esc(tr('Send'))}" ${CHAT_BUSY || !ready ? 'disabled' : ''}>${CH_I.send}</button></form>
+    <p class="ch-foot">${tr('Simulated from your research — a source of questions, never of data.')} ${esc(tr('Messages go to {h}; the history stays in this browser.').replace('{h}', aiHostLabel(host)))}</p>`;
+}
+function chatStartHtml(){
+  const ps = chatPersonas(), sel = ps.filter(p=> CHAT_NEW.has(p.id));
+  return `<section class="ch-start">
+    <h2>${tr('Talk to your personas')}</h2>
+    <p>${tr('Every answer comes from your research. Pick one persona, or several for a group conversation.')}</p>
+    ${ps.length ? `<div class="ch-chips" role="group" aria-label="${esc(tr('Personas'))}">${ps.map(p=>{ const on = CHAT_NEW.has(p.id);
+        return `<button type="button" class="ch-chip${on ? ' on' : ''}" aria-pressed="${on}" data-chpick="${esc(p.id)}" title="${esc(tr(p.fm.category || 'persona'))}">${faceHtml(p, 'ch-face-xs', chatName(p))}<span>${esc(chatName(p))}</span></button>`; }).join('')}</div>
+      <div class="ch-dock">${chatComposeHtml(null, sel.length ? tr('Write to {p}…').replace('{p}', sel.map(chatName).join(', ')) : tr('Pick a persona above, then write…'), sel.length)}</div>`
+    : `<p class="ch-none">${tr('No personas in this workspace yet.')}</p>`}
+  </section>`;
+}
+function chatMsgHtml(c, m, prev){
+  if(m.role === 'system') return `<div class="ch-sys${m.err ? ' err' : ''}">${esc(m.text)}</div>`;
+  if(m.pass) return '';
+  const mine = m.role === 'user', p = ENTITIES[m.pid];
+  const cont = prev && !prev.pass && prev.role === m.role && prev.pid === m.pid && m.t - prev.t < 120000;   // a run of lines from one speaker
+  const chips = (m.src || []).map(k=> { const id = m.ctx && m.ctx[k], e = id && ENTITIES[id];
+    return e ? `<a class="ch-src" href="#${esc(id)}" title="${esc(e.title)}">${esc(k)}</a>` : ''; }).join('');
+  return `<div class="ch-msg ${mine ? 'me' : 'them'}${cont ? ' cont' : ''}">
+    ${mine ? '' : `<span class="ch-av">${cont ? '' : faceHtml(p, 'ch-face', chatName(p))}</span>`}
+    <div class="ch-col">
+      ${!mine && c.who.length > 1 && !cont ? `<span class="ch-who">${esc(chatName(p))}</span>` : ''}
+      <div class="ch-bubble">${esc(m.text).replace(/\n/g, '<br>')}</div>
+      <span class="ch-meta"><time>${chatTime(m.t)}</time>${chips ? `<span class="ch-srcs" aria-label="${esc(tr('Based on'))}">${chips}</span>` : ''}</span>
+      ${m.note ? `<details class="ch-note"><summary>${tr('Researcher context')}</summary><div>${chatNoteHtml(m)}</div></details>` : ''}
+    </div></div>`;
+}
+/* the researcher block: light markdown (bold, italics, lines), markers as links */
+function chatNoteHtml(m){
+  return esc(m.note.replace(/^\s*(\*\*|#+\s*)?(Researcher context|Kontekst badacza)(\*\*)?\s*\n/i, '')).replace(/^#+\s*/gm, '').replace(/\*\*(.+?)\*\*/g, '<b>$1</b>').replace(/(^|[^*])\*(?!\s)(.+?)\*/g, '$1<i>$2</i>')
+    .replace(/\[([SEAT]\d+)\]/g, (x, k)=> m.ctx && m.ctx[k] ? `<a class="ch-src" href="#${esc(m.ctx[k])}">${k}</a>` : x).replace(/\n/g, '<br>');
+}
+function chatThreadHtml(c){
+  const busy = CHAT_BUSY && CHAT_BUSY.id === c.id ? ENTITIES[CHAT_BUSY.pid] : null;
+  return `<section class="ch-thread">
+    <div class="ch-body" id="chBody" aria-live="polite"><div class="ch-msgs">
+      ${c.msgs.map((m, i)=> chatMsgHtml(c, m, c.msgs[i-1])).join('')}
+      ${busy ? `<div class="ch-msg them"><span class="ch-av">${faceHtml(busy, 'ch-face', chatName(busy))}</span><div class="ch-col"><div class="ch-bubble ch-typing" aria-label="${esc(tr('{p} is typing').replace('{p}', chatName(busy)))}"><i></i><i></i><i></i></div></div></div>` : ''}
+    </div></div>
+    <div class="ch-dock">${chatComposeHtml(c, tr('Write to {p}…').replace('{p}', chatTitle(c)), true)}</div>
+  </section>`;
+}
+/* a new conversation, made by the first message sent from the start screen */
+function chatCreate(who){
+  const c = { id: 'c' + Date.now().toString(36) + Math.random().toString(36).slice(2, 6), scope: CHAT_SCOPE(), who, title: '', created: Date.now(), msgs: [], host: chatHost(null) || '' };
+  c.msgs.push({ role: 'system', t: Date.now(), text: who.length > 1
+    ? tr('{list} joined the conversation').replace('{list}', who.map(id=> chatName(ENTITIES[id])).join(', '))
+    : tr('You are chatting with {p}').replace('{p}', chatName(ENTITIES[who[0]])) });
+  chatPut(c); CHAT_NEW = null; CHAT_SEL = c.id; suppressRoute = true; location.hash = '#chat:' + c.id;
+  return c;
+}
+function chatRender(){
+  if(!CHAT_ACTIVE) return;
+  const c = CHAT_SEL && chatGet(CHAT_SEL), list = chatMine();
+  if(!c && !CHAT_NEW){ const ps = chatPersonas(); CHAT_NEW = new Set(ps.length === 1 ? [ps[0].id] : []); }
+  const keep = document.getElementById('chInput'), draft = keep ? keep.value : '';
+  grid.className = 'ch-wrap';
+  grid.innerHTML = chatTopHtml(c, list.length) + chatListHtml(list) + (c ? chatThreadHtml(c) : chatStartHtml());
+  const body = document.getElementById('chBody'); if(body) body.scrollTop = body.scrollHeight;
+  const inp = document.getElementById('chInput');
+  if(inp){ inp.value = draft; const fit = ()=>{ inp.style.height = 'auto'; inp.style.height = Math.min(inp.scrollHeight, 200) + 'px'; }; fit(); inp.oninput = fit;
+    inp.onkeydown = ev=>{ if(ev.key === 'Enter' && !ev.shiftKey && !ev.isComposing){ ev.preventDefault(); document.getElementById('chForm').requestSubmit(); } };
+    if(!CHAT_BUSY) inp.focus(); }
+  const form = document.getElementById('chForm');
+  if(form) form.onsubmit = ev=>{ ev.preventDefault(); const v = inp.value.trim(); if(!v || CHAT_BUSY) return;
+    const cc = c || (CHAT_NEW && CHAT_NEW.size ? chatCreate([...CHAT_NEW]) : null); if(!cc) return;
+    inp.value = ''; chatSend(cc, v); };
+  const hs = document.getElementById('chHost'); if(hs) hs.onchange = ()=>{ if(c){ c.host = hs.value; chatPut(c); } else CHAT_HOST = hs.value; };
+}
+grid.addEventListener('click', ev=>{
+  if(!CHAT_ACTIVE) return;
+  const t = ev.target;
+  if(t.closest('[data-chnew]')){ CHAT_NEW = null; CHAT_SEL = null; suppressRoute = true; location.hash = '#chat'; chatRender(); return; }
+  const pick = t.closest('[data-chpick]');
+  if(pick){ const id = pick.dataset.chpick; CHAT_NEW.has(id) ? CHAT_NEW.delete(id) : CHAT_NEW.add(id); chatRender(); return; }
+  if(t.closest('[data-chsens]')){
+    const c = chatGet(CHAT_SEL); if(!c) return;
+    const host = chatHost(c), eu = PREFS.data_residency === 'EU' ? '\n\n' + tr('Keep processing in the EU is on — check that this provider processes in the EU.') : '';
+    if(!confirm(tr('Send special-category data (GDPR Art. 9 — e.g. health) to {h} in this conversation?').replace('{h}', host ? aiHostLabel(host) : tr('the AI provider')) + '\n\n'
+      + tr('These files make the persona truer, but their content leaves this computer for the provider. It applies to this conversation only, and files without consent for AI processing still stay here.') + eu)) return;
+    c.sensitive = true; c.msgs.push({ role: 'system', t: Date.now(), text: tr('Sensitive data included from here on') }); chatPut(c); chatRender(); return;
+  }
+  const ren = t.closest('[data-chren]');
+  if(ren){ t.closest('[popover]')?.hidePopover(); const c = chatGet(ren.dataset.chren); if(!c) return;
+    const v = prompt(tr('Name this conversation (empty = the participants’ names)'), c.title || '');
+    if(v === null) return; c.title = v.replace(/\s+/g, ' ').trim().slice(0, 80); chatPut(c); chatRender(); return; }
+  const del = t.closest('[data-chdel]');
+  if(del){ t.closest('[popover]')?.hidePopover(); const c = chatGet(del.dataset.chdel); if(!c) return;
+    if(!confirm(tr('Delete “{t}”?').replace('{t}', chatTitle(c)) + '\n\n' + tr('The conversation is removed from this browser for good — it cannot be undone.'))) return;
+    chatSave(chatAll().filter(x=> x.id !== c.id)); if(CHAT_SEL === c.id){ CHAT_SEL = null; suppressRoute = true; location.hash = '#chat'; } chatRender(); return; }
+});
+
+function chatEnter(id){
+  CHAT_ACTIVE = true; CHAT_SEL = id || null; if(id) CHAT_NEW = null;
+  syncLinTheme(); chatBtn.classList.add('active'); document.body.classList.add('chat-open');
+  galleryView.style.display = ''; detailView.classList.remove('active');
+  hideGalleryChrome(); renderTabs();
+  pageTitle.textContent = tr('Conversations');   // hidden on this page (body.chat-open); kept for the tab title
+  chatRender(); window.scrollTo(0, 0);
+}
+function chatExit(){
+  if(!CHAT_ACTIVE) return;
+  CHAT_ACTIVE = false; CHAT_NEW = null; chatBtn.classList.remove('active'); document.body.classList.remove('chat-open');
+  grid.className = ''; updatePageHead();
+}
+chatBtn.onclick = ()=>{ location.hash = '#chat'; };
 /* ---------- Overview dashboard ----------
    A snapshot of what's actually in the graph right now — counts, freshness,
    research cadence and grounding health. Strictly read-only: it never creates
@@ -17097,13 +18573,13 @@ function dxBacklogTop(){
   const qi = h.findIndex(x=> /question|pytanie/.test(x)), pi = h.findIndex(x=> /persona/.test(x));
   return sec.table.rows.map(r=>({ q: r[qi>=0?qi:2]||'', who: (r[pi>=0?pi:1]||'').trim() }));
 }
-/* Fresh research, Revolut-style: one line for how many sources are younger
-   than three months, day by day. A new transcript (date:) or new desk research
-   (Evidence retrieved:) lifts it; 92 days later the same source goes out of
-   date and the line steps down — so a project that stops listening slides
-   visibly. A dot marks each day something changed; hovering (or ←/→ on the
-   focused card) scrubs to it and says what happened, the way Revolut names a
-   price. Set-aside sessions and undated files count nowhere. */
+/* Research activity, GitHub-style: the last twelve months as a calendar, one
+   square a day, its ember deeper the more sources arrived that day — a new
+   transcript (date:) or new desk research (Evidence retrieved:). A project
+   that stops listening shows it as a run of empty weeks. The head keeps the
+   freshness count (younger than three months) the old line chart carried.
+   Pointing at a day (or ←/→ on the focused card) says what came in. Set-aside
+   sessions and undated files count nowhere. */
 let DX_FRESH = null;
 const DX_DAY = 86400000;
 const dxDayOf = d => Math.round(Date.UTC(d.getFullYear(), d.getMonth(), d.getDate()) / DX_DAY);
@@ -17111,77 +18587,79 @@ const dxDateOf = n => { const u = new Date(n * DX_DAY); return new Date(u.getUTC
 const dxDayLabel = n => { const d = dxDateOf(n); return `${d.getDate()} ${dashMon(d.getMonth())} ${d.getFullYear()}`; };
 function dxFresh(){
   DX_FRESH = null;
-  const today = dxDayOf(new Date(graphNow())), WIN = 92;
-  const src = [];
+  const today = dxDayOf(new Date(graphNow())), WIN = 92, per = new Map();
+  let fresh = 0, soon = 0;
   wsEntities().forEach(e=>{
     const d = e.type==='Transcript' && !isExcluded(e) ? parseAnyDate(e.fm.date) : e.type==='Evidence' ? parseAnyDate(e.fm.retrieved) : null;
-    if(d && dxDayOf(d) <= today) src.push({ k: e.type==='Transcript' ? 'tr' : 'ev', n: dxDayOf(d) });
+    const n = d && dxDayOf(d);
+    if(!n || n > today) return;
+    (per.get(n) || per.set(n, { tr: 0, ev: 0 }).get(n))[e.type==='Transcript' ? 'tr' : 'ev']++;
+    if(n + WIN > today){ fresh++; if(n + WIN <= today + 30) soon++; }
   });
-  if(!src.length) return '';
-  const days = new Map(), at = n => days.get(n) || days.set(n, { n, add: { tr: 0, ev: 0 }, out: { tr: 0, ev: 0 } }).get(n);
-  src.forEach(s=>{ at(s.n).add[s.k]++; if(s.n + WIN <= today) at(s.n + WIN).out[s.k]++; });
-  let v = 0;
-  const pts = [...days.values()].sort((a,b)=> a.n - b.n).map(p=> ({ ...p, v: v += p.add.tr + p.add.ev - p.out.tr - p.out.ev }));
-  const what = p => [
-    p.add.tr && trn(p.add.tr, '+{n} transcript', '+{n} transcripts', '+{n} transkrypcja', '+{n} transkrypcje', '+{n} transkrypcji'),
-    p.add.ev && trn(p.add.ev, '+{n} desk research source', '+{n} desk research sources', '+{n} źródło z desk research', '+{n} źródła z desk research', '+{n} źródeł z desk research'),
-    p.out.tr && trn(p.out.tr, '{n} transcript went out of date', '{n} transcripts went out of date', '{n} transkrypcja się zestarzała', '{n} transkrypcje się zestarzały', '{n} transkrypcji się zestarzało'),
-    p.out.ev && trn(p.out.ev, '{n} desk research source went out of date', '{n} desk research sources went out of date', '{n} źródło z desk research się zestarzało', '{n} źródła z desk research się zestarzały', '{n} źródeł z desk research się zestarzało'),
-  ].filter(Boolean).join(' · ');
-  const soon = src.filter(s=> s.n + WIN > today && s.n + WIN <= today + 30).length;
-  const a = pts[0].n - 3, b = Math.max(today, pts[pts.length-1].n), H = 160, top = 14, max = Math.max(...pts.map(p=> p.v), 1);
-  const X = n => (n - a) / Math.max(1, b - a) * 1000, Y = val => H - 4 - val / max * (H - 4 - top);
-  const line = [`M${X(a).toFixed(1)},${Y(0).toFixed(1)}`].concat(pts.map(p=> `L${X(p.n).toFixed(1)},${Y(p.v).toFixed(1)}`), `L${X(b).toFixed(1)},${Y(v).toFixed(1)}`).join('');
-  const area = line + `L${X(b).toFixed(1)},${H}L${X(a).toFixed(1)},${H}Z`;
-  DX_FRESH = {
-    now: v,
-    nowWhat: soon ? trn(soon, '{n} source goes out of date in the next 30 days', '{n} sources go out of date in the next 30 days', 'W ciągu 30 dni zestarzeje się {n} źródło', 'W ciągu 30 dni zestarzeją się {n} źródła', 'W ciągu 30 dni zestarzeje się {n} źródeł') : tr('Nothing goes out of date in the next 30 days'),
-    pts: pts.map(p=> ({ x: X(p.n) / 10, v: p.v, when: dxDayLabel(p.n), what: what(p) })),
-  };
-  const unit = n => trn(n, 'fresh source', 'fresh sources', 'świeże źródło', 'świeże źródła', 'świeżych źródeł');
-  const span = `${dxDayLabel(pts[0].n)} – ${tr('today')}`;
+  if(!per.size) return '';
+  /* 53 weeks, Monday on top, the last column ending today */
+  const dow = n => (dxDateOf(n).getDay() + 6) % 7, W = 53, start = today - dow(today) - (W - 1) * 7;
+  const C = 11, STEP = 14, LW = 30, MH = 18, vw = LW + W * STEP, vh = MH + 7 * STEP;
+  const inRange = [...per].filter(([n])=> n >= start), total = inRange.reduce((s, [, c])=> s + c.tr + c.ev, 0);
+  const max = Math.max(1, ...inRange.map(([, c])=> c.tr + c.ev));
+  const lvl = v => v ? Math.min(4, Math.ceil(v / max * 4)) : 0;
+  const what = c => [
+    c.tr && trn(c.tr, '{n} transcript', '{n} transcripts', '{n} transkrypcja', '{n} transkrypcje', '{n} transkrypcji'),
+    c.ev && trn(c.ev, '{n} desk research source', '{n} desk research sources', '{n} źródło z desk research', '{n} źródła z desk research', '{n} źródeł z desk research'),
+  ].filter(Boolean).join(' · ') || tr('Nothing came in');
+  let cells = '', months = '', lastM = -1, lastX = -99;
+  for(let col = 0; col < W; col++){
+    const m = dxDateOf(start + col * 7 + 6).getMonth(), x = LW + col * STEP;   // a week belongs to the month its Sunday is in
+    if(m !== lastM){ lastM = m; if(x - lastX >= 30){ months += `<text x="${x}" y="11">${esc(dashMon(m))}</text>`; lastX = x; } }
+    for(let row = 0; row < 7; row++){
+      const n = start + col * 7 + row; if(n > today) break;
+      const c = per.get(n), v = c ? c.tr + c.ev : 0;
+      cells += `<rect class="dx-hm-c l${lvl(v)}" data-n="${n}" x="${x}" y="${MH + row * STEP}" width="${C}" height="${C}" rx="2.5" style="--d:${Math.min((col * 7 + row) * 1.4, 520) | 0}ms"/>`;
+    }
+  }
+  const wd = k => new Date(2024, 0, 1 + k).toLocaleDateString(LANG==='pl' ? 'pl-PL' : 'en-US', { weekday: 'short' });   // 1 Jan 2024 was a Monday
+  const days = [0, 2, 4].map(r=> `<text x="0" y="${MH + r * STEP + C / 2}" dominant-baseline="middle">${esc(wd(r))}</text>`).join('');
+  const unit = n => trn(n, 'source', 'sources', 'źródło', 'źródła', 'źródeł');
+  const nowWhat = trn(fresh, '{n} still fresh', '{n} still fresh', '{n} wciąż świeże', '{n} wciąż świeże', '{n} wciąż świeżych')
+    + ' · ' + (soon ? trn(soon, '{n} goes out of date in 30 days', '{n} go out of date in 30 days', '{n} zestarzeje się w ciągu 30 dni', '{n} zestarzeją się w ciągu 30 dni', '{n} zestarzeje się w ciągu 30 dni') : tr('Nothing goes out of date in the next 30 days'));
+  DX_FRESH = { today, start, nowWhat, label: dxDayLabel, what: n => what(per.get(n) || {}) };
+  const legend = [0,1,2,3,4].map(l=> `<i class="dx-hm-k l${l}"></i>`).join('');
   return `<section class="dx-sec">
-      <div class="dx-h2row"><h2 class="dx-h2">${tr('Fresh research')}</h2><span class="dx-h2note">${esc(span)}</span>${dxTip(tr('What is still fresh'), esc(tr('How many of your sources are younger than three months, day by day. A new interview or new desk research lifts the line; three months later it goes out of date and the line steps down. Each dot is a day something changed — point at it to see what. Sessions the researcher set aside count nowhere.')), 'right')}</div>
-      <div class="dx-card dx-fr" tabindex="0" aria-label="${esc(tr('Fresh research over time — use the arrow keys to step through the changes'))}">
-        <div class="dx-fr-head" aria-live="polite"><b class="dx-fr-v">${v}</b><span class="dx-fr-unit" data-one="${esc(unit(1))}" data-many="${esc(unit(2))}" data-lots="${esc(unit(5))}">${esc(unit(v))}</span>
-          <span class="dx-fr-when">${tr('Today')}</span><span class="dx-fr-what">${esc(DX_FRESH.nowWhat)}</span></div>
-        <div class="dx-fr-plot">
-          <svg viewBox="0 0 1000 ${H}" preserveAspectRatio="none" aria-hidden="true"><defs><linearGradient id="dxFrFill" x1="0" y1="0" x2="0" y2="1"><stop offset="0" style="stop-color:var(--accent);stop-opacity:.16"/><stop offset="1" style="stop-color:var(--accent);stop-opacity:0"/></linearGradient></defs>
-            <path class="dx-fr-area" d="${area}"/><path class="dx-fr-line" d="${line}"/></svg>
-          ${pts.map((p,i)=> `<i class="dx-fr-dot ${p.out.tr+p.out.ev ? (p.add.tr+p.add.ev ? 'mix' : 'down') : 'up'}" style="left:${(X(p.n)/10).toFixed(2)}%;top:${(Y(p.v)/H*100).toFixed(2)}%;--i:${i}"></i>`).join('')}
-          <i class="dx-fr-cursor" aria-hidden="true"></i>
-        </div>
-        <div class="dx-fr-axis"><span>${esc(dxDayLabel(a))}</span><span>${tr('today')}</span></div>
+      <div class="dx-h2row"><h2 class="dx-h2">${tr('Research activity')}</h2><span class="dx-h2note">${esc(dxDayLabel(start))} – ${tr('today')}</span>${dxTip(tr('When research came in'), esc(tr('One square a day for the last twelve months. The deeper the colour, the more sources arrived that day — a new interview or new desk research. A source counts as fresh for three months. Point at a day to see what came in. Sessions the researcher set aside count nowhere.')), 'right')}</div>
+      <div class="dx-card dx-fr dx-hm" tabindex="0" aria-label="${esc(tr('Research activity by day — use the arrow keys to step through the days'))}">
+        <div class="dx-fr-head" aria-live="polite"><b class="dx-fr-v">${total}</b><span class="dx-fr-unit">${esc(unit(total))}</span>
+          <span class="dx-fr-when">${tr('Last 12 months')}</span><span class="dx-fr-what">${esc(nowWhat)}</span></div>
+        <div class="dx-hm-scroll"><svg class="dx-hm-svg" viewBox="0 0 ${vw} ${vh}" role="img" aria-label="${esc(total + ' ' + unit(total) + ' · ' + tr('Last 12 months'))}"><g class="dx-hm-t">${months}${days}</g>${cells}</svg></div>
+        <div class="dx-hm-legend">${tr('Less')}${legend}${tr('More')}</div>
       </div>
     </section>`;
 }
-/* scrubbing: the nearest change to the pointer (or ←/→), back to today on leave */
+/* pointing at a day (or ←/→ on the focused card) says what came in; back to the summary on leave */
 function dxFreshWire(){
-  const card = grid.querySelector('.dx-fr'); if(!card || !DX_FRESH) return;
-  const plot = card.querySelector('.dx-fr-plot'), cur = card.querySelector('.dx-fr-cursor'), dots = [...card.querySelectorAll('.dx-fr-dot')];
-  const $ = s => card.querySelector(s), unit = $('.dx-fr-unit');
-  let at = -1;
-  const show = k=>{
-    at = k; dots.forEach((d,j)=> d.classList.toggle('on', j===k)); card.classList.toggle('scrub', k >= 0);
-    const p = k >= 0 ? DX_FRESH.pts[k] : null, v = p ? p.v : DX_FRESH.now;
-    $('.dx-fr-v').textContent = v;
-    unit.textContent = v===1 ? unit.dataset.one : (LANG==='pl' && !(v%10>=2 && v%10<=4 && (v%100<12 || v%100>14))) ? unit.dataset.lots : unit.dataset.many;
-    $('.dx-fr-when').textContent = p ? p.when : tr('Today');
-    $('.dx-fr-what').textContent = p ? p.what : DX_FRESH.nowWhat;
-    if(p) cur.style.left = p.x + '%';
+  const card = grid.querySelector('.dx-hm'); if(!card || !DX_FRESH) return;
+  const F = DX_FRESH, $ = s => card.querySelector(s), head = [$('.dx-fr-v'), $('.dx-fr-unit'), $('.dx-fr-when'), $('.dx-fr-what')];
+  const keep = head.map(x=> x.textContent);
+  let at = null;
+  const show = n=>{
+    card.querySelector('.dx-hm-c.on')?.classList.remove('on');
+    at = n;
+    if(n == null){ head.forEach((x, k)=> x.textContent = keep[k]); return; }
+    card.querySelector(`.dx-hm-c[data-n="${n}"]`)?.classList.add('on');
+    const w = F.what(n), v = (w.match(/\d+/g) || []).reduce((s, x)=> s + +x, 0);
+    head[0].textContent = v;
+    head[1].textContent = trn(v, 'source', 'sources', 'źródło', 'źródła', 'źródeł');
+    head[2].textContent = F.label(n);
+    head[3].textContent = w;
   };
-  plot.onpointermove = ev=>{
-    const r = plot.getBoundingClientRect(), x = (ev.clientX - r.left) / r.width * 100;
-    let k = 0; DX_FRESH.pts.forEach((p,j)=>{ if(Math.abs(p.x - x) < Math.abs(DX_FRESH.pts[k].x - x)) k = j; });
-    if(k !== at) show(k);
-  };
-  plot.onpointerleave = ()=> show(-1);
+  const svg = $('.dx-hm-svg');
+  svg.onpointerover = ev=>{ const r = ev.target.closest('.dx-hm-c'); if(r && +r.dataset.n !== at) show(+r.dataset.n); };
+  svg.onpointerleave = ()=> show(null);
   card.onkeydown = ev=>{
-    const n = DX_FRESH.pts.length;
-    if(ev.key==='ArrowRight' || ev.key==='ArrowLeft'){ ev.preventDefault(); show(Math.max(0, Math.min(n-1, at < 0 ? n-1 : at + (ev.key==='ArrowRight' ? 1 : -1)))); }
-    if(ev.key==='Escape') show(-1);
+    const step = { ArrowRight: 7, ArrowLeft: -7, ArrowDown: 1, ArrowUp: -1 }[ev.key];
+    if(step){ ev.preventDefault(); show(Math.max(F.start, Math.min(F.today, at == null ? F.today : at + step))); }
+    if(ev.key==='Escape') show(null);
   };
-  card.onblur = ()=> show(-1);
+  card.onblur = ()=> show(null);
 }
 
 function renderDashboard(){
@@ -18971,12 +20449,13 @@ function route(){
   const h = decodeURIComponent(location.hash.replace(/^#/,''));
   if(h==='projects'){ projectsEnter(); return; }
   projectsExit();   // the Projects screen covers the app — any other route leaves it
-  if(h==='dashboard'){ mindmapExit(); settingsExit(); helpExit(); backlogExit(); dashboardEnter(); return; }
-  if(h==='settings'){ mindmapExit(); dashboardExit(); backlogExit(); settingsEnter(); return; }
+  if(h==='dashboard'){ mindmapExit(); settingsExit(); helpExit(); backlogExit(); chatExit(); dashboardEnter(); return; }
+  if(h==='settings'){ mindmapExit(); dashboardExit(); backlogExit(); chatExit(); settingsEnter(); return; }
   if(h==='backlog' || h.startsWith('backlog:')){ mindmapExit(); settingsExit(); helpExit(); dashboardExit(); backlogEnter(h.slice(8) || null); return; }
-  if(h==='mindmap' || h.startsWith('mindmap:')){ dashboardExit(); backlogExit(); mindmapEnter(h.split(':')[1] || null); return; }
-  if(h==='help' || h.startsWith('help:')){ mindmapExit(); settingsExit(); dashboardExit(); backlogExit(); helpEnter(h.split(':')[1] || HELP_CAT); return; }
-  helpExit(); settingsExit(); mindmapExit(); dashboardExit(); backlogExit();
+  if(h==='chat' || h.startsWith('chat:')){ mindmapExit(); settingsExit(); helpExit(); dashboardExit(); backlogExit(); chatEnter(h.slice(5) || null); return; }
+  if(h==='mindmap' || h.startsWith('mindmap:')){ dashboardExit(); backlogExit(); chatExit(); mindmapEnter(h.split(':')[1] || null); return; }
+  if(h==='help' || h.startsWith('help:')){ mindmapExit(); settingsExit(); dashboardExit(); backlogExit(); chatExit(); helpEnter(h.split(':')[1] || HELP_CAT); return; }
+  helpExit(); settingsExit(); mindmapExit(); dashboardExit(); backlogExit(); chatExit();
   // the poster is a page of its own (#poster:<id>), so Back and the browser's back leave it
   const poster = h.startsWith('poster:') && ENTITIES[h.slice(7)] ? h.slice(7) : null;
   if(!poster) posterClose();
@@ -19131,7 +20610,7 @@ async function loadLocalPictures(){
   if(!DIRHANDLE) return 0;
   const want = new Set();
   for(const e of Object.values(ENTITIES)){
-    for(const field of ['picture','photo']){
+    for(const field of ['picture','photo','cover']){
       const v = String((e.fm && e.fm[field]) || '').trim();
       if(!v || /^[a-z][a-z0-9+.-]*:/i.test(v)) continue;   // data:, http(s): — not a local file
       const dir = String(e.file||'').includes('/') ? String(e.file).replace(/\/[^/]*$/, '/') : '';
@@ -19583,7 +21062,7 @@ sideSearch.addEventListener('input', ()=>{
   const v = sideSearch.value;
   searchInput.value = v;
   if(location.hash){   // leave whatever page is open the way a nav tab does, then show the results
-    helpExit(); settingsExit(); mindmapExit(); dashboardExit(); backlogExit(); projectsExit(); closeDetail();
+    helpExit(); settingsExit(); mindmapExit(); dashboardExit(); backlogExit(); chatExit(); projectsExit(); closeDetail();
     activeType = 'All'; suppressRoute = true; location.hash = '';
     renderTabs(); renderGrid(v); updatePageHead(); return;
   }

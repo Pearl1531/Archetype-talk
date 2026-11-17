@@ -11,12 +11,13 @@ function route(){
   const h = decodeURIComponent(location.hash.replace(/^#/,''));
   if(h==='projects'){ projectsEnter(); return; }
   projectsExit();   // the Projects screen covers the app — any other route leaves it
-  if(h==='dashboard'){ mindmapExit(); settingsExit(); helpExit(); backlogExit(); dashboardEnter(); return; }
-  if(h==='settings'){ mindmapExit(); dashboardExit(); backlogExit(); settingsEnter(); return; }
+  if(h==='dashboard'){ mindmapExit(); settingsExit(); helpExit(); backlogExit(); chatExit(); dashboardEnter(); return; }
+  if(h==='settings'){ mindmapExit(); dashboardExit(); backlogExit(); chatExit(); settingsEnter(); return; }
   if(h==='backlog' || h.startsWith('backlog:')){ mindmapExit(); settingsExit(); helpExit(); dashboardExit(); backlogEnter(h.slice(8) || null); return; }
-  if(h==='mindmap' || h.startsWith('mindmap:')){ dashboardExit(); backlogExit(); mindmapEnter(h.split(':')[1] || null); return; }
-  if(h==='help' || h.startsWith('help:')){ mindmapExit(); settingsExit(); dashboardExit(); backlogExit(); helpEnter(h.split(':')[1] || HELP_CAT); return; }
-  helpExit(); settingsExit(); mindmapExit(); dashboardExit(); backlogExit();
+  if(h==='chat' || h.startsWith('chat:')){ mindmapExit(); settingsExit(); helpExit(); dashboardExit(); backlogExit(); chatEnter(h.slice(5) || null); return; }
+  if(h==='mindmap' || h.startsWith('mindmap:')){ dashboardExit(); backlogExit(); chatExit(); mindmapEnter(h.split(':')[1] || null); return; }
+  if(h==='help' || h.startsWith('help:')){ mindmapExit(); settingsExit(); dashboardExit(); backlogExit(); chatExit(); helpEnter(h.split(':')[1] || HELP_CAT); return; }
+  helpExit(); settingsExit(); mindmapExit(); dashboardExit(); backlogExit(); chatExit();
   // the poster is a page of its own (#poster:<id>), so Back and the browser's back leave it
   const poster = h.startsWith('poster:') && ENTITIES[h.slice(7)] ? h.slice(7) : null;
   if(!poster) posterClose();
@@ -171,7 +172,7 @@ async function loadLocalPictures(){
   if(!DIRHANDLE) return 0;
   const want = new Set();
   for(const e of Object.values(ENTITIES)){
-    for(const field of ['picture','photo']){
+    for(const field of ['picture','photo','cover']){
       const v = String((e.fm && e.fm[field]) || '').trim();
       if(!v || /^[a-z][a-z0-9+.-]*:/i.test(v)) continue;   // data:, http(s): — not a local file
       const dir = String(e.file||'').includes('/') ? String(e.file).replace(/\/[^/]*$/, '/') : '';
@@ -623,7 +624,7 @@ sideSearch.addEventListener('input', ()=>{
   const v = sideSearch.value;
   searchInput.value = v;
   if(location.hash){   // leave whatever page is open the way a nav tab does, then show the results
-    helpExit(); settingsExit(); mindmapExit(); dashboardExit(); backlogExit(); projectsExit(); closeDetail();
+    helpExit(); settingsExit(); mindmapExit(); dashboardExit(); backlogExit(); chatExit(); projectsExit(); closeDetail();
     activeType = 'All'; suppressRoute = true; location.hash = '';
     renderTabs(); renderGrid(v); updatePageHead(); return;
   }

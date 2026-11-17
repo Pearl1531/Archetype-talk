@@ -356,6 +356,7 @@ function transcriptWorkspace(e){
     if(ev.target.closest('[data-tract="extract"]')) trCopyExtract(e);
   };
   light(kept);
+  trChapters(main, doc);   // the section rail (09g)
   bar.onclick = ev=>{
     const v = ev.target.closest('[data-trview]');
     if(v){ if(TR_VIEW !== v.dataset.trview){ TR_VIEW = v.dataset.trview; openDetail(e.id); } return; }

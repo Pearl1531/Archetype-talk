@@ -45,6 +45,16 @@ competitor icons are local files or inline images. This is enforced by a
 limited to `self`/`data:`/`blob:`, a single permitted connect host for row 3) —
 verifiable in the first 20 lines of the file, no code reading required.
 
+**One opt-in exception: AI providers.** In Settings ▸ AI providers the user may
+switch on a provider (Anthropic, OpenAI, Google Gemini, Mistral) or add their
+own endpoint (https, or `http://localhost` for a local model). Only that origin
+is appended to `connect-src`, by a short script at the top of `<head>` that
+writes the policy before anything else runs; it accepts bare origins only and
+drops anything else, so a tampered setting cannot widen any other directive.
+With nothing switched on — the default — the policy is byte-for-byte the one
+above. Keys typed there live in the browser's storage only (session by default,
+the device on request), never in the project folder, `.env` or an export.
+
 ## What stays local
 
 - Research files: plain Markdown in your folder.

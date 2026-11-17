@@ -183,7 +183,7 @@ function renderTabs(){
   document.querySelectorAll('.sidebar .nav-item').forEach(b=> b.classList.contains('active') ? b.setAttribute('aria-current', 'page') : b.removeAttribute('aria-current'));
   tabsEl.querySelectorAll('.nav-item').forEach(b=> b.onclick=()=>{
     activeType=b.dataset.t;
-    if(HELP_ACTIVE || SETTINGS_ACTIVE || MINDMAP_ACTIVE || DASHBOARD_ACTIVE || BACKLOG_ACTIVE){ helpExit(); settingsExit(); mindmapExit(); dashboardExit(); backlogExit(); if(location.hash) { suppressRoute = true; location.hash=''; } }
+    if(HELP_ACTIVE || SETTINGS_ACTIVE || MINDMAP_ACTIVE || DASHBOARD_ACTIVE || BACKLOG_ACTIVE || CHAT_ACTIVE){ helpExit(); settingsExit(); mindmapExit(); dashboardExit(); backlogExit(); chatExit(); if(location.hash) { suppressRoute = true; location.hash=''; } }
     renderTabs(); renderGrid(searchInput.value);
     updatePageHead(); motionPage();
   });

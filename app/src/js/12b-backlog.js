@@ -944,7 +944,8 @@ document.addEventListener('keydown', ev=>{
 }, true);
 
 /* ---- page lifecycle ---- */
-async function backlogEnter(sel){   // sel: a row key ("open:2") to open in the panel — #backlog:open:2
+async function backlogEnter(sel){
+  if(typeof chatExit==='function') chatExit();   // sel: a row key ("open:2") to open in the panel — #backlog:open:2
   BACKLOG_ACTIVE = true;
   if(typeof settingsExit==='function') settingsExit();
   if(typeof helpExit==='function') helpExit();

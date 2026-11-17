@@ -47,7 +47,7 @@
      spacing — is named once, right here. */
   :root {
     /* Surfaces — canvas, then two steps up */
-    --bg: #EFEDE7;        /* paper */
+    --bg: #FAF9F5;        /* paper */
     --bg-elev: #FFFFFF;   /* a sheet on the paper */
     --bg-elev-2: #F4F2EC; /* a field inside a sheet */
     --bg-rail: #E8E5DD;   /* the left rail, one step darker than the page */

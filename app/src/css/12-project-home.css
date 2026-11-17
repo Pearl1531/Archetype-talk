@@ -100,6 +100,15 @@
   .dx-pc-name { font-size: 36px; font-weight: 800; letter-spacing: -0.05em; line-height: 1; color: var(--text); text-decoration: none; }
   .dx-pc-desc { color: var(--text-soft); font-size: var(--fs-md); display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; min-height: 2.9em; }
   .dx-pc-foot { margin-top: auto; display: flex; align-items: center; justify-content: space-between; gap: 10px; }
+  /* the card measures itself, not the window: meter + "4/5" + Ask need ~280px
+     across, and a narrow column (four cards beside a wide rail) has less — then
+     the button takes its own full-width row under the meter */
+  .dx-pc { container-type: inline-size; min-width: 0; }
+  .dx-pc-foot .dx-btn { flex: none; white-space: nowrap; }
+  @container (max-width: 280px) {
+    .dx-pc-foot { flex-direction: column; align-items: stretch; gap: 12px; }
+    .dx-pc-foot .dx-btn { justify-content: center; }
+  }
 
   /* research health */
   .dx-health { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); overflow: hidden; }
@@ -140,18 +149,20 @@
   .dx-fr-unit { font-size: var(--fs-md); font-weight: 600; color: var(--text-dim); }
   .dx-fr-when { grid-column: 1 / -1; font-size: var(--text-body); font-weight: 700; color: var(--text); }
   .dx-fr-what { grid-column: 1 / -1; font-size: var(--text-body); color: var(--text-soft); }
-  .dx-fr-plot { position: relative; height: 160px; cursor: crosshair; touch-action: pan-y; }
-  .dx-fr-plot svg { position: absolute; inset: 0; width: 100%; height: 100%; overflow: visible; }
-  .dx-fr-area { fill: url(#dxFrFill); }
-  .dx-fr-line { fill: none; stroke: var(--text); stroke-width: 2; stroke-linejoin: round; vector-effect: non-scaling-stroke; }
-  .dx-fr-dot { position: absolute; width: 10px; height: 10px; margin: -5px 0 0 -5px; border-radius: 50%; background: var(--text); box-shadow: 0 0 0 2px var(--bg-elev); }
-  .dx-fr-dot.down { background: var(--accent); }
-  .dx-fr-dot.mix { background: var(--bg-elev); box-shadow: inset 0 0 0 2.5px var(--accent), 0 0 0 2px var(--bg-elev); }
-  .dx-fr-dot.on { transform: scale(1.6); }
-  .dx-fr-cursor { position: absolute; top: 0; bottom: 0; width: 0; border-left: 1.5px dashed var(--edge); opacity: 0; pointer-events: none; }
-  .dx-fr.scrub .dx-fr-cursor { opacity: 1; }
-  .dx-fr-axis { display: flex; justify-content: space-between; padding-top: 8px; border-top: 1.5px solid var(--text);
-    font-family: var(--font-mono); font-size: var(--text-caption); color: var(--text-dim); }
+  /* research activity calendar (dxFresh): ember steps over an empty square, GitHub-style */
+  .dx-hm { --hm-0: color-mix(in srgb, var(--text) 7%, var(--bg-elev)); }
+  .dx-hm-scroll { overflow-x: auto; }
+  .dx-hm-svg { display: block; width: 100%; min-width: 620px; height: auto; user-select: none; }
+  .dx-hm-t text { font-family: var(--font-mono); font-size: 9.5px; fill: var(--text-dim); }
+  .dx-hm-c, .dx-hm-k { fill: var(--hm-0); background: var(--hm-0); stroke: transparent; stroke-width: 1.25; }
+  .dx-hm .l1 { fill: color-mix(in srgb, var(--accent) 28%, var(--bg-elev)); background: color-mix(in srgb, var(--accent) 28%, var(--bg-elev)); }
+  .dx-hm .l2 { fill: color-mix(in srgb, var(--accent) 52%, var(--bg-elev)); background: color-mix(in srgb, var(--accent) 52%, var(--bg-elev)); }
+  .dx-hm .l3 { fill: color-mix(in srgb, var(--accent) 76%, var(--bg-elev)); background: color-mix(in srgb, var(--accent) 76%, var(--bg-elev)); }
+  .dx-hm .l4 { fill: var(--accent); background: var(--accent); }
+  .dx-hm-c.on { stroke: var(--text); }
+  .dx-hm-legend { display: flex; align-items: center; justify-content: flex-end; gap: 5px; font-family: var(--font-mono); font-size: var(--text-caption); color: var(--text-dim); }
+  .dx-hm-k { display: inline-block; width: 11px; height: 11px; border-radius: 2.5px; }
+  .dx-hm-legend .dx-hm-k:first-child { margin-left: 4px; }
 
   /* open questions */
   .dx-oq td { font-weight: 600; vertical-align: middle; }
@@ -209,13 +220,10 @@
 
     .dx-table tbody tr { transition: background .2s; }
 
-    /* the fresh-research line draws itself left to right, then its dots land */
-    .dx-motion .dx-rv .dx-fr-plot svg { clip-path: inset(0 100% 0 0); transition: clip-path 1.6s var(--ease-out) .3s; }
-    .dx-motion .dx-rv.in .dx-fr-plot svg { clip-path: inset(0 0 0 0); }
-    .dx-motion .dx-rv .dx-fr-dot { scale: 0; transition: scale .5s var(--ease-spring), transform .25s var(--ease-spring); transition-delay: calc(.6s + var(--i) * 45ms), 0s; }
-    .dx-motion .dx-rv.in .dx-fr-dot { scale: 1; }
-    .dx-fr-dot { transition: transform .25s var(--ease-spring); }
-    .dx-fr-cursor { transition: left .18s var(--ease-out), opacity .2s; }
+    /* the activity calendar fills in square by square, oldest first */
+    .dx-motion .dx-rv .dx-hm-c { opacity: 0; }
+    .dx-motion .dx-rv.in .dx-hm-c { opacity: 1; transition: opacity .32s ease-out var(--d); }
+    .dx-hm-c { transition: stroke .12s; }
   }
 
   /* hovers — pointer devices only */
