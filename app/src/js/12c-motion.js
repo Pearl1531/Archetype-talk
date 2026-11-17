@@ -121,8 +121,8 @@ function dxCount(el){
 function motionPage(){
   if(MO_STILL.matches || MINDMAP_ACTIVE || document.body.classList.contains('poster-open')) return;
   const all = (root, sel)=> root ? [...root.querySelectorAll(sel)] : [];
-  if(DASHBOARD_ACTIVE){   // every section after the hero rises; the hero choreographs itself (12-project-home.css)
-    if(motionReveal(grid, [...grid.children].slice(1), all(grid, '.dx-pgrid > .dx-pc, .dx-health > .dx-ht, .dx-oq tbody tr'))) motionWords(grid.querySelector('.dx-title'));
+  if(DASHBOARD_ACTIVE){   // every section rises
+    motionReveal(grid, [...grid.children], all(grid, '.dx-pgrid > .dx-pc, .dx-health > .dx-ht'));
     return;
   }
   if(detailView.classList.contains('active')){

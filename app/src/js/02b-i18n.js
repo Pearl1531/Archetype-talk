@@ -879,6 +879,8 @@ const PL = {
   'On the same feature, some participants stand against it and some for it. A split is a finding, not noise — take it to the next round, or ask your AI assistant to run /contradictions on it.': 'Przy tej samej funkcji część uczestników jest przeciw, a część za. Rozbieżność to wynik, nie szum — weź ją do następnej rundy albo poproś asystenta AI o /contradictions.',
   'Plan the next round': 'Zaplanuj następną rundę',
   'Research health': 'Kondycja badań',
+  'Research agency brief': 'Brief dla agencji research',
+  'A ready-to-edit .md brief for commissioning the next round of interviews': 'Gotowy do edycji brief .md do zlecenia kolejnej rundy wywiadów',
   'Search': 'Szukaj',
   'Search this workspace': 'Szukaj w tej przestrzeni',
   'See all': 'Zobacz wszystkie',

@@ -32,8 +32,6 @@
   .dx-btn-primary:hover { opacity: .88; }
   .dx-btn-line { border: 1.5px solid var(--text); font-weight: 600; }
   .dx-btn-line:hover { background: var(--bg-elev); }
-  .dx-btn-inv { border: 1.5px solid var(--bg-elev); color: var(--bg-elev); font-weight: 600; height: 46px; }
-  .dx-btn-inv:hover { background: rgba(255,255,255,.08); }
 
   /* ⓘ popovers: hover or keyboard focus opens them — in the top layer
      (popover="manual", placed by dxTipShow), so nothing that clips can cut them */
@@ -47,42 +45,20 @@
   .dx-tip-pop b ~ b, .dx-tip-pop :not(:first-child) b { display: inline; color: #FFFFFF; font-size: inherit; }
 
   /* menus (Ask a persona, More) */
-  .dx-menu-wrap { position: relative; }
-  .dx-menu { position: absolute; left: 0; top: calc(100% + 8px); z-index: 30; min-width: 220px; padding: 6px; border-radius: 12px;
     background: var(--bg-elev); border: 1px solid var(--line); box-shadow: var(--shadow); display: flex; flex-direction: column; }
-  .dx-menu[hidden] { display: none; }
-  .dx-menu-up { top: auto; bottom: calc(100% + 8px); right: 0; left: auto; }
-  .dx-menu a, .dx-menu button { display: flex; align-items: center; gap: 10px; height: 40px; padding: 0 10px; border-radius: 8px;
     color: var(--text); text-decoration: none; font-size: var(--fs-md); text-align: left; white-space: nowrap; }
-  .dx-menu a:hover, .dx-menu button:hover { background: var(--bg-elev-2); }
 
   /* faces are .face (faceHtml, 03-cards-gallery.css) — only their sizes here */
   .dx-face-md { width: 72px; height: 72px; }
   .dx-face-xs { width: 28px; height: 28px; }
 
-  /* hero */
-  .dx-hero { display: grid; grid-template-columns: minmax(0, 1fr) 440px; gap: 32px; align-items: end; }
-  .dx-kicker { display: flex; align-items: center; gap: 10px; flex-wrap: wrap; margin-bottom: 18px; font-size: var(--fs-md); color: var(--text-dim); }
-  .dx-kicker b { color: var(--text); font-weight: 600; }
   .dx-chip { display: inline-flex; align-items: center; gap: 2px; height: 28px; padding: 0 4px 0 12px; border-radius: var(--r-pill);
     border: 1.5px solid var(--text); color: var(--text); font-size: var(--text-caption); font-weight: 600; }
-  .dx-title { font-size: clamp(64px, 7.6vw, 120px); font-weight: 800; line-height: .88; letter-spacing: -0.06em; color: var(--text); overflow-wrap: anywhere; }
-  .dx-actions { margin-top: 36px; display: flex; gap: 10px; align-items: center; flex-wrap: wrap; }
-  .dx-cast { position: relative; height: 420px; }
-  .dx-cast > a { position: absolute; display: block; border-radius: 50%; text-decoration: none; color: var(--text); }
-  .dx-cast .dx-face { width: 100%; height: 100%; }
-  .dx-cast-0 { left: 0; top: 0; width: 280px; height: 280px; }
-  .dx-cast-0 .dx-face { background: var(--accent); }
-  .dx-cast-1 { left: 262px; top: 110px; width: 170px; height: 170px; box-shadow: 0 0 0 6px var(--bg); }
-  .dx-cast-2 { left: 118px; top: 262px; width: 150px; height: 150px; box-shadow: 0 0 0 6px var(--bg); }
-  .dx-cast-3 { left: 290px; top: 292px; width: 118px; height: 118px; box-shadow: 0 0 0 6px var(--bg); }
 
   /* facts strip */
   .dx-facts { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); border-top: 1.5px solid var(--text); border-bottom: 1.5px solid var(--text); margin-top: -12px; }
   .dx-facts > div { display: flex; flex-direction: column; gap: 8px; padding: 20px 24px 22px; border-left: 1px solid var(--line); }
   .dx-facts > div:first-child { border-left: 0; padding-left: 0; }
-  .dx-big { font-size: 52px; font-weight: 800; line-height: 1; letter-spacing: -0.04em; color: var(--text); font-variant-numeric: tabular-nums; }
-  .dx-of { color: var(--edge); }
   .dx-fs { font-size: var(--text-body); color: var(--text-dim); }
   .dx-fs.ok { color: #1F7A4D; font-weight: 600; }
   .dx-facts .dx-btn { align-self: flex-start; margin-top: 2px; }   /* a button in a fact cell keeps its own width */
@@ -127,20 +103,13 @@
   .dx-track.ink i { background: var(--text); }
   .dx-track b { position: absolute; top: -4px; bottom: -4px; width: 2px; background: var(--text); }
 
-  /* disagreements + sessions */
-  .dx-pair { display: grid; grid-template-columns: minmax(0, 1.55fr) minmax(0, 1fr); gap: 40px; }
-  .dx-pair.one { grid-template-columns: minmax(0, 1fr); }
-  .dx-col { display: flex; flex-direction: column; gap: 20px; min-width: 0; }
+  /* tables */
   .dx-table { width: 100%; border-collapse: collapse; font-size: var(--text-body); }
   .dx-table th { text-align: left; padding: 14px 16px; font-size: var(--text-caption); font-weight: 600; color: var(--text-dim); }
   .dx-table th:first-child, .dx-table td:first-child { padding-left: 20px; }
   .dx-table td { padding: 14px 16px; border-top: 1px solid var(--line-soft); vertical-align: top; line-height: 1.75; }
   .dx-table a { color: var(--text); text-decoration: underline; text-decoration-color: rgba(10,10,10,.3); text-underline-offset: 3px; }
   .dx-table a:hover { color: var(--accent-text); }
-  .dx-feat { font-weight: 700; }
-  .dx-who { color: var(--text-dim); }
-  .dx-sw { display: inline-block; width: 9px; height: 9px; border-radius: 2px; margin-right: 6px; background: var(--text); }
-  .dx-sw.ember { background: var(--accent); }
   /* fresh research — the Revolut-style line (dxFresh / dxFreshWire, 13) */
   .dx-fr { padding: 24px 24px 18px; display: flex; flex-direction: column; gap: 14px; outline: none; }
   .dx-fr:focus-visible { box-shadow: 0 0 0 2px var(--text); }
@@ -164,26 +133,13 @@
   .dx-hm-k { display: inline-block; width: 11px; height: 11px; border-radius: 2.5px; }
   .dx-hm-legend .dx-hm-k:first-child { margin-left: 4px; }
 
-  /* open questions */
-  .dx-oq td { font-weight: 600; vertical-align: middle; }
-  .dx-oq-who { width: 1%; white-space: nowrap; text-align: right; }
   .dx-pill { display: inline-block; padding: 2px 8px; border-radius: 6px; background: var(--bg); font-size: var(--text-caption); font-weight: 500; }
 
-  /* the next round */
-  .dx-band { display: flex; align-items: center; gap: 18px; padding: 24px 24px 24px 32px; border-radius: 20px; background: #0A0A0A; color: #FFFFFF; flex-wrap: wrap; }
-  .dx-band-k { font-family: var(--font-mono); font-size: var(--text-caption); letter-spacing: .08em; text-transform: uppercase; color: var(--accent); }
-  .dx-band-h { flex: 1; min-width: 260px; font-size: 26px; font-weight: 800; letter-spacing: -0.02em; line-height: 1.15; }
-  .dx-band-acts { display: flex; gap: 8px; align-items: center; }
-  .dx-band .dx-btn-primary { height: 46px; font-size: var(--fs-md); background: var(--primary-fg); color: var(--primary-bg); }
-  .dx-cmd { font-family: var(--font-mono); font-size: var(--fs-md); color: #FFFFFF; padding: 0 8px; }
 
   @media (max-width: 1100px){
-    .dx-hero { grid-template-columns: minmax(0, 1fr); }
-    .dx-cast { display: none; }
     .dx-health, .dx-facts { grid-template-columns: repeat(2, minmax(0, 1fr)); }
     .dx-facts > div:nth-child(3) { border-left: 0; padding-left: 0; }
     .dx-ht:nth-child(3) { border-left: 0; }
-    .dx-pair { grid-template-columns: minmax(0, 1fr); }
   }
 
   /* ── Motion, the Overview's own part ─────────────────────────────────────
@@ -191,25 +147,12 @@
      .dx-st), numbers counting, bars drawing, the easing tokens — lives in
      16-motion.css for every page, and so does the title rising word by word
      out of its own mask (shared with the persona page). What is here is this
-     page's choreography: the cast landing and breathing, the band opening, the session stems, the persona-card tilt. */
+     page's choreography: the activity calendar filling in, the persona-card tilt. */
 
   @media (prefers-reduced-motion: no-preference) {
-    @keyframes dxFloat { 50% { transform: translateY(-7px); } }
 
-    /* arrivals — the hero choreographs itself, every later section rises as it scrolls in */
-    .dx-motion .dx-kicker { animation: dxUp .3s var(--ease-out) backwards .05s; }
-    .dx-motion .dx-actions { animation: dxUp .3s var(--ease-out) backwards .15s; }
-    .dx-motion .dx-cast > a { animation: dxCastIn 1s var(--ease-spring) backwards; animation-delay: min(150ms, calc(.03s + var(--i) * 40ms)); }
-    .dx-motion .dx-band.dx-rv { clip-path: inset(0 7% round 20px); transition: clip-path 1.1s var(--ease-out) .1s; }
-    .dx-motion .dx-band.dx-rv.in { clip-path: inset(-400px 0 0 0 round 20px); }   /* open above: the "More" menu pops up out of the band */
+    
 
-
-    /* the cast breathes, out of step, and drifts against the pointer by depth */
-    .dx-cast-0 { --i: 0; --d: 14; } .dx-cast-1 { --i: 1; --d: -10; } .dx-cast-2 { --i: 2; --d: 18; } .dx-cast-3 { --i: 3; --d: -16; }
-    .dx-cast > a { translate: calc(var(--hx, 0) * var(--d) * 1px) calc(var(--hy, 0) * var(--d) * 1px);
-      transition: translate .7s var(--ease-out), scale .5s var(--ease-spring); }
-    .dx-cast .dx-face { animation: dxFloat 7s ease-in-out infinite; animation-delay: calc(var(--i) * -1.75s); }
-    .dx-cast .dx-face img { transition: transform .7s var(--ease-out); }
 
     .dx-btn { transition: background .25s, color .25s, border-color .25s, filter .25s, transform .45s var(--ease-spring), translate .35s var(--ease-out); }
     .dx-btn:active { transform: scale(.96); }
@@ -228,9 +171,6 @@
 
   /* hovers — pointer devices only */
   @media (hover: hover) and (prefers-reduced-motion: no-preference) {
-    .dx-cast > a:hover { scale: 1.06; z-index: 2; }
-    .dx-cast > a:hover .dx-face img { transform: translateY(-3%) scale(1.05); }
-    .dx-band .dx-btn-primary:hover::after { transform: translateX(130%); }   /* the hero's buttons stay still */
 
     /* a persona card's gesture is the lean component (data-lean, 16-motion.css);
        only the primary card's keyline has to survive its hover shadow */
