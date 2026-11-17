@@ -6,6 +6,16 @@
      with her face, the ember only where the page titles use it. ── */
   body.chat-open .page-head { display: none; }
   body.chat-open .content { max-width: none; padding-top: var(--s-4); padding-bottom: var(--s-4); }
+  /* the rail steps aside on this page (desktop); the panel button in the top row brings it back */
+  .ch-rail { display: none; }
+  @media (min-width: 861px){
+    body.chat-open:not(.chat-rail) .sidebar { display: none; }
+    body.chat-open:not(.chat-rail) .topnav { left: 0; }
+    body.chat-open:not(.chat-rail) .ch-list { left: 0; }
+    .ch-rail { display: inline-flex; padding: 0 12px; }
+    body.chat-rail .ch-rail { background: var(--bg-elev-2); }
+  }
+  .ch-top-l { display: flex; gap: 8px; }
   .ch-wrap { display: flex; flex-direction: column; height: calc(100dvh - var(--topbar-h) - 2 * var(--s-4)); min-height: 480px; }
 
   /* the top row */
@@ -109,6 +119,11 @@
     background: var(--bg-elev-2); font-size: 14px; color: var(--text-soft); text-align: left; }
 
   @media (max-width: 860px){
+    /* the rail sits on top here: the page scrolls and the composer sticks to the bottom */
+    .ch-wrap { height: auto; min-height: 0; }
+    .ch-body { overflow: visible; }
+    .ch-thread .ch-dock { position: sticky; bottom: 0; padding: 8px 0 12px; background: var(--bg); }
+    .ch-start { padding-block: var(--s-8, 48px); }
     .ch-list { left: 0; }
     .ch-pill > span:not(.ch-count) { display: none; }
     .ch-pill { padding: 0 12px; }

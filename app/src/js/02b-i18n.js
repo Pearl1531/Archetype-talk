@@ -1349,6 +1349,7 @@ const PL = {
   'To chat, switch on an AI provider and add its key — it stays in this browser.': 'Żeby rozmawiać, włącz dostawcę AI i dodaj jego klucz — zostaje w tej przeglądarce.',
   'Talk to your personas': 'Porozmawiaj ze swoimi personami',
   'History': 'Historia',
+  'Show menu': 'Pokaż menu',
   'Every answer comes from your research. Pick one persona, or several for a group conversation.': 'Każda odpowiedź pochodzi z Twoich badań. Wybierz jedną personę albo kilka do rozmowy grupowej.',
   'Pick a persona above, then write…': 'Wybierz personę powyżej i napisz…',
   'Simulated from your research — a source of questions, never of data.': 'Symulacja oparta na Twoich badaniach — źródło pytań, nigdy danych.',

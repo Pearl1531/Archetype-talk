@@ -194,6 +194,7 @@ let CHAT_HOST = null;   // the provider picked on the start screen, before a con
    composer. The history waits behind a button, in a panel that slides over. ---- */
 const CH_I = {
   plus: '<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" aria-hidden="true"><path d="M12 5v14M5 12h14"/></svg>',
+  rail: '<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3" y="4" width="18" height="16" rx="2"/><path d="M9 4v16"/></svg>',
   clock: '<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 12a9 9 0 1 0 3-6.7L3 8"/><path d="M3 3v5h5"/><path d="M12 7v5l3 2"/></svg>',
   send: '<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 19V5M5 12l7-7 7 7"/></svg>',
   pen: '<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 20h9"/><path d="M16.5 3.5a2.1 2.1 0 0 1 3 3L7 19l-4 1 1-4z"/></svg>',
@@ -226,7 +227,10 @@ function chatTopHtml(c, n){
     mid = `<div class="ch-title">${chatFaces(c, 'ch-face-sm')}<div><b>${esc(chatTitle(c))}</b><span>${tr('Simulated conversation')} · ${trn(grounded, 'grounded in {n} signal', 'grounded in {n} signals', 'oparta na {n} sygnale', 'oparta na {n} sygnałach', 'oparta na {n} sygnałach')}${held ? ' · ' + trn(held, '{n} file kept local', '{n} files kept local', '{n} plik zostaje lokalnie', '{n} pliki zostają lokalnie', '{n} plików zostaje lokalnie') : ''}${chatSensitiveN(c) && !c.sensitive ? ` · <button type="button" class="ch-linkbtn" data-chsens>${tr('Include sensitive data')}</button>` : c.sensitive ? ` · ${tr('sensitive data included')}` : ''}</span></div>${chatMenu(c)}</div>`;
   }
   return `<div class="ch-top">
-    <button type="button" class="ch-pill" popovertarget="chHist">${CH_I.clock}<span>${tr('History')}</span>${n ? `<span class="ch-count">${n}</span>` : ''}</button>
+    <span class="ch-top-l">
+      <button type="button" class="ch-pill ch-rail" data-chrail aria-pressed="${document.body.classList.contains('chat-rail')}" aria-label="${esc(tr('Show menu'))}" title="${esc(tr('Show menu'))}">${CH_I.rail}</button>
+      <button type="button" class="ch-pill" popovertarget="chHist">${CH_I.clock}<span>${tr('History')}</span>${n ? `<span class="ch-count">${n}</span>` : ''}</button>
+    </span>
     ${mid}
     ${c ? `<button type="button" class="ch-pill" data-chnew>${CH_I.plus}<span>${tr('New conversation')}</span></button>` : ''}
   </div>`;
@@ -313,6 +317,8 @@ grid.addEventListener('click', ev=>{
   if(!CHAT_ACTIVE) return;
   const t = ev.target;
   if(t.closest('[data-chnew]')){ CHAT_NEW = null; CHAT_SEL = null; suppressRoute = true; location.hash = '#chat'; chatRender(); return; }
+  const rail = t.closest('[data-chrail]');
+  if(rail){ rail.setAttribute('aria-pressed', String(document.body.classList.toggle('chat-rail'))); return; }
   const pick = t.closest('[data-chpick]');
   if(pick){ const id = pick.dataset.chpick; CHAT_NEW.has(id) ? CHAT_NEW.delete(id) : CHAT_NEW.add(id); chatRender(); return; }
   if(t.closest('[data-chsens]')){
@@ -342,7 +348,7 @@ function chatEnter(id){
 }
 function chatExit(){
   if(!CHAT_ACTIVE) return;
-  CHAT_ACTIVE = false; CHAT_NEW = null; chatBtn.classList.remove('active'); document.body.classList.remove('chat-open');
+  CHAT_ACTIVE = false; CHAT_NEW = null; chatBtn.classList.remove('active'); document.body.classList.remove('chat-open', 'chat-rail');
   grid.className = ''; updatePageHead();
 }
 chatBtn.onclick = ()=>{ location.hash = '#chat'; };
