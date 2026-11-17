@@ -250,7 +250,7 @@ function chatStartHtml(){
     <h2>${tr('Talk to your personas')}</h2>
     <p>${tr('Every answer comes from your research. Pick one persona, or several for a group conversation.')}</p>
     ${ps.length ? `<div class="ch-chips" role="group" aria-label="${esc(tr('Personas'))}">${ps.map(p=>{ const on = CHAT_NEW.has(p.id);
-        return `<button type="button" class="ch-chip${on ? ' on' : ''}" aria-pressed="${on}" data-chpick="${esc(p.id)}" title="${esc(tr(p.fm.category || 'persona'))}">${faceHtml(p, 'ch-face-xs', chatName(p))}<span>${esc(chatName(p))}</span></button>`; }).join('')}</div>
+        return `<button type="button" class="ch-chip${on ? ' on' : ''}" aria-pressed="${on}" data-chpick="${esc(p.id)}">${faceHtml(p, 'ch-face-xs', chatName(p))}<span>${esc(chatName(p))}</span></button>`; }).join('')}</div>
       <div class="ch-dock">${chatComposeHtml(null, sel.length ? tr('Write to {p}…').replace('{p}', sel.map(chatName).join(', ')) : tr('Pick a persona above, then write…'), sel.length)}</div>`
     : `<p class="ch-none">${tr('No personas in this workspace yet.')}</p>`}
   </section>`;
@@ -302,6 +302,7 @@ function chatRender(){
   const keep = document.getElementById('chInput'), draft = keep ? keep.value : '';
   grid.className = 'ch-wrap';
   grid.innerHTML = chatTopHtml(c, list.length) + chatListHtml(list) + (c ? chatThreadHtml(c) : chatStartHtml());
+  wirePeek(grid, '[data-chpick]', b=> b.dataset.chpick);   // who is this persona? — on hover/focus
   const body = document.getElementById('chBody'); if(body) body.scrollTop = body.scrollHeight;
   const inp = document.getElementById('chInput');
   if(inp){ inp.value = draft; const fit = ()=>{ inp.style.height = 'auto'; inp.style.height = Math.min(inp.scrollHeight, 200) + 'px'; }; fit(); inp.oninput = fit;

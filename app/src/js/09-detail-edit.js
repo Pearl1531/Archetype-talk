@@ -139,13 +139,23 @@ function peekHtml(x){
       ${take?`<p class="peek-p">${esc(trim(take,220))}</p>`:''}
       ${x.fm.retrieved?`<div class="peek-m">${tr('Checked')} ${esc(String(x.fm.retrieved))}</div>`:''}`;
   }
+  if(x.type==='Persona'){   // who is this? — the chat's persona chips
+    const h1 = (x.body.match(/^#\s+(.+—.+)$/m)||[])[1] || '';
+    const role = h1.includes('—') ? h1.split('—').slice(1).join('—').trim() : '';
+    const archs = linkedEntities(section(x.body,'Archetypes')||'').filter(a=> a.type==='Archetype').map(a=> esc(a.title));
+    return `<div class="peek-t peek-row">${esc(h1.includes('—') ? h1.split('—')[0].trim() : x.title)}${role ? ` <span class="peek-m">· ${esc(role)}</span>` : ''}</div>
+      <div class="peek-lvl">${levelMeter(personaLevel(x), '', true)}</div>
+      ${x.fm.description?`<p class="peek-p">${esc(trim(stripLinks(x.fm.description),220))}</p>`:''}
+      ${archs.length?`<div class="peek-m">${tr('Archetypes')}: ${archs.join(', ')}</div>`:''}`;
+  }
   return '';
 }
 let PEEK = null;
-function wirePeek(root){
+function wirePeek(root, sel = 'a.xref[data-goto]', idOf = a => a.dataset.goto){
   if(!PEEK){ PEEK = document.createElement('div'); PEEK.className = 'peek'; PEEK.setAttribute('role','tooltip'); PEEK.hidden = true; document.body.appendChild(PEEK); }
+  PEEK.hidden = true;   // a re-render may have removed the element it was showing for
   const show = a =>{
-    const x = ENTITIES[a.dataset.goto]; const html = x ? peekHtml(x) : '';
+    const x = ENTITIES[idOf(a)]; const html = x ? peekHtml(x) : '';
     if(!html) return;
     PEEK.innerHTML = html; PEEK.hidden = false;
     const r = a.getBoundingClientRect(), w = PEEK.offsetWidth, h = PEEK.offsetHeight;
@@ -154,7 +164,7 @@ function wirePeek(root){
     PEEK.style.top  = (below ? r.bottom + 8 : r.top - h - 8) + 'px';
   };
   const hide = ()=>{ PEEK.hidden = true; };
-  root.querySelectorAll('a.xref[data-goto]').forEach(a=>{
+  root.querySelectorAll(sel).forEach(a=>{
     a.addEventListener('mouseenter', ()=> show(a)); a.addEventListener('focus', ()=> show(a));
     a.addEventListener('mouseleave', hide); a.addEventListener('blur', hide);
     a.addEventListener('click', hide);
