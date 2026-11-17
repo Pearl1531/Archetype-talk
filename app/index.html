@@ -912,6 +912,10 @@
   .pe-cmd code { font-family: var(--font-mono); font-size: var(--text-body); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
   .pe-portrait { width: 240px; height: 240px; }   /* a .face (faceHtml) */
   .pe-portrait.prim { background: var(--accent); }
+  .pe-pic { position: absolute; inset: 0; z-index: 3; display: grid; place-items: center; cursor: pointer;
+    background: rgba(10,10,10,.55); color: #FFFFFF; font-size: var(--text-body); font-weight: 700; opacity: 0; transition: opacity .15s; }
+  .pe-portrait:hover .pe-pic, .pe-pic:focus-within { opacity: 1; }
+  @media (hover: none){ .pe-pic { inset: auto 0 0 0; height: 30%; opacity: 1; } }
   .pe-facts { margin-top: -24px; grid-template-columns: minmax(0, 2fr) repeat(3, minmax(0, 1fr)); }
   .pe-oneline { font-size: 18px; font-weight: 600; line-height: 1.35; color: var(--text); }
   .pe-fact { font-size: 19px; font-weight: 700; color: var(--text); }
@@ -10146,6 +10150,11 @@ const PL = {
   'Fetch blocked (CORS/offline) — upload a file instead, or ask your AI assistant to fetch the favicon for {name}':
     'Pobieranie zablokowane (CORS/offline) — wgraj plik albo poproś asystenta AI o faviconę dla {name}',
   'Could not read that image': 'Nie udało się odczytać tego obrazu',
+  'Change photo': 'Zmień zdjęcie',
+  'That file is not an image': 'Ten plik nie jest obrazem',
+  'That photo is {n} MB — the limit is {m} MB. Make it smaller and try again.': 'To zdjęcie ma {n} MB — limit to {m} MB. Zmniejsz je i spróbuj ponownie.',
+  'Could not write the photo file — nothing was saved': 'Nie udało się zapisać pliku zdjęcia — nic nie zostało zapisane',
+  'Photo saved ({k} KB) ✓': 'Zdjęcie zapisane ({k} KB) ✓',
   /* poster */
   'Persona poster': 'Plakat persony',
   'Full list — every entry in this section': 'Pełna lista — wszystkie pozycje z tej sekcji',
@@ -14383,8 +14392,57 @@ function personaEditorialWire(root, e){
   wireVotes(root);
   wirePeek(root);
   const pb = root.querySelector('#pPosterBtn'); if(pb) pb.onclick = ()=>{ location.hash = 'poster:' + e.id; };
+  const face = root.querySelector('.pe-portrait');
+  if(face){
+    face.insertAdjacentHTML('beforeend', `<label class="pe-pic"><input type="file" accept="image/jpeg,image/png,image/webp,image/avif,image/gif" hidden><span>${tr('Change photo')}</span></label>`);
+    face.querySelector('.pe-pic input').onchange = ev=>{ const f = ev.target.files[0]; ev.target.value = ''; if(f) savePersonaPhoto(e, f); };
+  }
   root.querySelectorAll('a.xref[data-goto]').forEach(a=> a.onclick = ev=>{ ev.preventDefault(); location.hash = '#'+a.dataset.goto; });
   root.querySelectorAll('[data-pe-edit]').forEach(b=> b.onclick = ()=> editSection(e, b.dataset.peEdit));
+}
+
+/* A persona's own photo, from the hover on the portrait. Any size up to
+   PHOTO_MAX_MB is shrunk here, in the browser: longest side 512px, WebP (JPEG
+   where the browser can't encode WebP — Safari), quality stepped down until it
+   fits. With a folder open it lands next to the avatars as Personas/photos/<Name>.webp
+   and `picture:` points at it — never base64 in the .md, which every agent
+   reading the persona would pay for in tokens. The demo sandbox has no folder,
+   so there it goes inline. */
+const PHOTO_MAX_MB = 25;
+async function photoShrink(file, maxBytes){
+  if(!/^image\//.test(file.type)) throw new Error(tr('That file is not an image'));
+  if(file.size > PHOTO_MAX_MB * 1048576) throw new Error(tr('That photo is {n} MB — the limit is {m} MB. Make it smaller and try again.').replace('{n}', (file.size / 1048576).toFixed(1)).replace('{m}', PHOTO_MAX_MB));
+  const bmp = await createImageBitmap(file);
+  const r = Math.min(1, 512 / Math.max(bmp.width, bmp.height));
+  const c = document.createElement('canvas'); c.width = Math.round(bmp.width * r); c.height = Math.round(bmp.height * r);
+  c.getContext('2d').drawImage(bmp, 0, 0, c.width, c.height); bmp.close();
+  let blob;
+  for(const q of [.82, .7, .55, .4]){
+    blob = await new Promise(res=> c.toBlob(res, 'image/webp', q));
+    if(!blob || blob.type !== 'image/webp') blob = await new Promise(res=> c.toBlob(res, 'image/jpeg', q));
+    if(blob.size <= maxBytes) break;
+  }
+  return blob;
+}
+async function savePersonaPhoto(e, file){
+  e = await ensureWritable(e); if(!e) return;
+  const local = !!(e.handle && DIRHANDLE);
+  let blob;
+  try{ blob = await photoShrink(file, local ? 150000 : 60000); }
+  catch(err){ toast(err.message && !/decode|bitmap|source/i.test(err.message) ? err.message : tr('Could not read that image')); return; }
+  const uri = await new Promise((res, rej)=>{ const fr = new FileReader(); fr.onload = ()=> res(fr.result); fr.onerror = rej; fr.readAsDataURL(blob); });
+  let md;
+  if(local){
+    const dir = e.file.replace(/[^/]*$/, ''), name = 'photos/' + e.file.replace(/^.*\//, '').replace(/\.md$/i, '') + (blob.type === 'image/webp' ? '.webp' : '.jpg');
+    try{
+      let d = DIRHANDLE; const parts = (dir + name).split('/');
+      for(const p of parts.slice(0, -1)) d = await d.getDirectoryHandle(p, {create: true});
+      const w = await (await d.getFileHandle(parts.at(-1), {create: true})).createWritable(); await w.write(blob); await w.close();
+    }catch(err){ toast(tr('Could not write the photo file — nothing was saved')); return; }
+    picStore(dir + name, uri);
+    md = setFmField(e.md, 'picture', name);
+  } else md = setPictureInMd(e.md, uri);
+  if(await saveEntityText(e, md)){ openDetail(e.id); toast(tr('Photo saved ({k} KB) ✓').replace('{k}', Math.round(blob.size / 1024)), {label: 'Undo', fn: undoLastSave}); }
 }
 /* ---------- a transcript as a working surface (Condens-inspired, 2026-10) ----------
    The interview on the left, read turn by turn: who spoke, the sections the
@@ -17993,7 +18051,7 @@ function chatContext(p, c){
     .forEach(e=>{ const k = CHAT_KIND[e.type]; n[k] = (n[k] || 0) + 1; ref[k + n[k]] = e.id; key.set(e.id, k + n[k]); });
   return { items, held, ref, key, signals: items.filter(e=> e.type === 'Signal'), count: n };
 }
-const chatClean = md => String(md || '').replace(/\r/g, '').replace(/^﻿?\s*/, '').trim();
+const chatClean = md => String(md || '').replace(/\r/g, '').replace(/^﻿?\s*/, '').replace(/data:image\/[^\s)"']+/g, '(inline image)').trim();
 const chatNoFull = md => chatClean(md).replace(/\n## Full transcript[^\n]*\n[\s\S]*?(?=\n## |$)/i, '\n## Full transcript\n(not included here)');
 const CHAT_SKILL_TXT = ((document.getElementById('skillPersonaTalk') || {}).textContent || '').replace(/<\\\/script/g, '</script').trim();
 /* how many special-category files this conversation's personas stand on (consent-held ones never count: those stay home regardless) */

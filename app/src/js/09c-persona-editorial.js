@@ -170,6 +170,55 @@ function personaEditorialWire(root, e){
   wireVotes(root);
   wirePeek(root);
   const pb = root.querySelector('#pPosterBtn'); if(pb) pb.onclick = ()=>{ location.hash = 'poster:' + e.id; };
+  const face = root.querySelector('.pe-portrait');
+  if(face){
+    face.insertAdjacentHTML('beforeend', `<label class="pe-pic"><input type="file" accept="image/jpeg,image/png,image/webp,image/avif,image/gif" hidden><span>${tr('Change photo')}</span></label>`);
+    face.querySelector('.pe-pic input').onchange = ev=>{ const f = ev.target.files[0]; ev.target.value = ''; if(f) savePersonaPhoto(e, f); };
+  }
   root.querySelectorAll('a.xref[data-goto]').forEach(a=> a.onclick = ev=>{ ev.preventDefault(); location.hash = '#'+a.dataset.goto; });
   root.querySelectorAll('[data-pe-edit]').forEach(b=> b.onclick = ()=> editSection(e, b.dataset.peEdit));
+}
+
+/* A persona's own photo, from the hover on the portrait. Any size up to
+   PHOTO_MAX_MB is shrunk here, in the browser: longest side 512px, WebP (JPEG
+   where the browser can't encode WebP — Safari), quality stepped down until it
+   fits. With a folder open it lands next to the avatars as Personas/photos/<Name>.webp
+   and `picture:` points at it — never base64 in the .md, which every agent
+   reading the persona would pay for in tokens. The demo sandbox has no folder,
+   so there it goes inline. */
+const PHOTO_MAX_MB = 25;
+async function photoShrink(file, maxBytes){
+  if(!/^image\//.test(file.type)) throw new Error(tr('That file is not an image'));
+  if(file.size > PHOTO_MAX_MB * 1048576) throw new Error(tr('That photo is {n} MB — the limit is {m} MB. Make it smaller and try again.').replace('{n}', (file.size / 1048576).toFixed(1)).replace('{m}', PHOTO_MAX_MB));
+  const bmp = await createImageBitmap(file);
+  const r = Math.min(1, 512 / Math.max(bmp.width, bmp.height));
+  const c = document.createElement('canvas'); c.width = Math.round(bmp.width * r); c.height = Math.round(bmp.height * r);
+  c.getContext('2d').drawImage(bmp, 0, 0, c.width, c.height); bmp.close();
+  let blob;
+  for(const q of [.82, .7, .55, .4]){
+    blob = await new Promise(res=> c.toBlob(res, 'image/webp', q));
+    if(!blob || blob.type !== 'image/webp') blob = await new Promise(res=> c.toBlob(res, 'image/jpeg', q));
+    if(blob.size <= maxBytes) break;
+  }
+  return blob;
+}
+async function savePersonaPhoto(e, file){
+  e = await ensureWritable(e); if(!e) return;
+  const local = !!(e.handle && DIRHANDLE);
+  let blob;
+  try{ blob = await photoShrink(file, local ? 150000 : 60000); }
+  catch(err){ toast(err.message && !/decode|bitmap|source/i.test(err.message) ? err.message : tr('Could not read that image')); return; }
+  const uri = await new Promise((res, rej)=>{ const fr = new FileReader(); fr.onload = ()=> res(fr.result); fr.onerror = rej; fr.readAsDataURL(blob); });
+  let md;
+  if(local){
+    const dir = e.file.replace(/[^/]*$/, ''), name = 'photos/' + e.file.replace(/^.*\//, '').replace(/\.md$/i, '') + (blob.type === 'image/webp' ? '.webp' : '.jpg');
+    try{
+      let d = DIRHANDLE; const parts = (dir + name).split('/');
+      for(const p of parts.slice(0, -1)) d = await d.getDirectoryHandle(p, {create: true});
+      const w = await (await d.getFileHandle(parts.at(-1), {create: true})).createWritable(); await w.write(blob); await w.close();
+    }catch(err){ toast(tr('Could not write the photo file — nothing was saved')); return; }
+    picStore(dir + name, uri);
+    md = setFmField(e.md, 'picture', name);
+  } else md = setPictureInMd(e.md, uri);
+  if(await saveEntityText(e, md)){ openDetail(e.id); toast(tr('Photo saved ({k} KB) ✓').replace('{k}', Math.round(blob.size / 1024)), {label: 'Undo', fn: undoLastSave}); }
 }

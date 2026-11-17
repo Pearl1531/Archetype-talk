@@ -79,7 +79,7 @@ function chatContext(p, c){
     .forEach(e=>{ const k = CHAT_KIND[e.type]; n[k] = (n[k] || 0) + 1; ref[k + n[k]] = e.id; key.set(e.id, k + n[k]); });
   return { items, held, ref, key, signals: items.filter(e=> e.type === 'Signal'), count: n };
 }
-const chatClean = md => String(md || '').replace(/\r/g, '').replace(/^﻿?\s*/, '').trim();
+const chatClean = md => String(md || '').replace(/\r/g, '').replace(/^﻿?\s*/, '').replace(/data:image\/[^\s)"']+/g, '(inline image)').trim();
 const chatNoFull = md => chatClean(md).replace(/\n## Full transcript[^\n]*\n[\s\S]*?(?=\n## |$)/i, '\n## Full transcript\n(not included here)');
 const CHAT_SKILL_TXT = ((document.getElementById('skillPersonaTalk') || {}).textContent || '').replace(/<\\\/script/g, '</script').trim();
 /* how many special-category files this conversation's personas stand on (consent-held ones never count: those stay home regardless) */

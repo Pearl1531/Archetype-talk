@@ -1644,6 +1644,11 @@ const PL = {
   'Fetch blocked (CORS/offline) — upload a file instead, or ask your AI assistant to fetch the favicon for {name}':
     'Pobieranie zablokowane (CORS/offline) — wgraj plik albo poproś asystenta AI o faviconę dla {name}',
   'Could not read that image': 'Nie udało się odczytać tego obrazu',
+  'Change photo': 'Zmień zdjęcie',
+  'That file is not an image': 'Ten plik nie jest obrazem',
+  'That photo is {n} MB — the limit is {m} MB. Make it smaller and try again.': 'To zdjęcie ma {n} MB — limit to {m} MB. Zmniejsz je i spróbuj ponownie.',
+  'Could not write the photo file — nothing was saved': 'Nie udało się zapisać pliku zdjęcia — nic nie zostało zapisane',
+  'Photo saved ({k} KB) ✓': 'Zdjęcie zapisane ({k} KB) ✓',
   /* poster */
   'Persona poster': 'Plakat persony',
   'Full list — every entry in this section': 'Pełna lista — wszystkie pozycje z tej sekcji',

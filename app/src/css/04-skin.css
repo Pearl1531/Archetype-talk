@@ -238,6 +238,10 @@
   .pe-cmd code { font-family: var(--font-mono); font-size: var(--text-body); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
   .pe-portrait { width: 240px; height: 240px; }   /* a .face (faceHtml) */
   .pe-portrait.prim { background: var(--accent); }
+  .pe-pic { position: absolute; inset: 0; z-index: 3; display: grid; place-items: center; cursor: pointer;
+    background: rgba(10,10,10,.55); color: #FFFFFF; font-size: var(--text-body); font-weight: 700; opacity: 0; transition: opacity .15s; }
+  .pe-portrait:hover .pe-pic, .pe-pic:focus-within { opacity: 1; }
+  @media (hover: none){ .pe-pic { inset: auto 0 0 0; height: 30%; opacity: 1; } }
   .pe-facts { margin-top: -24px; grid-template-columns: minmax(0, 2fr) repeat(3, minmax(0, 1fr)); }
   .pe-oneline { font-size: 18px; font-weight: 600; line-height: 1.35; color: var(--text); }
   .pe-fact { font-size: 19px; font-weight: 700; color: var(--text); }
