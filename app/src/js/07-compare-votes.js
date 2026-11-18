@@ -274,18 +274,18 @@ function card(e){
   const el=document.createElement('div'); el.className='card' + (e.type==='Transcript'&&isExcluded(e)?' excluded':'');
   let inner = badge(e);
   if(e.type==='Persona'){
-    /* Apple-store card: small-caps kicker, the persona's own words as the
-       headline, cartoon avatar as the hero image. Trimmed on purpose. */
+    /* Portrait card: the face as the hero, then who she is and how solid —
+       the same 5-step meter as everywhere — and what she stands on. */
     const h1 = (e.body.match(/^#\s+(.+—.+)$/m)||[])[1] || '';
     const [nm, role] = h1.includes('—') ? h1.split('—').map(x=>x.trim()) : [e.title, ''];
-    const qFull = (firstQuote(e.body)||'').replace(/^["“']|["”']$/g,'');
-    let q=''; for(const s of qFull.split(/(?<=[.!?])\s+/)){ if(!q) q=s; else if((q+' '+s).length<=130) q+=' '+s; else break; }  // whole sentences
-    if(q.length>150) q=trim(q,140);
+    const lv = personaLevel(e), people = personaParticipants(e);
+    const srcs = new Set(linkedEntities(e.body).filter(x=> x.type==='Signal' || x.type==='Evidence').map(x=> x.id)).size;
     el.classList.add('p-apple'); el.dataset.lean = '4';   // the persona card's gesture (16-motion.css)
-    inner = `<div class="pa-kicker">${esc(tr(e.fm.category||''))} ${tr('persona')}${e.fm.demo?'<span class="pa-demo">Demo</span>':''}${levelMeter(personaLevel(e))}</div>
-      <h3 class="pa-quote">${esc(q)}</h3>
-      <div class="pa-who">${esc(nm)}${role?` · ${esc(role)}`:''}</div>
-      <div class="pa-avatar">${faceHtml(e, '', nm)}</div>`;
+    inner = `<div class="pa-avatar">${faceHtml(e, '', nm)}</div>
+      <h3 class="pa-name">${esc(nm)}</h3>
+      ${role?`<div class="pa-who">${esc(role)}</div>`:''}
+      <div class="pa-lvl"><span>${tr('Readiness score')}</span>${levelMeter(lv)}</div>
+      <div class="pa-base">${tr('Based on:')} ${esc(trn(people,'{n} interview','{n} interviews','{n} wywiad','{n} wywiady','{n} wywiadów'))} · ${esc(trn(srcs,'{n} source','{n} sources','{n} źródło','{n} źródła','{n} źródeł'))}</div>`;
     } else if(e.type==='Archetype'){
     inner += `<div class="persona-id">${archIconHtml(e)}<div><div class="name">${esc(e.title)}</div></div></div>
       <div class="excerpt">${esc(trim(stripLinks(afterLabel(e.body,'Short description')),150))}</div>

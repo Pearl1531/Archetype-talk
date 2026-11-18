@@ -653,8 +653,6 @@
     border: 1px solid var(--line); color: var(--text-mute); cursor: help; white-space: nowrap; }
   .lvl-3 { color: var(--warn-text); border-color: color-mix(in srgb, var(--warn) 40%, transparent); }
   .lvl-4, .lvl-5 { color: var(--accent-text); border-color: color-mix(in srgb, var(--accent, #ff4d00) 45%, transparent); background: var(--accent-soft); }
-  body.lin-all .p-apple .pa-kicker { white-space: nowrap; }
-  .pa-kicker .lvl-meter { margin-left: auto; }
 
 
   /* ── Transcript card (card() in 07): meta line, title, two lines of gist and
@@ -746,17 +744,16 @@
   body.lin-all .col-resize::after { background: var(--line); }
   body.lin-all .th-sort { color: var(--accent); }
 
-  /* Apple-store persona card (the screenshot pattern: kicker → headline → hero image) */
-  body.lin-all .card.p-apple { display: flex; flex-direction: column; text-align: left;
-    padding: var(--s-6) var(--s-6) 0; overflow: hidden; min-height: 380px; }
-  body.lin-all .p-apple .pa-kicker { font-size: 14px; font-weight: 600; letter-spacing: .8px;
-    text-transform: uppercase; color: var(--text-dim); display: flex; align-items: center; gap: 10px; }
-  body.lin-all .p-apple .pa-demo { color: var(--accent-text); }
-  body.lin-all .p-apple .pa-quote { margin: 10px 0 0; font-size: 23px; line-height: 1.2;
-    font-weight: 600; letter-spacing: -0.3px; color: var(--text); }
-  body.lin-all .p-apple .pa-who { margin-top: 10px; font-size: 14px; color: var(--text-dim); }
-  body.lin-all .p-apple .pa-avatar { margin-top: auto; display: flex; justify-content: center; padding-top: 18px; }
-  body.lin-all .p-apple .pa-avatar .face { width: 170px; height: 170px; margin-bottom: -34px; }
+  /* persona card: portrait on top → name, role → how solid → what it stands on */
+  body.lin-all .card.p-apple { display: flex; flex-direction: column; text-align: left; padding: var(--s-6); overflow: hidden; }
+  body.lin-all .p-apple .pa-avatar { display: flex; justify-content: center; padding: 8px 0 28px; }
+  body.lin-all .p-apple .pa-avatar .face { width: 170px; height: 170px; }
+  body.lin-all .p-apple .pa-name { margin: 0; font-size: 23px; line-height: 1.2; font-weight: 700; letter-spacing: -0.3px; color: var(--text); }
+  body.lin-all .p-apple .pa-who { margin-top: 4px; font-size: 14px; color: var(--text-dim); }
+  body.lin-all .p-apple .pa-lvl { margin-top: auto; padding-top: 18px; display: flex; align-items: center; gap: 10px; }
+  body.lin-all .p-apple .pa-lvl > span { font-size: 13px; font-weight: 600; letter-spacing: .8px; text-transform: uppercase; color: var(--accent-text); }
+  body.lin-all .p-apple .pa-lvl .lvl-meter { margin-left: auto; }
+  body.lin-all .p-apple .pa-base { margin-top: 10px; font-size: 14px; color: var(--text-dim); }
   body.lin-all .p-apple:hover { border-color: var(--hover-border); }
 
   /* ---- detail view ---- */
@@ -894,29 +891,36 @@
   .detail-card.persona-detail .detail-head { display: none; }
   .detail-card.persona-detail .doc-tools { display: none; }
   .p-hero { display: flex; flex-direction: column; gap: 56px; margin-bottom: 56px; }
-  .pe-hero { display: grid; grid-template-columns: minmax(0, 1fr) 240px; gap: 40px; align-items: end; }
-  .pe-kicker { display: flex; align-items: center; gap: 10px; flex-wrap: wrap; margin-bottom: 14px; font-size: var(--fs-md); color: var(--text-dim); }
-  .pe-kicker b { color: var(--text); font-weight: 600; }
-  .pe-name { font-size: clamp(72px, 9vw, 150px); font-weight: 800; line-height: .84; letter-spacing: -0.065em; color: var(--text); }
-  .pe-role { margin-top: 18px; font-size: 21px; font-weight: 500; color: var(--text-soft); }
-  .pe-arch { margin-top: 14px; display: flex; align-items: center; gap: 8px; flex-wrap: wrap; }
-  .pe-arch-l { font-size: var(--text-body); color: var(--text-dim); margin-right: 4px; }
-  .pe-pill { height: 36px; padding: 0 14px 0 10px; border-radius: var(--r-pill); background: #E4DED2; color: var(--text); text-decoration: none;
-    display: inline-flex; align-items: center; gap: 8px; font-size: var(--text-body); font-weight: 600; cursor: pointer; }
-  .pe-pill:hover { background: #D9D2C3; }
-  .pe-actions { margin-top: 24px; display: flex; align-items: center; gap: 10px; flex-wrap: wrap; }
+  /* hero card: portrait left, who she is right; the page's Map / Edit / Poster sit in its top-right corner */
+  .detail-wrap:has(.persona-detail) { position: relative; }
+  .detail-wrap:has(.persona-detail) > .crumbs { position: absolute; top: calc(var(--s-5) + 24px); right: calc(var(--s-6) + 24px); z-index: 2; padding: 0; }
+  .pe-hero { display: grid; grid-template-columns: 280px minmax(0, 1fr); gap: 32px; align-items: stretch; padding: 28px; border-radius: 20px; background: var(--bg-elev); }
+  .pe-chips { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; padding-right: 220px; }
+  .pe-name { margin-top: 14px; font-size: clamp(64px, 7vw, 110px); font-weight: 800; line-height: .84; letter-spacing: -0.065em; color: var(--text); }
+  .pe-role { margin-top: 14px; font-size: 19px; font-weight: 500; color: var(--text-soft); }
+  .pe-ctx { margin-top: 16px; max-width: 110ch; font-size: var(--text-body); line-height: 1.6; color: var(--text-dim);
+    display: -webkit-box; -webkit-line-clamp: 3; -webkit-box-orient: vertical; overflow: hidden; }
+  .pe-actions { margin-top: 20px; display: flex; align-items: center; gap: 10px; flex-wrap: wrap; }
   .pe-actions .p-talk { width: auto; margin: 0; display: inline-flex; }
-  .pe-actions .p-talk .pj-btn { height: 52px; padding: 0 22px; font-size: var(--fs-lg); font-weight: 700; background: var(--primary-bg); color: var(--primary-fg); border-color: var(--primary-bg); }
+  .pe-actions .p-talk .pj-btn { height: 48px; padding: 0 20px; font-size: var(--fs-md); font-weight: 700; background: var(--primary-bg); color: var(--primary-fg); border-color: var(--primary-bg); }
   .pe-actions .p-talk .pj-split-more { padding: 0 14px; border-left: 1px solid rgba(255,255,255,.25); }
-  .pe-cmd { display: inline-flex; align-items: center; height: 52px; padding: 0 16px; border: 1.5px solid var(--text); border-radius: 14px; background: var(--bg-elev-2); max-width: 100%; }
-  .pe-cmd code { font-family: var(--font-mono); font-size: var(--text-body); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-  .pe-portrait { width: 240px; height: 240px; }   /* a .face (faceHtml) */
+  .pe-portrait { width: 100%; height: auto; aspect-ratio: 7 / 8; border-radius: 12px; }   /* a .face (faceHtml), squared off here */
+  /* frustrations / typical behaviour: three cards a row */
+  .pe-cards { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 20px; }
+  .pe-cd { padding: 24px 28px 28px; border-radius: 14px; background: var(--bg-elev); box-shadow: 0 1px 3px rgba(10,10,10,.06); }
+  .pe-cd-k { display: flex; align-items: center; gap: 10px; font-size: var(--text-body); font-weight: 600; color: var(--text); }
+  .pe-emo { font-size: 26px; line-height: 1; }
+  .pe-cd-t { margin-top: 14px; font-weight: 700; line-height: 1.5; color: var(--text); }
+  .pe-cd-t a { color: inherit; text-decoration: none; cursor: pointer; }
+  .pe-cd-t a:hover { text-decoration: underline; text-underline-offset: 3px; }
+  .pe-cd-q { margin-top: 12px; font-size: var(--text-body); line-height: 1.6; color: var(--text-dim);
+    display: -webkit-box; -webkit-line-clamp: 3; -webkit-box-orient: vertical; overflow: hidden; }
   .pe-portrait.prim { background: var(--accent); }
   .pe-pic { position: absolute; inset: 0; z-index: 3; display: grid; place-items: center; cursor: pointer;
     background: rgba(10,10,10,.55); color: #FFFFFF; font-size: var(--text-body); font-weight: 700; opacity: 0; transition: opacity .15s; }
   .pe-portrait:hover .pe-pic, .pe-pic:focus-within { opacity: 1; }
   @media (hover: none){ .pe-pic { inset: auto 0 0 0; height: 30%; opacity: 1; } }
-  .pe-facts { margin-top: -24px; grid-template-columns: minmax(0, 2fr) repeat(3, minmax(0, 1fr)); }
+  .pe-facts { margin-top: 0; border-top: 0; border-bottom: 0; grid-template-columns: repeat(4, minmax(0, 1fr)); }
   .pe-oneline { font-size: 18px; font-weight: 600; line-height: 1.35; color: var(--text); }
   .pe-fact { font-size: 19px; font-weight: 700; color: var(--text); }
   .pe-facts .lvl-meter { font-size: var(--fs-md); flex-wrap: wrap; white-space: normal; } .pe-facts .dx-lvl i { width: 22px; height: 8px; }
@@ -962,8 +966,8 @@
   .persona-detail .doc p, .persona-detail .doc li { font-size: 16px; line-height: 1.62; color: var(--text-soft); }
   .persona-detail .doc blockquote { border-left: 3px solid var(--accent); color: var(--text); }
   @media (max-width: 1100px){
-    .pe-hero { grid-template-columns: minmax(0, 1fr) 160px; }
-    .pe-portrait { width: 160px; height: 160px; }
+    .pe-hero { grid-template-columns: 200px minmax(0, 1fr); }
+    .pe-cards { grid-template-columns: repeat(2, minmax(0, 1fr)); }
     .pe-facts { grid-template-columns: repeat(2, minmax(0, 1fr)); }
     .pe-foot { grid-template-columns: repeat(2, minmax(0, 1fr)); }
     .pe-foot-h { grid-column: 1 / -1; }
@@ -971,8 +975,10 @@
   }
   @media (max-width: 720px){
     .pe-hero { grid-template-columns: 1fr; }
-    .pe-portrait { order: -1; width: 120px; height: 120px; }
-    .pe-cmd { display: none; }
+    .pe-portrait { width: 140px; }
+    .pe-cards { grid-template-columns: 1fr; }
+    .pe-chips { padding-right: 0; }
+    .detail-wrap:has(.persona-detail) > .crumbs { position: static; padding-bottom: var(--s-2); }
     .persona-detail .p-body { grid-template-columns: 1fr; }
     .p-toc { position: static; flex-direction: row; flex-wrap: wrap; gap: 6px; margin-bottom: 20px; }
     .p-toc a { background: var(--bg-elev); }
@@ -4353,6 +4359,7 @@
     <div class="crumbs">
       <span class="spacer"></span>
       <button class="btn btn-ghost btn-sm" id="mapHereBtn" title="See this entity in the context of its connections" data-i18n-title="See this entity in the context of its connections" data-i18n="◎ Map">◎ Map</button>
+      <button class="btn btn-ghost btn-sm" id="posterHereBtn" style="display:none" data-i18n="Poster">Poster</button>
       <button class="btn btn-ghost btn-sm" id="deleteDraftBtn" style="display:none" title="Delete this local draft" data-i18n-title="Delete this local draft" data-i18n="Delete draft">Delete draft</button>
       <button class="btn btn-outline btn-sm" id="editBtn" style="display:none" data-i18n="Edit">Edit</button>
     </div>
@@ -9210,8 +9217,9 @@ const PL = {
   'Frustration, in their words': 'Frustracja, ich słowami',
   'Heard': 'Usłyszane',
   'How confident can we be in this idea?': 'Jak pewny jest ten pomysł?',
-  'How solid': 'Jak solidna',
-  'How solid is a persona?': 'Jak solidna jest persona?',
+  'Readiness score': 'Gotowość',
+  'Based on:': 'Na podstawie:',
+  'What is the readiness score?': 'Czym jest gotowość persony?',
   'Idea': 'Pomysł',
   'Idea for it': 'Pomysł na to',
   'In one line': 'W jednym zdaniu',
@@ -9225,6 +9233,12 @@ const PL = {
   'Read': 'Przeczytane',
   'Signal:': 'Sygnał:',
   'Typical behavior': 'Typowe zachowania',
+  'Frustrations': 'Frustracje',
+  'Pain': 'Bolączka',
+  'Product ideas': 'Pomysły produktowe',
+  'Description': 'Opis',
+  'Primary persona': 'Persona główna',
+  'Secondary persona': 'Persona poboczna',
   'Votes': 'Głosy',
   'What they do or expect': 'Co robi lub czego oczekuje',
   'Where it comes from': 'Skąd to wiemy',
@@ -9317,7 +9331,7 @@ const PL = {
   'Fresh': 'Świeże',
   'Have we heard enough people?': 'Czy wysłuchaliśmy dość osób?',
   'Heard {h} · Read {r}': 'Usłyszane {h} · Przeczytane {r}',
-  'How solid: {l} of 5 · stands on {s} heard + {e} read': 'Jak solidna: {l} z 5 · opiera się na {s} usłyszanych + {e} przeczytanych',
+  'Readiness score: {l} of 5 · stands on {s} heard + {e} read': 'Gotowość: {l} z 5 · opiera się na {s} usłyszanych + {e} przeczytanych',
   'Illustrative research on Spotify listeners, not your users. The numbers are read as of the day its research closed, and it never mixes with your own projects.': 'Poglądowe badania słuchaczy Spotify, nie Twoich użytkowników. Liczby są odczytane na dzień zamknięcia badań, a projekt nigdy nie miesza się z Twoimi.',
   'Interviews and tests': 'Wywiady i testy',
   'Last interview': 'Ostatni wywiad',
@@ -12052,18 +12066,18 @@ function card(e){
   const el=document.createElement('div'); el.className='card' + (e.type==='Transcript'&&isExcluded(e)?' excluded':'');
   let inner = badge(e);
   if(e.type==='Persona'){
-    /* Apple-store card: small-caps kicker, the persona's own words as the
-       headline, cartoon avatar as the hero image. Trimmed on purpose. */
+    /* Portrait card: the face as the hero, then who she is and how solid —
+       the same 5-step meter as everywhere — and what she stands on. */
     const h1 = (e.body.match(/^#\s+(.+—.+)$/m)||[])[1] || '';
     const [nm, role] = h1.includes('—') ? h1.split('—').map(x=>x.trim()) : [e.title, ''];
-    const qFull = (firstQuote(e.body)||'').replace(/^["“']|["”']$/g,'');
-    let q=''; for(const s of qFull.split(/(?<=[.!?])\s+/)){ if(!q) q=s; else if((q+' '+s).length<=130) q+=' '+s; else break; }  // whole sentences
-    if(q.length>150) q=trim(q,140);
+    const lv = personaLevel(e), people = personaParticipants(e);
+    const srcs = new Set(linkedEntities(e.body).filter(x=> x.type==='Signal' || x.type==='Evidence').map(x=> x.id)).size;
     el.classList.add('p-apple'); el.dataset.lean = '4';   // the persona card's gesture (16-motion.css)
-    inner = `<div class="pa-kicker">${esc(tr(e.fm.category||''))} ${tr('persona')}${e.fm.demo?'<span class="pa-demo">Demo</span>':''}${levelMeter(personaLevel(e))}</div>
-      <h3 class="pa-quote">${esc(q)}</h3>
-      <div class="pa-who">${esc(nm)}${role?` · ${esc(role)}`:''}</div>
-      <div class="pa-avatar">${faceHtml(e, '', nm)}</div>`;
+    inner = `<div class="pa-avatar">${faceHtml(e, '', nm)}</div>
+      <h3 class="pa-name">${esc(nm)}</h3>
+      ${role?`<div class="pa-who">${esc(role)}</div>`:''}
+      <div class="pa-lvl"><span>${tr('Readiness score')}</span>${levelMeter(lv)}</div>
+      <div class="pa-base">${tr('Based on:')} ${esc(trn(people,'{n} interview','{n} interviews','{n} wywiad','{n} wywiady','{n} wywiadów'))} · ${esc(trn(srcs,'{n} source','{n} sources','{n} źródło','{n} źródła','{n} źródeł'))}</div>`;
     } else if(e.type==='Archetype'){
     inner += `<div class="persona-id">${archIconHtml(e)}<div><div class="name">${esc(e.title)}</div></div></div>
       <div class="excerpt">${esc(trim(stripLinks(afterLabel(e.body,'Short description')),150))}</div>
@@ -13390,6 +13404,7 @@ function openDetail(id){
      the three working tables), then the rest of the file with a sticky section menu. */
   const dcard = document.querySelector('.detail-card');
   dcard.classList.toggle('persona-detail', e.type==='Persona');
+  const ph = document.getElementById('posterHereBtn'); ph.style.display = e.type==='Persona' ? '' : 'none'; ph.onclick = ()=>{ location.hash = 'poster:' + e.id; };
   dcard.classList.toggle('ed-detail', e.type==='Evidence' || e.type==='Signal');
   document.querySelector('.detail-wrap').classList.toggle('detail-wide', /^(Persona|Transcript|Evidence|Signal)$/.test(e.type));
   dcard.classList.toggle('tr-detail', e.type==='Transcript');
@@ -14177,18 +14192,19 @@ function wireProjectEmpty(){
   const pr = document.getElementById('esPrompt2'); if(pr) pr.onclick = ()=> copyNewPrompt('Signal');
 }
 /* ---------- Persona page, Editorial (2026-10) ----------
-   The top of a persona reads like the design: her name as the headline, the
-   archetypes she fits, the line that starts a conversation, then four facts
-   and three working tables built straight from her file:
+   The top of a persona is one card — portrait, name, role, a few lines of
+   context (the description plus the researched "Who they are" lines; character
+   colour stays out), the button that starts a conversation — then cards and a
+   table built straight from her file:
 
-     ## Pains               → "<Name>'s frustrations": each pain's signal, its
-                              verbatim quote (from the signal itself — the
-                              persona file paraphrases), tags, the sources
-                              behind it, and the idea that answers it
-     ## Jobs to be Done     → "Typical behavior": the moment, what she expects,
-                              and the source (or "no source yet")
-     ## Ideas for this persona → votes, grounding, what it stands on, which of
-                              her frustrations it solves
+     ## Pains               → "Frustrations": one card per pain, the signal's
+                              verbatim quote (the persona file paraphrases)
+     ## Jobs to be Done     → "Typical behavior": the moment, what she expects
+     (four facts)           → in one line, built from, sources, readiness score
+     ## Ideas for this persona → idea, votes, description
+
+   Where each card comes from is one hover away (the peek) and listed in full
+   under the page.
 
    Every other section of the file still renders below, as before. Nothing
    here invents content: a row with nothing behind it says so. */
@@ -14242,24 +14258,21 @@ function personaEditorialHtml(e){
   const heard = uniq('Signal'), read = uniq('Evidence'), archs = peLinks(section(e.body,'Archetypes')).filter(x=> x.e.type==='Archetype');
   const { n: people, off } = personaParticipants(e, true);
   const ideas = peLinks(section(e.body,'Ideas for this persona')).filter(x=> x.e.type==='IdeaForImprovement');
-  const pairs = graphPairs(wsEntities());
-  const nb = id => { const s = new Set(); pairs.forEach(([a,b])=>{ if(a===id) s.add(b); else if(b===id) s.add(a); }); return s; };
 
-  /* hero */
-  const archPills = archs.map(x=> `<a class="pe-pill xref" data-goto="${esc(x.e.id)}" title="${esc(stripLinks(x.e.fm.description||''))}">${ICONS.Archetype}${esc(x.e.title)}</a>`).join('');
+  /* hero: portrait, then who she is, a few lines of context, the conversation */
+  const ctx = [stripLinks(e.fm.description||''), ...peItems(section(e.body,'Who they are'))
+    .map(it=> it.text).filter(t=> !/\[colour\]/.test(t))            // character colour stays out of the headline
+    .map(t=> stripLinks(t.replace(/^\*\*[^*]+:\*\*\s*/,'')).replace(/\*+/g,'').trim())]
+    .filter(Boolean).map(t=> /[.!?]$/.test(t) ? t : t+'.').join(' ');
   const hero = `<section class="pe-hero">
+      ${faceHtml(e, 'pe-portrait'+(prim?' prim':''), first)}
       <div class="pe-main">
-        <div class="pe-kicker"><b>${tr('Persona')}</b><span aria-hidden="true">·</span><span>${esc(tr(prim ? 'the main user type this project designs for' : 'a secondary user type'))}</span>${e.fm.demo ? `<span class="dx-chip">${tr('Example data')}${dxTip(tr('This is the example project'), esc(tr('Illustrative research on Spotify listeners, not your users. The numbers are read as of the day its research closed, and it never mixes with your own projects.')))}</span>` : ''}</div>
+        <div class="pe-chips"><span class="dx-chip">${tr(prim ? 'Primary persona' : 'Secondary persona')}${dxTip(tr(prim ? 'Primary persona' : 'Secondary persona'), esc(tr(prim ? 'the main user type this project designs for' : 'a secondary user type')))}</span>${e.fm.demo ? `<span class="dx-chip">${tr('Example data')}${dxTip(tr('This is the example project'), esc(tr('Illustrative research on Spotify listeners, not your users. The numbers are read as of the day its research closed, and it never mixes with your own projects.')))}</span>` : ''}</div>
         <h1 class="pe-name">${esc(first)}<span class="dx-dot">.</span></h1>
-        <div class="pe-role">${esc([fullName !== first ? fullName.replace(first,'').trim() : '', role].filter(Boolean).join(' · ') || e.fm.description || '')}</div>
-        ${archPills ? `<div class="pe-arch"><span class="pe-arch-l">${tr('Archetypes')}</span>${archPills}</div>` : ''}
-        <div class="pe-actions">${talkButtonHtml(e, first)}
-          <span class="pe-cmd" title="${esc(tr('Paste into your AI assistant, opened in this project folder'))}"><code>${esc(talkCommand(e, pjAgent()))}</code></span>
-          <span class="dx-spacer"></span>
-          <button type="button" class="dx-btn dx-btn-line dx-btn-sm" id="pPosterBtn">${tr('Poster')} ↗</button>
-        </div>
+        <div class="pe-role">${esc([fullName !== first ? fullName.replace(first,'').trim() : '', role].filter(Boolean).join(' · '))}</div>
+        ${ctx ? `<p class="pe-ctx" title="${esc(ctx)}">${esc(ctx)}</p>` : ''}
+        <div class="pe-actions">${talkButtonHtml(e, first)}</div>
       </div>
-      ${faceHtml(e, 'pe-portrait'+(prim?' prim':''), first, 'data-lean="6"')}
     </section>`;
 
   /* four facts */
@@ -14269,66 +14282,44 @@ function personaEditorialHtml(e){
         <b class="pe-fact">${esc(trn(people,'{n} interview','{n} interviews','{n} wywiad','{n} wywiady','{n} wywiadów'))}</b>${off ? `<span class="dx-fs">${esc(tr('+{n} set aside').replace('{n}', off))}</span>` : ''}</div>
       <div><span class="dx-fl">${tr('Sources')}${dxTip(tr('Heard {h} · Read {r}').replace('{h}', heard.length).replace('{r}', read.length), esc(tr('Solid = heard in your own sessions (signals). Striped = read in published research or data (evidence).')))}</span>
         <b class="pe-fact">${heard.length + read.length}</b><span class="dx-split"><i style="flex:${heard.length} 1 0"></i><i class="ev" style="flex:${read.length} 1 0"></i></span></div>
-      <div><span class="dx-fl">${tr('How solid')}${dxTip(tr('How solid is a persona?'), peLevelTip(lv), 'right')}</span>
+      <div><span class="dx-fl">${tr('Readiness score')}${dxTip(tr('What is the readiness score?'), peLevelTip(lv), 'right')}</span>
         ${levelMeter(lv, '', true)}</div>
     </section>`;
 
-  /* frustrations — with the relievers the researcher connected to each (the poster's `(→ …)` links) */
-  const relievers = ppRaw(e.md, 'Potential Pain Relievers');
-  const painRows = peItems(section(e.body,'Pains')).map(it=>{
-    const sigX = peLinks(it.text).find(x=> x.e.type==='Signal');
-    const sig = sigX && sigX.e;
+  /* frustrations and typical behaviour: one card each, the words first */
+  const pcard = (emo, label, title, text, link)=> `<article class="pe-cd">
+      <div class="pe-cd-k"><span class="pe-emo" aria-hidden="true">${emo}</span>${esc(label)}</div>
+      <div class="pe-cd-t">${link ? `<a class="xref" data-goto="${esc(link)}">${esc(title)}</a>` : esc(title)}</div>
+      ${text ? `<p class="pe-cd-q">${esc(text)}</p>` : ''}
+    </article>`;
+  const painCards = peItems(section(e.body,'Pains')).map(it=>{
+    const sig = (peLinks(it.text).find(x=> x.e.type==='Signal') || {}).e;
     const title = stripLinks(it.text.replace(MD_LINK,'')).replace(/^[\s—–-]+/,'') || (sig ? sig.title : '');
-    const said = it.subs.map(s=> stripLinks(s).replace(/^In (her|his|their) words:\s*/i,'')).join(' ');
+    const said = it.subs.map(x=> stripLinks(x).replace(/^In (her|his|their) words:\s*/i,'')).join(' ');
     const quote = sig ? (firstQuote(sig.body)||'').replace(/^["“]|["”]$/g,'') : '';
-    const tags = sig ? [].concat(sig.fm.tags||[]).filter(Boolean) : [];
-    const src = sig ? peSourcesOf(sig) : { tr: [], ev: [] };
-    const fix = sig ? [...nb(sig.id)].map(id=> ENTITIES[id]).filter(x=> x && x.type==='IdeaForImprovement') : [];
-    return `<tr>
-        <td><div class="pe-t">${esc(title)}</div>${quote ? `<div class="pe-q">“${esc(quote)}”</div>` : said ? `<div class="pe-q pe-para">${esc(said)}</div>` : ''}${tags.length ? `<div class="pe-tags">${tags.map(t=>`<span class="dx-pill">${esc(t)}</span>`).join('')}</div>` : ''}</td>
-        <td class="pe-src">${sig ? `<span class="pe-h">●</span> ${peLink({e:sig}, tr('Signal:'))}` : `<span class="pe-none">◌ ${tr('No source yet')}</span>`}
-          ${src.tr.map(x=>`<br><span class="pe-h">●</span> ${peLink({e:x.e, label: x.e.title + (x.anchor ? ' · '+x.anchor : '')})}`).join('')}
-          ${src.ev.map(x=>`<br><span class="pe-r">○</span> ${peLink({e:x.e}, tr('Evidence:'))}`).join('')}</td>
-        <td class="pe-idea">${fix.length ? fix.map(i=> peLink({e:i, label: i.title.replace(/^Idea:?\s*\d*\s*/,'')})).join('<br>') : `<b class="pe-warn">${tr('No idea yet')}</b>`}${(()=>{
-          const key = (sig ? sig.title : title).toLowerCase();
-          const eased = relievers.filter(r=> r.to.some(n=> n.toLowerCase()===key)).map(r=> r.b.t.split(/\s+—\s+/)[0]);
-          return eased.length ? `<div class="pe-sub">${tr('Eased by:')} ${eased.map(esc).join(', ')}</div>` : '';
-        })()}</td>
-      </tr>`;
+    return pcard('😡', tr('Pain'), title, quote ? `“${quote}”` : said, sig && sig.id);
   }).join('');
-
-  /* typical behavior, from the jobs to be done */
-  const jobRows = peItems(section(e.body,'Jobs to be Done')).map(it=>{
+  const jobCards = peItems(section(e.body,'Jobs to be Done')).map(it=>{
     const txt = stripLinks(it.text.replace(MD_LINK, '')).trim();
     const m = txt.match(/^(When [^,]+),\s*(.*)$/i) || txt.match(/^(Kiedy [^,]+),\s*(.*)$/i);
-    const L = peLinks(it.text);
-    return `<tr${L.length ? '' : ' class="pe-dim"'}><td class="pe-t">${esc(m ? m[1] : txt)}</td><td>${esc(m ? m[2].charAt(0).toUpperCase()+m[2].slice(1) : '')}</td>
-        <td class="pe-src">${L.length ? L.map(x=>`<span class="pe-h">●</span> ${peLink(x)}`).join('<br>') : `<span class="pe-none">◌ ${tr('No source yet')}</span>`}</td></tr>`;
+    const src = peLinks(it.text)[0];
+    return pcard('💤', tr('Typical behavior'), m ? m[1] : txt, m ? m[2].charAt(0).toUpperCase()+m[2].slice(1) : '', src && src.e.id);
   }).join('');
 
   /* ideas */
   const ideaRows = ideas.map(x=>{
-    const i = x.e, g = ideaGrounding(i);
-    const L = peLinks(i.body).filter(y=> y.e.type==='Signal' || y.e.type==='Evidence');
-    const mine = new Set(heard.map(h=> h.e.id));
-    const solves = L.filter(y=> y.e.type==='Signal' && mine.has(y.e.id));
+    const i = x.e;
     return `<tr>
-        <td><a class="xref pe-t" data-goto="${esc(i.id)}">${esc(i.title.replace(/^Idea:?\s*\d*\s*/,''))}</a>${i.fm.description ? `<div class="pe-sub">${esc(stripLinks(i.fm.description))}</div>` : ''}</td>
+        <td><a class="xref pe-t" data-goto="${esc(i.id)}">${esc(i.title.replace(/^Idea:?\s*\d*\s*/,''))}</a></td>
         <td>${votePillHtml(i)}</td>
-        <td><span class="pe-conf">${barsHtml(g)}<b>${esc(tr(g.word))}</b></span><div class="pe-sub">${esc(g.detail || tr(g.why))}</div></td>
-        <td class="pe-src">${L.map(y=> `<span class="${y.e.type==='Signal'?'pe-h':'pe-r'}">${y.e.type==='Signal'?'●':'○'}</span> ${peLink(y)}`).join('<br>') || `<span class="pe-none">◌ ${tr('No source yet')}</span>`}</td>
-        <td>${solves.length ? solves.map(y=> esc(y.e.title)).join('<br>') : `<span class="pe-none">${tr('None of the listed ones')}</span>`}</td>
+        <td class="pe-sub">${esc(stripLinks(i.fm.description||'')) || '—'}</td>
       </tr>`;
   }).join('');
 
   const head = (title, sub, sec)=> `<div class="pe-h2row"><div><h2 class="dx-h2">${title}</h2>${sub ? `<p class="pe-h2sub">${sub}</p>` : ''}</div>${canEdit(e) ? `<button type="button" class="dx-btn dx-btn-line dx-btn-sm" data-pe-edit="${esc(sec)}">${tr('Edit')}</button>` : ''}</div>`;
-  const tables = `
-    ${painRows ? `<section class="dx-sec">${head(esc(tr('{name}’s frustrations').replace('{name}', first)), '', 'Pains')}
-      <div class="dx-card"><table class="dx-table pe-table"><thead><tr><th>${tr('Frustration, in their words')}</th><th style="width:30%">${tr('Where it comes from')}</th><th style="width:18%">${tr('Idea for it')}</th></tr></thead><tbody>${painRows}</tbody></table></div></section>` : ''}
-    ${jobRows ? `<section class="dx-sec">${head(tr('Typical behavior'), '', 'Jobs to be Done')}
-      <div class="dx-card"><table class="dx-table pe-table"><thead><tr><th style="width:30%">${tr('Moment')}</th><th>${tr('What they do or expect')}</th><th style="width:28%">${tr('Where it comes from')}</th></tr></thead><tbody>${jobRows}</tbody></table></div></section>` : ''}
-    ${ideaRows ? `<section class="dx-sec">${head(esc(tr('Product ideas for {name}').replace('{name}', first)), '', 'Ideas for this persona')}
-      <div class="dx-card"><table class="dx-table pe-table"><thead><tr><th>${tr('Idea')}</th><th style="width:80px">${tr('Votes')}</th><th style="width:20%"><span class="pe-th">${tr('Confidence')}${dxTip(tr('How confident can we be in this idea?'), esc(tr('Worked out from what the idea links to, not from votes: interviews and research together = strong, interviews only = medium, research only = weak.')))}</span></th><th style="width:22%">${tr('Based on')}</th><th style="width:18%">${tr('Frustration it solves')}</th></tr></thead><tbody>${ideaRows}</tbody></table></div></section>` : ''}`;
+  const cards = (title, sec, html)=> html ? `<section class="dx-sec">${head(title, '', sec)}<div class="pe-cards">${html}</div></section>` : '';
+  const ideasSec = ideaRows ? `<section class="dx-sec">${head(tr('Product ideas'), '', 'Ideas for this persona')}
+      <div class="dx-card"><table class="dx-table pe-table"><thead><tr><th style="width:36%">${tr('Idea')}</th><th style="width:80px">${tr('Votes')}</th><th>${tr('Description')}</th></tr></thead><tbody>${ideaRows}</tbody></table></div></section>` : '';
 
   /* everything behind her */
   const interviews = [...new Map(heard.flatMap(h=> peSourcesOf(h.e).tr).map(x=> [x.e.id, x])).values()];
@@ -14340,14 +14331,13 @@ function personaEditorialHtml(e){
       ${col(tr('Interviews'), interviews.length, interviews.map(x=> peLink({e:x.e, label:x.e.title + (isExcluded(x.e) ? ' · '+tr('set aside') : '')})))}
       ${col(tr('Archetypes'), archs.length, archs.map(x=> peLink(x)))}
     </footer>`;
-  return { top: hero + facts + tables, footer };
+  return { top: hero + cards(tr('Frustrations'), 'Pains', painCards) + cards(tr('Typical behavior'), 'Jobs to be Done', jobCards) + facts + ideasSec, footer };
 }
 
 function personaEditorialWire(root, e){
   wireTalkButton(root, e, peFirst(e));
   wireVotes(root);
   wirePeek(root);
-  const pb = root.querySelector('#pPosterBtn'); if(pb) pb.onclick = ()=>{ location.hash = 'poster:' + e.id; };
   const face = root.querySelector('.pe-portrait');
   if(face){
     face.insertAdjacentHTML('beforeend', `<label class="pe-pic"><input type="file" accept="image/jpeg,image/png,image/webp,image/avif,image/gif" hidden><span>${tr('Change photo')}</span></label>`);
@@ -18632,7 +18622,7 @@ function renderDashboard(){
         <a class="dx-pc-name card-link" href="#${esc(e.id)}">${esc(firstName(e))}<span class="dx-dot">.</span></a>
         <p class="dx-pc-desc" title="${esc(e.fm.description||'')}">${esc(e.fm.description||'')}</p>
         <div class="dx-pc-foot">
-          ${levelMeter(lv, tr('How solid: {l} of 5 · stands on {s} heard + {e} read').replace('{l}',lv).replace('{s}',r.sig).replace('{e}',r.ev))}
+          ${levelMeter(lv, tr('Readiness score: {l} of 5 · stands on {s} heard + {e} read').replace('{l}',lv).replace('{s}',r.sig).replace('{e}',r.ev))}
           <button type="button" class="dx-btn dx-btn-sm ${prim?'dx-btn-primary':'dx-btn-line'}" data-ask="${esc(e.id)}" title="${esc(tr('Copies the line that starts the conversation — paste it into {a}, opened in this project folder').replace('{a}', pjAgentLabel(pjAgent())))}">${TALK_ICO}${tr('Ask')}</button>
         </div>
       </article>`;

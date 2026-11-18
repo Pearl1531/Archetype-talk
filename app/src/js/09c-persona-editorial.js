@@ -1,16 +1,17 @@
 /* ---------- Persona page, Editorial (2026-10) ----------
-   The top of a persona reads like the design: her name as the headline, the
-   archetypes she fits, the line that starts a conversation, then four facts
-   and three working tables built straight from her file:
+   The top of a persona is one card — portrait, name, role, a few lines of
+   context (the description plus the researched "Who they are" lines; character
+   colour stays out), the button that starts a conversation — then cards and a
+   table built straight from her file:
 
-     ## Pains               → "<Name>'s frustrations": each pain's signal, its
-                              verbatim quote (from the signal itself — the
-                              persona file paraphrases), tags, the sources
-                              behind it, and the idea that answers it
-     ## Jobs to be Done     → "Typical behavior": the moment, what she expects,
-                              and the source (or "no source yet")
-     ## Ideas for this persona → votes, grounding, what it stands on, which of
-                              her frustrations it solves
+     ## Pains               → "Frustrations": one card per pain, the signal's
+                              verbatim quote (the persona file paraphrases)
+     ## Jobs to be Done     → "Typical behavior": the moment, what she expects
+     (four facts)           → in one line, built from, sources, readiness score
+     ## Ideas for this persona → idea, votes, description
+
+   Where each card comes from is one hover away (the peek) and listed in full
+   under the page.
 
    Every other section of the file still renders below, as before. Nothing
    here invents content: a row with nothing behind it says so. */
@@ -64,24 +65,21 @@ function personaEditorialHtml(e){
   const heard = uniq('Signal'), read = uniq('Evidence'), archs = peLinks(section(e.body,'Archetypes')).filter(x=> x.e.type==='Archetype');
   const { n: people, off } = personaParticipants(e, true);
   const ideas = peLinks(section(e.body,'Ideas for this persona')).filter(x=> x.e.type==='IdeaForImprovement');
-  const pairs = graphPairs(wsEntities());
-  const nb = id => { const s = new Set(); pairs.forEach(([a,b])=>{ if(a===id) s.add(b); else if(b===id) s.add(a); }); return s; };
 
-  /* hero */
-  const archPills = archs.map(x=> `<a class="pe-pill xref" data-goto="${esc(x.e.id)}" title="${esc(stripLinks(x.e.fm.description||''))}">${ICONS.Archetype}${esc(x.e.title)}</a>`).join('');
+  /* hero: portrait, then who she is, a few lines of context, the conversation */
+  const ctx = [stripLinks(e.fm.description||''), ...peItems(section(e.body,'Who they are'))
+    .map(it=> it.text).filter(t=> !/\[colour\]/.test(t))            // character colour stays out of the headline
+    .map(t=> stripLinks(t.replace(/^\*\*[^*]+:\*\*\s*/,'')).replace(/\*+/g,'').trim())]
+    .filter(Boolean).map(t=> /[.!?]$/.test(t) ? t : t+'.').join(' ');
   const hero = `<section class="pe-hero">
+      ${faceHtml(e, 'pe-portrait'+(prim?' prim':''), first)}
       <div class="pe-main">
-        <div class="pe-kicker"><b>${tr('Persona')}</b><span aria-hidden="true">·</span><span>${esc(tr(prim ? 'the main user type this project designs for' : 'a secondary user type'))}</span>${e.fm.demo ? `<span class="dx-chip">${tr('Example data')}${dxTip(tr('This is the example project'), esc(tr('Illustrative research on Spotify listeners, not your users. The numbers are read as of the day its research closed, and it never mixes with your own projects.')))}</span>` : ''}</div>
+        <div class="pe-chips"><span class="dx-chip">${tr(prim ? 'Primary persona' : 'Secondary persona')}${dxTip(tr(prim ? 'Primary persona' : 'Secondary persona'), esc(tr(prim ? 'the main user type this project designs for' : 'a secondary user type')))}</span>${e.fm.demo ? `<span class="dx-chip">${tr('Example data')}${dxTip(tr('This is the example project'), esc(tr('Illustrative research on Spotify listeners, not your users. The numbers are read as of the day its research closed, and it never mixes with your own projects.')))}</span>` : ''}</div>
         <h1 class="pe-name">${esc(first)}<span class="dx-dot">.</span></h1>
-        <div class="pe-role">${esc([fullName !== first ? fullName.replace(first,'').trim() : '', role].filter(Boolean).join(' · ') || e.fm.description || '')}</div>
-        ${archPills ? `<div class="pe-arch"><span class="pe-arch-l">${tr('Archetypes')}</span>${archPills}</div>` : ''}
-        <div class="pe-actions">${talkButtonHtml(e, first)}
-          <span class="pe-cmd" title="${esc(tr('Paste into your AI assistant, opened in this project folder'))}"><code>${esc(talkCommand(e, pjAgent()))}</code></span>
-          <span class="dx-spacer"></span>
-          <button type="button" class="dx-btn dx-btn-line dx-btn-sm" id="pPosterBtn">${tr('Poster')} ↗</button>
-        </div>
+        <div class="pe-role">${esc([fullName !== first ? fullName.replace(first,'').trim() : '', role].filter(Boolean).join(' · '))}</div>
+        ${ctx ? `<p class="pe-ctx" title="${esc(ctx)}">${esc(ctx)}</p>` : ''}
+        <div class="pe-actions">${talkButtonHtml(e, first)}</div>
       </div>
-      ${faceHtml(e, 'pe-portrait'+(prim?' prim':''), first, 'data-lean="6"')}
     </section>`;
 
   /* four facts */
@@ -91,66 +89,44 @@ function personaEditorialHtml(e){
         <b class="pe-fact">${esc(trn(people,'{n} interview','{n} interviews','{n} wywiad','{n} wywiady','{n} wywiadów'))}</b>${off ? `<span class="dx-fs">${esc(tr('+{n} set aside').replace('{n}', off))}</span>` : ''}</div>
       <div><span class="dx-fl">${tr('Sources')}${dxTip(tr('Heard {h} · Read {r}').replace('{h}', heard.length).replace('{r}', read.length), esc(tr('Solid = heard in your own sessions (signals). Striped = read in published research or data (evidence).')))}</span>
         <b class="pe-fact">${heard.length + read.length}</b><span class="dx-split"><i style="flex:${heard.length} 1 0"></i><i class="ev" style="flex:${read.length} 1 0"></i></span></div>
-      <div><span class="dx-fl">${tr('How solid')}${dxTip(tr('How solid is a persona?'), peLevelTip(lv), 'right')}</span>
+      <div><span class="dx-fl">${tr('Readiness score')}${dxTip(tr('What is the readiness score?'), peLevelTip(lv), 'right')}</span>
         ${levelMeter(lv, '', true)}</div>
     </section>`;
 
-  /* frustrations — with the relievers the researcher connected to each (the poster's `(→ …)` links) */
-  const relievers = ppRaw(e.md, 'Potential Pain Relievers');
-  const painRows = peItems(section(e.body,'Pains')).map(it=>{
-    const sigX = peLinks(it.text).find(x=> x.e.type==='Signal');
-    const sig = sigX && sigX.e;
+  /* frustrations and typical behaviour: one card each, the words first */
+  const pcard = (emo, label, title, text, link)=> `<article class="pe-cd">
+      <div class="pe-cd-k"><span class="pe-emo" aria-hidden="true">${emo}</span>${esc(label)}</div>
+      <div class="pe-cd-t">${link ? `<a class="xref" data-goto="${esc(link)}">${esc(title)}</a>` : esc(title)}</div>
+      ${text ? `<p class="pe-cd-q">${esc(text)}</p>` : ''}
+    </article>`;
+  const painCards = peItems(section(e.body,'Pains')).map(it=>{
+    const sig = (peLinks(it.text).find(x=> x.e.type==='Signal') || {}).e;
     const title = stripLinks(it.text.replace(MD_LINK,'')).replace(/^[\s—–-]+/,'') || (sig ? sig.title : '');
-    const said = it.subs.map(s=> stripLinks(s).replace(/^In (her|his|their) words:\s*/i,'')).join(' ');
+    const said = it.subs.map(x=> stripLinks(x).replace(/^In (her|his|their) words:\s*/i,'')).join(' ');
     const quote = sig ? (firstQuote(sig.body)||'').replace(/^["“]|["”]$/g,'') : '';
-    const tags = sig ? [].concat(sig.fm.tags||[]).filter(Boolean) : [];
-    const src = sig ? peSourcesOf(sig) : { tr: [], ev: [] };
-    const fix = sig ? [...nb(sig.id)].map(id=> ENTITIES[id]).filter(x=> x && x.type==='IdeaForImprovement') : [];
-    return `<tr>
-        <td><div class="pe-t">${esc(title)}</div>${quote ? `<div class="pe-q">“${esc(quote)}”</div>` : said ? `<div class="pe-q pe-para">${esc(said)}</div>` : ''}${tags.length ? `<div class="pe-tags">${tags.map(t=>`<span class="dx-pill">${esc(t)}</span>`).join('')}</div>` : ''}</td>
-        <td class="pe-src">${sig ? `<span class="pe-h">●</span> ${peLink({e:sig}, tr('Signal:'))}` : `<span class="pe-none">◌ ${tr('No source yet')}</span>`}
-          ${src.tr.map(x=>`<br><span class="pe-h">●</span> ${peLink({e:x.e, label: x.e.title + (x.anchor ? ' · '+x.anchor : '')})}`).join('')}
-          ${src.ev.map(x=>`<br><span class="pe-r">○</span> ${peLink({e:x.e}, tr('Evidence:'))}`).join('')}</td>
-        <td class="pe-idea">${fix.length ? fix.map(i=> peLink({e:i, label: i.title.replace(/^Idea:?\s*\d*\s*/,'')})).join('<br>') : `<b class="pe-warn">${tr('No idea yet')}</b>`}${(()=>{
-          const key = (sig ? sig.title : title).toLowerCase();
-          const eased = relievers.filter(r=> r.to.some(n=> n.toLowerCase()===key)).map(r=> r.b.t.split(/\s+—\s+/)[0]);
-          return eased.length ? `<div class="pe-sub">${tr('Eased by:')} ${eased.map(esc).join(', ')}</div>` : '';
-        })()}</td>
-      </tr>`;
+    return pcard('😡', tr('Pain'), title, quote ? `“${quote}”` : said, sig && sig.id);
   }).join('');
-
-  /* typical behavior, from the jobs to be done */
-  const jobRows = peItems(section(e.body,'Jobs to be Done')).map(it=>{
+  const jobCards = peItems(section(e.body,'Jobs to be Done')).map(it=>{
     const txt = stripLinks(it.text.replace(MD_LINK, '')).trim();
     const m = txt.match(/^(When [^,]+),\s*(.*)$/i) || txt.match(/^(Kiedy [^,]+),\s*(.*)$/i);
-    const L = peLinks(it.text);
-    return `<tr${L.length ? '' : ' class="pe-dim"'}><td class="pe-t">${esc(m ? m[1] : txt)}</td><td>${esc(m ? m[2].charAt(0).toUpperCase()+m[2].slice(1) : '')}</td>
-        <td class="pe-src">${L.length ? L.map(x=>`<span class="pe-h">●</span> ${peLink(x)}`).join('<br>') : `<span class="pe-none">◌ ${tr('No source yet')}</span>`}</td></tr>`;
+    const src = peLinks(it.text)[0];
+    return pcard('💤', tr('Typical behavior'), m ? m[1] : txt, m ? m[2].charAt(0).toUpperCase()+m[2].slice(1) : '', src && src.e.id);
   }).join('');
 
   /* ideas */
   const ideaRows = ideas.map(x=>{
-    const i = x.e, g = ideaGrounding(i);
-    const L = peLinks(i.body).filter(y=> y.e.type==='Signal' || y.e.type==='Evidence');
-    const mine = new Set(heard.map(h=> h.e.id));
-    const solves = L.filter(y=> y.e.type==='Signal' && mine.has(y.e.id));
+    const i = x.e;
     return `<tr>
-        <td><a class="xref pe-t" data-goto="${esc(i.id)}">${esc(i.title.replace(/^Idea:?\s*\d*\s*/,''))}</a>${i.fm.description ? `<div class="pe-sub">${esc(stripLinks(i.fm.description))}</div>` : ''}</td>
+        <td><a class="xref pe-t" data-goto="${esc(i.id)}">${esc(i.title.replace(/^Idea:?\s*\d*\s*/,''))}</a></td>
         <td>${votePillHtml(i)}</td>
-        <td><span class="pe-conf">${barsHtml(g)}<b>${esc(tr(g.word))}</b></span><div class="pe-sub">${esc(g.detail || tr(g.why))}</div></td>
-        <td class="pe-src">${L.map(y=> `<span class="${y.e.type==='Signal'?'pe-h':'pe-r'}">${y.e.type==='Signal'?'●':'○'}</span> ${peLink(y)}`).join('<br>') || `<span class="pe-none">◌ ${tr('No source yet')}</span>`}</td>
-        <td>${solves.length ? solves.map(y=> esc(y.e.title)).join('<br>') : `<span class="pe-none">${tr('None of the listed ones')}</span>`}</td>
+        <td class="pe-sub">${esc(stripLinks(i.fm.description||'')) || '—'}</td>
       </tr>`;
   }).join('');
 
   const head = (title, sub, sec)=> `<div class="pe-h2row"><div><h2 class="dx-h2">${title}</h2>${sub ? `<p class="pe-h2sub">${sub}</p>` : ''}</div>${canEdit(e) ? `<button type="button" class="dx-btn dx-btn-line dx-btn-sm" data-pe-edit="${esc(sec)}">${tr('Edit')}</button>` : ''}</div>`;
-  const tables = `
-    ${painRows ? `<section class="dx-sec">${head(esc(tr('{name}’s frustrations').replace('{name}', first)), '', 'Pains')}
-      <div class="dx-card"><table class="dx-table pe-table"><thead><tr><th>${tr('Frustration, in their words')}</th><th style="width:30%">${tr('Where it comes from')}</th><th style="width:18%">${tr('Idea for it')}</th></tr></thead><tbody>${painRows}</tbody></table></div></section>` : ''}
-    ${jobRows ? `<section class="dx-sec">${head(tr('Typical behavior'), '', 'Jobs to be Done')}
-      <div class="dx-card"><table class="dx-table pe-table"><thead><tr><th style="width:30%">${tr('Moment')}</th><th>${tr('What they do or expect')}</th><th style="width:28%">${tr('Where it comes from')}</th></tr></thead><tbody>${jobRows}</tbody></table></div></section>` : ''}
-    ${ideaRows ? `<section class="dx-sec">${head(esc(tr('Product ideas for {name}').replace('{name}', first)), '', 'Ideas for this persona')}
-      <div class="dx-card"><table class="dx-table pe-table"><thead><tr><th>${tr('Idea')}</th><th style="width:80px">${tr('Votes')}</th><th style="width:20%"><span class="pe-th">${tr('Confidence')}${dxTip(tr('How confident can we be in this idea?'), esc(tr('Worked out from what the idea links to, not from votes: interviews and research together = strong, interviews only = medium, research only = weak.')))}</span></th><th style="width:22%">${tr('Based on')}</th><th style="width:18%">${tr('Frustration it solves')}</th></tr></thead><tbody>${ideaRows}</tbody></table></div></section>` : ''}`;
+  const cards = (title, sec, html)=> html ? `<section class="dx-sec">${head(title, '', sec)}<div class="pe-cards">${html}</div></section>` : '';
+  const ideasSec = ideaRows ? `<section class="dx-sec">${head(tr('Product ideas'), '', 'Ideas for this persona')}
+      <div class="dx-card"><table class="dx-table pe-table"><thead><tr><th style="width:36%">${tr('Idea')}</th><th style="width:80px">${tr('Votes')}</th><th>${tr('Description')}</th></tr></thead><tbody>${ideaRows}</tbody></table></div></section>` : '';
 
   /* everything behind her */
   const interviews = [...new Map(heard.flatMap(h=> peSourcesOf(h.e).tr).map(x=> [x.e.id, x])).values()];
@@ -162,14 +138,13 @@ function personaEditorialHtml(e){
       ${col(tr('Interviews'), interviews.length, interviews.map(x=> peLink({e:x.e, label:x.e.title + (isExcluded(x.e) ? ' · '+tr('set aside') : '')})))}
       ${col(tr('Archetypes'), archs.length, archs.map(x=> peLink(x)))}
     </footer>`;
-  return { top: hero + facts + tables, footer };
+  return { top: hero + cards(tr('Frustrations'), 'Pains', painCards) + cards(tr('Typical behavior'), 'Jobs to be Done', jobCards) + facts + ideasSec, footer };
 }
 
 function personaEditorialWire(root, e){
   wireTalkButton(root, e, peFirst(e));
   wireVotes(root);
   wirePeek(root);
-  const pb = root.querySelector('#pPosterBtn'); if(pb) pb.onclick = ()=>{ location.hash = 'poster:' + e.id; };
   const face = root.querySelector('.pe-portrait');
   if(face){
     face.insertAdjacentHTML('beforeend', `<label class="pe-pic"><input type="file" accept="image/jpeg,image/png,image/webp,image/avif,image/gif" hidden><span>${tr('Change photo')}</span></label>`);

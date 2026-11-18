@@ -251,6 +251,7 @@ function openDetail(id){
      the three working tables), then the rest of the file with a sticky section menu. */
   const dcard = document.querySelector('.detail-card');
   dcard.classList.toggle('persona-detail', e.type==='Persona');
+  const ph = document.getElementById('posterHereBtn'); ph.style.display = e.type==='Persona' ? '' : 'none'; ph.onclick = ()=>{ location.hash = 'poster:' + e.id; };
   dcard.classList.toggle('ed-detail', e.type==='Evidence' || e.type==='Signal');
   document.querySelector('.detail-wrap').classList.toggle('detail-wide', /^(Persona|Transcript|Evidence|Signal)$/.test(e.type));
   dcard.classList.toggle('tr-detail', e.type==='Transcript');

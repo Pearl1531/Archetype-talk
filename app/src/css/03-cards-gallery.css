@@ -401,8 +401,6 @@
     border: 1px solid var(--line); color: var(--text-mute); cursor: help; white-space: nowrap; }
   .lvl-3 { color: var(--warn-text); border-color: color-mix(in srgb, var(--warn) 40%, transparent); }
   .lvl-4, .lvl-5 { color: var(--accent-text); border-color: color-mix(in srgb, var(--accent, #ff4d00) 45%, transparent); background: var(--accent-soft); }
-  body.lin-all .p-apple .pa-kicker { white-space: nowrap; }
-  .pa-kicker .lvl-meter { margin-left: auto; }
 
 
   /* ── Transcript card (card() in 07): meta line, title, two lines of gist and

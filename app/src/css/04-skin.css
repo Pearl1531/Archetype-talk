@@ -72,17 +72,16 @@
   body.lin-all .col-resize::after { background: var(--line); }
   body.lin-all .th-sort { color: var(--accent); }
 
-  /* Apple-store persona card (the screenshot pattern: kicker → headline → hero image) */
-  body.lin-all .card.p-apple { display: flex; flex-direction: column; text-align: left;
-    padding: var(--s-6) var(--s-6) 0; overflow: hidden; min-height: 380px; }
-  body.lin-all .p-apple .pa-kicker { font-size: 14px; font-weight: 600; letter-spacing: .8px;
-    text-transform: uppercase; color: var(--text-dim); display: flex; align-items: center; gap: 10px; }
-  body.lin-all .p-apple .pa-demo { color: var(--accent-text); }
-  body.lin-all .p-apple .pa-quote { margin: 10px 0 0; font-size: 23px; line-height: 1.2;
-    font-weight: 600; letter-spacing: -0.3px; color: var(--text); }
-  body.lin-all .p-apple .pa-who { margin-top: 10px; font-size: 14px; color: var(--text-dim); }
-  body.lin-all .p-apple .pa-avatar { margin-top: auto; display: flex; justify-content: center; padding-top: 18px; }
-  body.lin-all .p-apple .pa-avatar .face { width: 170px; height: 170px; margin-bottom: -34px; }
+  /* persona card: portrait on top → name, role → how solid → what it stands on */
+  body.lin-all .card.p-apple { display: flex; flex-direction: column; text-align: left; padding: var(--s-6); overflow: hidden; }
+  body.lin-all .p-apple .pa-avatar { display: flex; justify-content: center; padding: 8px 0 28px; }
+  body.lin-all .p-apple .pa-avatar .face { width: 170px; height: 170px; }
+  body.lin-all .p-apple .pa-name { margin: 0; font-size: 23px; line-height: 1.2; font-weight: 700; letter-spacing: -0.3px; color: var(--text); }
+  body.lin-all .p-apple .pa-who { margin-top: 4px; font-size: 14px; color: var(--text-dim); }
+  body.lin-all .p-apple .pa-lvl { margin-top: auto; padding-top: 18px; display: flex; align-items: center; gap: 10px; }
+  body.lin-all .p-apple .pa-lvl > span { font-size: 13px; font-weight: 600; letter-spacing: .8px; text-transform: uppercase; color: var(--accent-text); }
+  body.lin-all .p-apple .pa-lvl .lvl-meter { margin-left: auto; }
+  body.lin-all .p-apple .pa-base { margin-top: 10px; font-size: 14px; color: var(--text-dim); }
   body.lin-all .p-apple:hover { border-color: var(--hover-border); }
 
   /* ---- detail view ---- */
@@ -220,29 +219,36 @@
   .detail-card.persona-detail .detail-head { display: none; }
   .detail-card.persona-detail .doc-tools { display: none; }
   .p-hero { display: flex; flex-direction: column; gap: 56px; margin-bottom: 56px; }
-  .pe-hero { display: grid; grid-template-columns: minmax(0, 1fr) 240px; gap: 40px; align-items: end; }
-  .pe-kicker { display: flex; align-items: center; gap: 10px; flex-wrap: wrap; margin-bottom: 14px; font-size: var(--fs-md); color: var(--text-dim); }
-  .pe-kicker b { color: var(--text); font-weight: 600; }
-  .pe-name { font-size: clamp(72px, 9vw, 150px); font-weight: 800; line-height: .84; letter-spacing: -0.065em; color: var(--text); }
-  .pe-role { margin-top: 18px; font-size: 21px; font-weight: 500; color: var(--text-soft); }
-  .pe-arch { margin-top: 14px; display: flex; align-items: center; gap: 8px; flex-wrap: wrap; }
-  .pe-arch-l { font-size: var(--text-body); color: var(--text-dim); margin-right: 4px; }
-  .pe-pill { height: 36px; padding: 0 14px 0 10px; border-radius: var(--r-pill); background: #E4DED2; color: var(--text); text-decoration: none;
-    display: inline-flex; align-items: center; gap: 8px; font-size: var(--text-body); font-weight: 600; cursor: pointer; }
-  .pe-pill:hover { background: #D9D2C3; }
-  .pe-actions { margin-top: 24px; display: flex; align-items: center; gap: 10px; flex-wrap: wrap; }
+  /* hero card: portrait left, who she is right; the page's Map / Edit / Poster sit in its top-right corner */
+  .detail-wrap:has(.persona-detail) { position: relative; }
+  .detail-wrap:has(.persona-detail) > .crumbs { position: absolute; top: calc(var(--s-5) + 24px); right: calc(var(--s-6) + 24px); z-index: 2; padding: 0; }
+  .pe-hero { display: grid; grid-template-columns: 280px minmax(0, 1fr); gap: 32px; align-items: stretch; padding: 28px; border-radius: 20px; background: var(--bg-elev); }
+  .pe-chips { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; padding-right: 220px; }
+  .pe-name { margin-top: 14px; font-size: clamp(64px, 7vw, 110px); font-weight: 800; line-height: .84; letter-spacing: -0.065em; color: var(--text); }
+  .pe-role { margin-top: 14px; font-size: 19px; font-weight: 500; color: var(--text-soft); }
+  .pe-ctx { margin-top: 16px; max-width: 110ch; font-size: var(--text-body); line-height: 1.6; color: var(--text-dim);
+    display: -webkit-box; -webkit-line-clamp: 3; -webkit-box-orient: vertical; overflow: hidden; }
+  .pe-actions { margin-top: 20px; display: flex; align-items: center; gap: 10px; flex-wrap: wrap; }
   .pe-actions .p-talk { width: auto; margin: 0; display: inline-flex; }
-  .pe-actions .p-talk .pj-btn { height: 52px; padding: 0 22px; font-size: var(--fs-lg); font-weight: 700; background: var(--primary-bg); color: var(--primary-fg); border-color: var(--primary-bg); }
+  .pe-actions .p-talk .pj-btn { height: 48px; padding: 0 20px; font-size: var(--fs-md); font-weight: 700; background: var(--primary-bg); color: var(--primary-fg); border-color: var(--primary-bg); }
   .pe-actions .p-talk .pj-split-more { padding: 0 14px; border-left: 1px solid rgba(255,255,255,.25); }
-  .pe-cmd { display: inline-flex; align-items: center; height: 52px; padding: 0 16px; border: 1.5px solid var(--text); border-radius: 14px; background: var(--bg-elev-2); max-width: 100%; }
-  .pe-cmd code { font-family: var(--font-mono); font-size: var(--text-body); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-  .pe-portrait { width: 240px; height: 240px; }   /* a .face (faceHtml) */
+  .pe-portrait { width: 100%; height: auto; aspect-ratio: 7 / 8; border-radius: 12px; }   /* a .face (faceHtml), squared off here */
+  /* frustrations / typical behaviour: three cards a row */
+  .pe-cards { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 20px; }
+  .pe-cd { padding: 24px 28px 28px; border-radius: 14px; background: var(--bg-elev); box-shadow: 0 1px 3px rgba(10,10,10,.06); }
+  .pe-cd-k { display: flex; align-items: center; gap: 10px; font-size: var(--text-body); font-weight: 600; color: var(--text); }
+  .pe-emo { font-size: 26px; line-height: 1; }
+  .pe-cd-t { margin-top: 14px; font-weight: 700; line-height: 1.5; color: var(--text); }
+  .pe-cd-t a { color: inherit; text-decoration: none; cursor: pointer; }
+  .pe-cd-t a:hover { text-decoration: underline; text-underline-offset: 3px; }
+  .pe-cd-q { margin-top: 12px; font-size: var(--text-body); line-height: 1.6; color: var(--text-dim);
+    display: -webkit-box; -webkit-line-clamp: 3; -webkit-box-orient: vertical; overflow: hidden; }
   .pe-portrait.prim { background: var(--accent); }
   .pe-pic { position: absolute; inset: 0; z-index: 3; display: grid; place-items: center; cursor: pointer;
     background: rgba(10,10,10,.55); color: #FFFFFF; font-size: var(--text-body); font-weight: 700; opacity: 0; transition: opacity .15s; }
   .pe-portrait:hover .pe-pic, .pe-pic:focus-within { opacity: 1; }
   @media (hover: none){ .pe-pic { inset: auto 0 0 0; height: 30%; opacity: 1; } }
-  .pe-facts { margin-top: -24px; grid-template-columns: minmax(0, 2fr) repeat(3, minmax(0, 1fr)); }
+  .pe-facts { margin-top: 0; border-top: 0; border-bottom: 0; grid-template-columns: repeat(4, minmax(0, 1fr)); }
   .pe-oneline { font-size: 18px; font-weight: 600; line-height: 1.35; color: var(--text); }
   .pe-fact { font-size: 19px; font-weight: 700; color: var(--text); }
   .pe-facts .lvl-meter { font-size: var(--fs-md); flex-wrap: wrap; white-space: normal; } .pe-facts .dx-lvl i { width: 22px; height: 8px; }
@@ -288,8 +294,8 @@
   .persona-detail .doc p, .persona-detail .doc li { font-size: 16px; line-height: 1.62; color: var(--text-soft); }
   .persona-detail .doc blockquote { border-left: 3px solid var(--accent); color: var(--text); }
   @media (max-width: 1100px){
-    .pe-hero { grid-template-columns: minmax(0, 1fr) 160px; }
-    .pe-portrait { width: 160px; height: 160px; }
+    .pe-hero { grid-template-columns: 200px minmax(0, 1fr); }
+    .pe-cards { grid-template-columns: repeat(2, minmax(0, 1fr)); }
     .pe-facts { grid-template-columns: repeat(2, minmax(0, 1fr)); }
     .pe-foot { grid-template-columns: repeat(2, minmax(0, 1fr)); }
     .pe-foot-h { grid-column: 1 / -1; }
@@ -297,8 +303,10 @@
   }
   @media (max-width: 720px){
     .pe-hero { grid-template-columns: 1fr; }
-    .pe-portrait { order: -1; width: 120px; height: 120px; }
-    .pe-cmd { display: none; }
+    .pe-portrait { width: 140px; }
+    .pe-cards { grid-template-columns: 1fr; }
+    .pe-chips { padding-right: 0; }
+    .detail-wrap:has(.persona-detail) > .crumbs { position: static; padding-bottom: var(--s-2); }
     .persona-detail .p-body { grid-template-columns: 1fr; }
     .p-toc { position: static; flex-direction: row; flex-wrap: wrap; gap: 6px; margin-bottom: 20px; }
     .p-toc a { background: var(--bg-elev); }
